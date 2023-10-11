@@ -1,4 +1,5 @@
-pub use crate::{Cash, City};
+pub use crate::city::City;
+pub use crate::Cash;
 
 macro_rules! any_order {
     ($one:path, $two:path) => {
