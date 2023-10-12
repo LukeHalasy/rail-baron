@@ -7,6 +7,7 @@ type PlayerId = u64;
 pub type Cash = u64;
 
 pub mod city;
+pub mod deed;
 pub mod payout;
 pub mod region;
 
