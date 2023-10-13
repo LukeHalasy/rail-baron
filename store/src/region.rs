@@ -1,31 +1,32 @@
 use crate::city::City;
 
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug)]
 pub enum Region {
-    NorthEast,
-    NorthCentral,
-    SouthEast,
-    SouthCentral,
+    North_East,
+    North_Central,
+    South_East,
+    South_Central,
     Plains,
-    NorthWest,
-    SouthWest,
+    North_West,
+    South_West,
 }
 
 impl Region {
     pub const fn cities(&self) -> &[City] {
         match self {
-            Self::NorthEast => &[
+            Self::North_East => &[
                 City::Albany,
                 City::Baltimore,
                 City::Boston,
                 City::Buffalo,
-                City::NewYork,
+                City::New_York,
                 City::Pittsburgh,
                 City::Philadelphia,
-                City::PortlandMaine,
+                City::Portland_Maine,
                 City::Washington,
             ],
-            Self::NorthCentral => &[
+            Self::North_Central => &[
                 City::Chicago,
                 City::Cincinnati,
                 City::Cleveland,
@@ -33,9 +34,9 @@ impl Region {
                 City::Detroit,
                 City::Indianapolis,
                 City::Milwaukee,
-                City::StLouis,
+                City::St_Louis,
             ],
-            Self::SouthEast => &[
+            Self::South_East => &[
                 City::Charlotte,
                 City::Norfolk,
                 City::Chattanooga,
@@ -48,49 +49,49 @@ impl Region {
                 City::Tampa,
                 City::Mobile,
             ],
-            Self::SouthCentral => &[
+            Self::South_Central => &[
                 City::Birmingham,
                 City::Dallas,
-                City::FortWorth,
+                City::Fort_Worth,
                 City::Houston,
-                City::LittleRock,
+                City::Little_Rock,
                 City::Louisville,
                 City::Memphis,
                 City::Nashville,
                 City::NewOrleans,
-                City::SanAntonio,
+                City::San_Antonio,
                 City::Shreveport,
             ],
             Self::Plains => &[
-                City::KansasCity,
-                City::OklahomaCity,
+                City::Kansas_City,
+                City::Oklahoma_City,
                 City::Denver,
                 City::Minneapolis,
-                City::DesMoines,
+                City::Des_Moines,
                 City::Omaha,
                 City::Pueblo,
                 City::Fargo,
             ],
-            Self::NorthWest => &[
+            Self::North_West => &[
                 City::Spokane,
-                City::SaltLakeCity,
+                City::Salt_Lake_City,
                 City::Seattle,
-                City::PortlandOregon,
-                City::RapidCity,
+                City::Portland_Oregon,
+                City::Rapid_City,
                 City::Casper,
                 City::Pocatello,
                 City::Billings,
                 City::Butte,
             ],
-            Self::SouthWest => &[
-                City::SanDiego,
+            Self::South_West => &[
+                City::San_Diego,
                 City::LosAngeles,
                 City::Reno,
                 City::Sacramento,
-                City::LasVegas,
+                City::Las_Vegas,
                 City::Phoenix,
                 City::ElPaso,
-                City::SanFrancisco,
+                City::San_Francisco,
                 City::Tucumcari,
             ],
         }
