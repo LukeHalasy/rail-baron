@@ -1,84 +1,30 @@
 use crate::deed::Deed;
 
 pub use crate::city::City;
+pub use crate::state::State;
 
 use serde::{Deserialize, Serialize};
 
-pub enum State {
-    Alabama,
-    Alaska,
-    Arizona,
-    Arkansas,
-    California,
-    Colorado,
-    Connecticut,
-    Delaware,
-    Florida,
-    Georgia,
-    Hawaii,
-    Idaho,
-    Illinois,
-    Indiana,
-    Iowa,
-    Kansas,
-    Kentucky,
-    Louisiana,
-    Maine,
-    Maryland,
-    Massachusetts,
-    Michigan,
-    Minnesota,
-    Mississippi,
-    Missouri,
-    Montana,
-    Nebraska,
-    Nevada,
-    NewHampshire,
-    NewJersey,
-    NewMexico,
-    NewYork,
-    NorthCarolina,
-    NorthDakota,
-    Ohio,
-    Oklahoma,
-    Oregon,
-    Pennsylvania,
-    RhodeIsland,
-    SouthCarolina,
-    SouthDakota,
-    Tennessee,
-    Texas,
-    Utah,
-    Vermont,
-    Virginia,
-    Washington,
-    WestVirginia,
-    Wisconsin,
-    Wyoming,
-}
-
-// $($subkey:literal: $subcmd:tt),+$(,)?
 macro_rules! sub_cities {
-    ($(($c:tt, $s:tt, [$($nc:tt: [$($d:tt),+$(,)?]),+$(,)?], [$($nsc:tt: [$($sd:tt),+$(,)?]),+$(,)?])),*$(,)?) => {
+    ($($c:tt: $s:tt => [$($nc:tt: [$($d:tt),*$(,)?]),*$(,)?] => [$($nsc:tt: [$($sd:tt),*$(,)?]),*$(,)?]),*$(,)?) => {
         paste::paste! {
             #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
             #[allow(non_camel_case_types)]
-            // Can I make this titled $city_$state ?
-            pub enum SubCity { $($c),* }
+            pub enum SubCity { $([<$c _ $s>]),* }
             impl SubCity {
                 pub const fn sub_cities() -> &'static [Self] {
-                    &[$(Self::$c),*]
+                    &[$(Self::[<$c _ $s>]),*]
                 }
 
                 pub const fn state(&self) -> State {
                     match self {
-                        $(Self::$c => State::$s),*
+                        $(Self::[<$c _ $s>] => State::$s),*
                     }
                 }
 
                 pub const fn neighbor_cities(&self) -> &[(City, &[Deed])] {
                     match self {
-                        $(Self::$c => {
+                        $(Self::[<$c _ $s>] => {
                             &[$((
                                 City::$nc,
                                 &[$(Deed::$d),*],
@@ -89,7 +35,7 @@ macro_rules! sub_cities {
 
                 pub const fn neighbor_sub_cities(&self) -> &[(Self, &[Deed])] {
                     match self {
-                        $(Self::$c => {
+                        $(Self::[<$c _ $s>] => {
                             &[$((
                                 Self::$nsc,
                                 &[$(Deed::$sd),*],
@@ -97,91 +43,36 @@ macro_rules! sub_cities {
                         }),*
                     }
                 }
-
-                // Also need a method for getting the name of the abbred with _AND_ replaced with &
             }
         }
     }
 }
 
-// would be nice to make this verbose
 sub_cities! {
-    (Concord, NewHampshire, [Boston: [B_AND_M], Portland_Maine: [B_AND_M]], [Springfield: [B_AND_M]]),
-    (Springfield, Massachusetts, [Albany: [B_AND_M], Boston: [B_AND_M]], [Concord: [B_AND_M]]),
+    // North East
+    Concord: NH => [Boston_MA: [B_AND_M], Portland_ME: [B_AND_M]] => [Springfield_MA: [B_AND_M]],
+    Springfield: MA => [Albany_NY: [B_AND_M], Boston_MA: [B_AND_M]] => [Concord_NH: [B_AND_M]],
+    Providence: RI => [Boston_MA: [NYNH_AND_H]] => [New_Haven_CT: [NYNH_AND_H]],
+    New_Haven: CT => [New_York_NY: [NYNH_AND_H]] => [Providence_RI: [NYNH_AND_H]],
+    Kingston: NY => [Albany_NY: [NYC], New_York_NY: [NYC]] => [],
+    Syracuse: NY => [Albany_NY: [NYC]] => [Rochester_NY: [NYC]],
+    Rochester: NY => [Buffalo_NY: [NYC]] => [Syracuse_NY: [NYC]],
+    Erie: PA => [Buffalo_NY: [NYC, PA], Cleveland_OH: [NYC]] => [Youngstown_OH: [PA]],
+    Trenton: NJ => [Philadelphia_PA: [PA], New_York_NY: [PA]] => [],
+    Pottstown: PA => [Boston_MA: [PA], Philadelphia_PA: [PA]] => [Lancaster_PA: [PA]],
+    Lancaster: PA => [] => [Pottstown_PA: [PA], Bedford_PA: [PA]],
+    Bedford: PA => [Pittsburgh_PA: [PA]] => [Lancaster_PA: [PA]],
+    Uniontown: PA => [Pittsburgh_PA: [B_AND_O]] => [Cumberland_MD: [B_AND_O]],
+    Frederick: MD => [Baltimore_MD: [B_AND_O], Washington_DC: [B_AND_O]] => [Cumberland_MD: [B_AND_O]],
+
+
+    // Canada :)
+    Brantford: ON => [Buffalo_NY: [C_AND_O]] => [London_ON: [C_AND_O]],
+    London: ON => [Detroit_MI: [C_AND_O]] => [Brantford_ON: [C_AND_O]],
+
+
+    // Mid-West
+
+
+
 }
-
-// What does each city need ??
-// Create a macro that makes an enum
-//
-// pub enum SubCity {
-//   Each_City_Name
-// }
-//
-// And then have a method to get the surrounding Cities and SubCities in a Vec (Option ??)
-// That method should also return the rail-roads associated with each connected city / subcity
-// pub enum CityTypes {
-//   Main(City)
-//   Side(City)
-// }
-// Vec<(CityTypes, Vec<Deed>)>
-//
-// I'll need to replicate this in city.rs in case the user is on a main city..
-// perhaps I should rename that file to main_city.rs and make a file city.rs with the above enum
-//
-// What happens in the case of duplicate names ?
-//
-//
-//
-//
-//
-//
-//
-//
-// * State (for finding coordinates and mapping)
-// A list of sub-cities and cities that connect to it. (And the rail-roads for each situation)
-
-//   --------------------------------------------------------------
-//   ----------------------------------y---------------------------
-//   --------------------------------------------------------------
-//   ---------------------------x----------------------------------
-//   ------------------a-------------------------------------------
-//   -----------------------------------b--------------------------
-//   --------------------------------------------------------------
-
-// In the examble above let's say their are two railroads that both get from a to x.
-// One of those railroads, 1, goes from a->x->b, while 2 goes a->x->y
-
-// How do I represent this in data ?
-//
-
-// Note
-
-// // North-West
-
-// // Rail-Road NYC:
-
-// // From left to right
-
-// // NYC Railroad
-// // More to the left into the MidWest
-// Erie -> ((City::Buffalo)) -> Rochester -> Syracuse -> ((City::Albany)) -> Kingston -> ((City::NewYork))
-
-// // B & M
-// ((City::Albany)) -> Springfield ->both Concord, Boston ->concord ((City::Portland))
-
-// // NYNH&H
-// ((City::NewYork)) -> New Haven -> Providence -> ((City::Boston))
-
-// Concord
-// Providence
-// New Haven
-// Springfield
-// Kingston
-// Trenton
-// Rochester
-// Frederick
-// Lancaster
-// Bedford
-// Pottstown
-// Cumberland
-// Union Town
