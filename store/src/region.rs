@@ -92,7 +92,7 @@ impl Region {
                 City::Phoenix_AZ,
                 City::El_Paso_TX,
                 City::San_Francisco_CA,
-                City::Tucumcari,
+                City::Tucumcari_NM,
             ],
         }
     }
