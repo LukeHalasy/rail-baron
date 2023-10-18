@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use city::City;
+use deed::Deed;
 use serde::{Deserialize, Serialize};
 
 type PlayerId = u64;
@@ -9,7 +10,10 @@ pub type Cash = u64;
 pub mod city;
 pub mod deed;
 pub mod payout;
+pub mod rail_road;
 pub mod region;
+pub mod state;
+pub mod sub_city;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Stage {
@@ -34,7 +38,7 @@ pub struct Player {
     pub name: String,
     pub piece: Piece,
     pub home_city: City,
-    // pub deeds: Vec<Deed>,
+    pub deeds: Vec<Deed>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -43,7 +47,43 @@ pub struct State {
     pub active_player_id: PlayerId,
     pub players: HashMap<PlayerId, Player>,
     pub player_order: Vec<PlayerId>,
-    // pub history: Vec<GameEvent>,
+    pub history: Vec<Event>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum Event {
+    RollDice { player_id: PlayerId },
+}
+
+impl State {
+    pub fn consume(&self, event: &Event) {
+        use Event::*;
+        match event {
+            RollDice { player_id } => {}
+            // TODO: Remove
+            _ => {}
+        }
+    }
+
+    pub fn validate(&self, event: &Event) -> bool {
+        use Event::*;
+        match event {
+            RollDice { player_id } => {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+                // Check player is currently the one making their move
+                if self.active_player_id != *player_id {
+                    return false;
+                }
+            }
+            // TODO: Remove
+            _ => {}
+        }
+
+        true
+    }
 }
 
 impl Default for State {
@@ -53,7 +93,7 @@ impl Default for State {
             active_player_id: 0,
             players: HashMap::new(),
             player_order: Vec::new(),
-            // history: Vec::new(),
+            history: Vec::new(),
         }
     }
 }
