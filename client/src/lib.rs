@@ -1,9 +1,12 @@
+use std::collections::HashMap;
+
 use gloo_events::EventListener;
 use gloo_utils::format::JsValueSerdeExt;
 use js_sys::{Array, Function};
 use leaflet::{
     Circle, Control, LatLng, LatLngBounds, Map, Polygon, Polyline, Rectangle, TileLayer,
 };
+use random_color::RandomColor;
 use serde::{Deserialize, Serialize};
 use store::{city, deed, rail_road, sub_city};
 use wasm_bindgen::{prelude::*, JsCast};
@@ -69,6 +72,14 @@ pub fn main() -> Result<(), JsValue> {
         .addTo(&map);
     }
 
+    let mut rs: HashMap<&deed::Deed, String> = HashMap::new();
+    for de in deed::Deed::rails() {
+        let color = RandomColor::new()
+            .luminosity(random_color::Luminosity::Dark)
+            .to_hex();
+        rs.insert(de, color);
+    }
+
     let d = deed::Deed::get_railroad_graph();
     for (ci, route) in d.into_iter() {
         for r in route {
@@ -85,7 +96,7 @@ pub fn main() -> Result<(), JsValue> {
                 .map(JsValue::from)
                 .collect(),
                 &JsValue::from_serde(&PolylineOptions {
-                    color: "green".into(),
+                    color: rs.get(&r.1).unwrap().into(),
                 })
                 .expect("Unable to serialize polyline options"),
             )
