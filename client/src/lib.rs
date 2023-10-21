@@ -15,6 +15,7 @@ use web_sys::{console, window, Element, HtmlAnchorElement};
 #[derive(Serialize, Deserialize)]
 struct CircleOptions {
     radius: f32,
+    color: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -37,6 +38,7 @@ struct ControlProps {
 pub fn main() -> Result<(), JsValue> {
     console::log_1(&"Running Leaflet example code in Rust.".into());
 
+    // TODO: Set a maximum zoom out
     let map = Map::new("map", &JsValue::NULL);
     map.setView(&LatLng::new(38.8951100, -77.0363700), 5.0);
     add_tile_layer(&map);
@@ -49,27 +51,35 @@ pub fn main() -> Result<(), JsValue> {
         //   color: 'transparent' // Set the border color to transparent
         // }).addTo(map).bindPopup(city.name);
 
-        Circle::new_with_options(
+        let circle = Circle::new_with_options(
             &LatLng::new(
                 city.coordinates().latitude(),
                 city.coordinates().longitude(),
             ),
-            &JsValue::from_serde(&CircleOptions { radius: 4000.0 })
-                .expect("Unable to serialize circle options"),
-        )
-        .addTo(&map);
+            &JsValue::from_serde(&CircleOptions {
+                radius: 4000.0,
+                color: Some("black".into()),
+            })
+            .expect("Unable to serialize circle options"),
+        );
+        circle.addTo(&map);
+        circle.bindPopup(&JsValue::from_str(&city.to_string()), &JsValue::NULL);
     }
 
     for city in sub_city::SubCity::sub_cities() {
-        Circle::new_with_options(
+        let circle = Circle::new_with_options(
             &LatLng::new(
                 city.coordinates().latitude(),
                 city.coordinates().longitude(),
             ),
-            &JsValue::from_serde(&CircleOptions { radius: 4000.0 })
-                .expect("Unable to serialize circle options"),
-        )
-        .addTo(&map);
+            &JsValue::from_serde(&CircleOptions {
+                radius: 4000.0,
+                color: Some("grey".into()),
+            })
+            .expect("Unable to serialize circle options"),
+        );
+        circle.addTo(&map);
+        circle.bindPopup(&JsValue::from_str(&city.to_string()), &JsValue::NULL);
     }
 
     let mut rs: HashMap<&deed::Deed, String> = HashMap::new();
@@ -80,27 +90,52 @@ pub fn main() -> Result<(), JsValue> {
         rs.insert(de, color);
     }
 
-    let d = deed::Deed::get_railroad_graph();
-    for (ci, route) in d.into_iter() {
-        for r in route {
-            let city_two = r.0;
-            Polyline::new_with_options(
-                [
-                    LatLng::new(ci.coordinates().latitude(), ci.coordinates().longitude()),
-                    LatLng::new(
-                        city_two.coordinates().latitude(),
-                        city_two.coordinates().longitude(),
-                    ),
-                ]
-                .iter()
-                .map(JsValue::from)
-                .collect(),
+    let d = rail_road::Deed::get_edges();
+    for (city_pair, rail_roads) in d.into_iter() {
+        for (index, rail_road) in rail_roads.iter().enumerate() {
+            // Find slope between the cities
+            let c0_coors = (
+                city_pair.0.coordinates().latitude(),
+                city_pair.0.coordinates().longitude(),
+            );
+            let c1_coors = (
+                city_pair.1.coordinates().latitude(),
+                city_pair.1.coordinates().longitude(),
+            );
+
+            let slope = (c1_coors.1 - c0_coors.1) / (c1_coors.0 - c0_coors.0);
+
+            // need to move perpendicular to the slope of the line
+            // need to move a standard (distance) down (or up) the perpendicular line from each coordinate
+            // there are going to be different offsets (x and y)
+
+            // Calculate the perpendicular slope
+            let p_m = -1.0 / slope;
+
+            // Calculate the equation of the perpendicular line passing through (x0, y0)
+            // let p_b_0 = c0_coors.1 - (p_m * c0_coors.0);
+            // let p_b_1 = c0_coors.1 - (p_m * c0_coors.0);
+
+            let distance = (index as f64) * 0.01;
+            let lat_0 = c0_coors.0 + (distance / (1.0 + p_m * p_m)).sqrt();
+            let lon_0 = c0_coors.1 + p_m * (lat_0 - c0_coors.0);
+
+            let lat_1 = c1_coors.0 + (distance / (1.0 + p_m * p_m)).sqrt();
+            let lon_1 = c1_coors.1 + p_m * (lat_1 - c1_coors.0);
+
+            // Will need to account for two+ railroads between two cities
+            let line = Polyline::new_with_options(
+                [LatLng::new(lat_0, lon_0), LatLng::new(lat_1, lon_1)]
+                    .iter()
+                    .map(JsValue::from)
+                    .collect(),
                 &JsValue::from_serde(&PolylineOptions {
-                    color: rs.get(&r.1).unwrap().into(),
+                    color: rs.get(&rail_road).unwrap().into(),
                 })
                 .expect("Unable to serialize polyline options"),
-            )
-            .addTo(&map);
+            );
+            line.addTo(&map);
+            line.bindPopup(&JsValue::from_str(&rail_road.to_string()), &JsValue::NULL);
         }
     }
 
@@ -167,14 +202,14 @@ fn add_circle(map: &Map) {
     Circle::new(&LatLng::new(63.25, 13.25)).addTo(map);
 }
 
-fn add_circle_with_options(map: &Map) {
-    Circle::new_with_options(
-        &LatLng::new(63.25, 13.35),
-        &JsValue::from_serde(&CircleOptions { radius: 4000.0 })
-            .expect("Unable to serialize circle options"),
-    )
-    .addTo(map);
-}
+// fn add_circle_with_options(map: &Map) {
+//     Circle::new_with_options(
+//         &LatLng::new(63.25, 13.35),
+//         &JsValue::from_serde(&CircleOptions { radius: 4000.0 })
+//             .expect("Unable to serialize circle options"),
+//     )
+//     .addTo(map);
+// }
 
 fn add_control(map: &Map) {
     let props = JsValue::from_serde(&ControlProps {
