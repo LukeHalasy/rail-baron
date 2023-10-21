@@ -57,7 +57,7 @@ pub fn main() -> Result<(), JsValue> {
                 city.coordinates().longitude(),
             ),
             &JsValue::from_serde(&CircleOptions {
-                radius: 4000.0,
+                radius: 9000.0,
                 color: Some("black".into()),
             })
             .expect("Unable to serialize circle options"),
@@ -73,7 +73,7 @@ pub fn main() -> Result<(), JsValue> {
                 city.coordinates().longitude(),
             ),
             &JsValue::from_serde(&CircleOptions {
-                radius: 4000.0,
+                radius: 7000.0,
                 color: Some("grey".into()),
             })
             .expect("Unable to serialize circle options"),
@@ -84,10 +84,18 @@ pub fn main() -> Result<(), JsValue> {
 
     let mut rs: HashMap<&deed::Deed, String> = HashMap::new();
     for de in deed::Deed::rails() {
-        let color = RandomColor::new()
-            .luminosity(random_color::Luminosity::Dark)
-            .to_hex();
-        rs.insert(de, color);
+        // let color = RandomColor::new()
+        //     .luminosity(random_color::Luminosity::Dark)
+        //     .to_hex();
+        let color = match de {
+            rail_road::Deed::B_AND_M => "#2C3073",
+            rail_road::Deed::B_AND_O => "#0077B0",
+            rail_road::Deed::NYC => "#295536",
+            rail_road::Deed::NYNH_AND_H => "#662D2D",
+            rail_road::Deed::PA => "#A12D2A",
+            _ => "#ff007f",
+        };
+        rs.insert(de, color.into());
     }
 
     let d = rail_road::Deed::get_edges();
@@ -130,7 +138,7 @@ pub fn main() -> Result<(), JsValue> {
                     .map(JsValue::from)
                     .collect(),
                 &JsValue::from_serde(&PolylineOptions {
-                    color: rs.get(&rail_road).unwrap().into(),
+                    color: rs.get(rail_road).unwrap().into(),
                 })
                 .expect("Unable to serialize polyline options"),
             );
