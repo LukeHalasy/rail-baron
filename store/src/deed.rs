@@ -7,7 +7,7 @@ use std::collections::HashMap;
 macro_rules! deeds {
     ($(($abbrev:tt, $full_name:literal, $cost:literal)),*$(,)?) => {
         paste::paste! {
-            #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
+            #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
             #[allow(non_camel_case_types)]
             pub enum Deed { $($abbrev),* }
             impl Deed {
@@ -24,6 +24,14 @@ macro_rules! deeds {
                 pub const fn full_name(&self) -> &str {
                     match self {
                         $(Self::$abbrev => $full_name),*
+                    }
+                }
+            }
+
+            impl std::fmt::Display for Deed {
+                fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    match self {
+                        $(Self::$abbrev => write!(f, "{}", stringify!($abbrev))),*
                     }
                 }
             }

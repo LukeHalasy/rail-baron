@@ -1,9 +1,11 @@
+use store::{
+    rail_road::{Deed, C},
+    sub_city::SubCity,
+};
+
 fn main() {
-    store::Region::NorthEast()
-    store::northeast::City::Albany
-    for region in store::Region::regions() {
-        for city in region.cities() {
-            println!("{:?}", city)
-        }
-    }
+    print!(
+        "{:?}",
+        Deed::NYC.rail_roads().get(&C::P(SubCity::Perrysburg_OH))
+    )
 }

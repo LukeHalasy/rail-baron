@@ -27,6 +27,14 @@ macro_rules! cities {
                     }
                 }
             }
+
+            impl std::fmt::Display for City {
+                fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    match self {
+                        $(Self::[<$c _ $s>] => write!(f, "{}, {}", stringify!($c), stringify!($s))),*
+                    }
+                }
+            }
         }
     }
 }

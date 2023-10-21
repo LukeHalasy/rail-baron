@@ -15,6 +15,15 @@ pub enum C {
     P(SubCity), // Path
 }
 
+impl C {
+    pub fn coordinates(&self) -> geoutils::Location {
+        match self {
+            C::D(city) => city.coordinates(),
+            C::P(city) => city.coordinates(),
+        }
+    }
+}
+
 macro_rules! rail_roads {
     // Will need to change this so that you can specify either a city or subcity in both parts
     ($($c1:expr, $c2:expr, $rr:tt);*$(;)?) => {
@@ -34,6 +43,21 @@ macro_rules! rail_roads {
                         rf.push(($c1, Deed::$rr))
                     } else {
                         graph.insert($c2, vec![($c1, Deed::$rr)]);
+                    }
+                    )*
+
+                    graph
+                }
+
+                // Create a method here that is just for rendering
+                pub fn get_edges() -> HashMap<(C, C), Vec<Deed>> {
+                    let mut graph: HashMap<(C, C), Vec<Deed>> = HashMap::new();
+
+                    $(
+                    if let Some(edge) = graph.get_mut(&($c1, $c2)) {
+                        edge.push(Deed::$rr);
+                    } else {
+                        graph.insert(($c1, $c2), vec![Deed::$rr]);
                     }
                     )*
 
@@ -122,7 +146,7 @@ rail_roads! {
     C::P(SubCity::Ligonier_IN), C::P(SubCity::Fremont_OH), B_AND_O;
     C::P(SubCity::Ligonier_IN), C::P(SubCity::Argos_IN), B_AND_O;
     C::D(City::Chicago_IL), C::P(SubCity::Argos_IN), B_AND_O;
-    C::P(SubCity::Cumberland_MD), C::P(SubCity::Brideport_WV), B_AND_O;
+    // C::P(SubCity::Cumberland_MD), C::P(SubCity::Brideport_WV), B_AND_O;
     C::P(SubCity::Clarksburg_WV), C::P(SubCity::Parkersburg_WV), B_AND_O;
     C::P(SubCity::Chillicothe_OH), C::P(SubCity::Parkersburg_WV), B_AND_O;
     C::P(SubCity::Chillicothe_OH), C::D(City::Cincinnati_OH), B_AND_O;
@@ -130,4 +154,11 @@ rail_roads! {
     C::P(SubCity::Columbus_IN), C::P(SubCity::Vincennes_IN), B_AND_O;
     C::P(SubCity::Centralia_IL), C::P(SubCity::Vincennes_IN), B_AND_O;
     C::P(SubCity::Centralia_IL), C::D(City::St_Louis_MO), B_AND_O;
+
+    // C_AND_O
+    C::D(City::Buffalo_NY), C::P(SubCity::Brantford_ON), C_AND_O;
+    C::P(SubCity::London_ON), C::P(SubCity::Brantford_ON), C_AND_O;
+    C::D(City::Detroit_MI), C::P(SubCity::London_ON), C_AND_O;
+    C::D(City::Detroit_MI), C::P(SubCity::Perrysburg_OH), C_AND_O;
+
 }
