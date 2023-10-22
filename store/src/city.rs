@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub use crate::deed::Deed;
+use crate::region::Region;
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;
 
@@ -105,4 +106,130 @@ cities! {
     [Tampa: FL] => (27.9506, -82.4572),
     [Tucumcari: NM] => (35.1717, -103.7250),
     [Washington: DC] => (38.8951, -77.0369)
+}
+
+macro_rules! city_from_dice_roll {
+    ($($region:tt => {$($sum:literal: ($c_odd:tt, $c_even:tt)),*$(,)?}),*$(,)?) => {
+        paste::paste! {
+            impl City {
+                pub fn city_from_dice_roll(region: Region, red_dice: i64, white_dice: (i64, i64)) -> Self {
+                    match region {
+                        $(Region::$region => {
+                            match (white_dice.0 + white_dice.1) {
+                                $($sum => {
+                                    if red_dice % 2 != 0 {
+                                        Self::$c_odd
+                                    } else {
+                                        Self::$c_even
+                                    }
+                                }),*
+                                _ => panic!("White dice sum (two dice) < 2 or > 12")
+                            }
+                        }),*
+                    }
+                }
+            }
+        }
+    };
+}
+
+city_from_dice_roll! {
+    North_East => {
+        //  (Odd,           Even)
+        2:	(New_York_NY,	New_York_NY),
+        3:	(New_York_NY,	Washington_DC),
+        4:	(New_York_NY,	Pittsburgh_PA),
+        5:	(Albany_NY,	    Pittsburgh_PA),
+        6:	(Boston_MA,	    Philadelphia_PA),
+        7:	(Buffalo_NY,	Washington_DC),
+        8:	(Boston_MA,	    Philadelphia_PA),
+        9:	(Portland_ME,	Baltimore_MD),
+        10:	(New_York_NY,	Baltimore_MD),
+        11:	(New_York_NY,	Baltimore_MD),
+        12:	(New_York_NY,	New_York_NY)
+    },
+    North_Central => {
+        //  (Odd,             Even)
+        2:	(Cleveland_OH,	  Cincinnati_OH),
+        3:	(Cleveland_OH,	  Chicago_IL),
+        4:	(Cleveland_OH,	  Cincinnati_OH),
+        5:	(Cleveland_OH,	  Cincinnati_OH),
+        6:	(Detroit_MI,	  Columbus_OH),
+        7:	(Detroit_MI,	  Chicago_IL),
+        8:	(Indianapolis_IN, Chicago_IL),
+        9:	(Milwaukee_WI,	  St_Louis_MO),
+        10:	(Milwaukee_WI,	  St_Louis_MO),
+        11:	(Chicago_IL,	  St_Louis_MO),
+        12:	(Milwaukee_WI,	  Chicago_IL)
+    },
+    South_East => {
+        //  (Odd,            Even)
+        2:	(Charlotte_TN,	 Norfolk_VA),
+        3:	(Charlotte_TN,	 Norfolk_VA),
+        4:	(Chattanooga_TN, Norfolk_VA),
+        5:	(Atlanta_GA,	 Charleston_SC),
+        6:	(Atlanta_GA,	 Miami_FL),
+        7:	(Atlanta_GA,	 Jacksonville_FL),
+        8:	(Richmond_VA,	 Miami_FL),
+        9:	(Knoxville_TN,	 Tampa_FL),
+        10:	(Mobile_AL,	     Tampa_FL),
+        11:	(Knoxville_TN,	 Mobile_AL),
+        12:	(Mobile_AL,	     Norfolk_VA),
+    },
+    South_Central => {
+        //  (Odd,            Even)
+        2:	(Memphis_TN,	 Shreveport_LA),
+        3:	(Memphis_TN,	 Shreveport_LA),
+        4:	(Memphis_TN,	 Dallas_TX),
+        5:	(Little_Rock_AK, New_Orleans_LA),
+        6:	(New_Orleans_LA, Dallas_TX),
+        7:	(Birmingham_AL,	 San_Antonio_TX),
+        8:	(Louisville_KY,	 Houston_TX),
+        9:	(Nashville_TN,	 Houston_TX),
+        10:	(Nashville_TN,	 Fort_Worth_TX),
+        11:	(Louisville_KY,	 Fort_Worth_TX),
+        12:	(Memphis_TN,	 Fort_Worth_TX),
+    },
+    Plains => {
+        //  (Odd,              Even)
+        2:	(Kansas_City_MO,   Oklahoma_City_OK),
+        3:	(Kansas_City_MO,   Minneapolis_MN),
+        4:	(Denver_CO,	       Minneapolis_MN),
+        5:	(Denver_CO,	       Minneapolis_MN),
+        6:	(Denver_CO,	       Minneapolis_MN),
+        7:	(Kansas_City_MO,   Oklahoma_City_OK),
+        8:	(Kansas_City_MO,   Des_Moines_IA),
+        9:	(Kansas_City_MO,   Omaha_NE),
+        10:	(Pueblo_CO,	       Omaha_NE),
+        11:	(Pueblo_CO,	       Fargo_ND),
+        12:	(Oklahoma_City_OK, Fargo_ND),
+    },
+    North_West => {
+        //  (Odd,          Even)
+        2:	(Spokane_WA,	Spokane_WA),
+        3:	(Spokane_WA,	Salt_Lake_City_UT),
+        4:	(Seattle_WA,	Salt_Lake_City_UT),
+        5:	(Seattle_WA,	Salt_Lake_City_UT),
+        6:	(Seattle_WA,	Portland_OR),
+        7:	(Seattle_WA,	Portland_OR),
+        8:	(Rapid_City_SD,	Portland_OR),
+        9:	(Casper_WY,	    Pocatello_ID),
+        10:	(Billings_MT,	Butte_MT),
+        11:	(Billings_MT,	Butte_MT),
+        12:	(Spokane_WA,	Portland_OR),
+    },
+    South_West => {
+        //  (Odd,           Even)
+        2:	(San_Diego_CA,	Los_Angeles_CA),
+        3:	(San_Diego_CA,	San_Francisco_CA),
+        4:	(Reno_NV,	San_Francisco_CA),
+        5:	(San_Diego_CA,	San_Francisco_CA),
+        6:	(Sacramento_CA,	Los_Angeles_CA),
+        7:	(Las_Vegas_NV,	Los_Angeles_CA),
+        8:	(Phoenix_AZ,	Los_Angeles_CA),
+        9:	(El_Paso_TX,	San_Francisco_CA),
+        10:	(Tucumcari_NM,	San_Francisco_CA),
+        11:	(Phoenix_AZ,	San_Francisco_CA),
+        12:	(Phoenix_AZ,	San_Francisco_CA),
+    },
 }

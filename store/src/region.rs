@@ -96,4 +96,38 @@ impl Region {
             ],
         }
     }
+
+    pub const fn region_from_dice_roll(red_dice: i32, white_dice: (i32, i32)) -> Self {
+        if red_dice % 2 != 0 {
+            match white_dice.0 + white_dice.1 {
+                2 => Self::Plains,
+                3 => Self::South_East,
+                4 => Self::South_East,
+                5 => Self::South_East,
+                6 => Self::North_Central,
+                7 => Self::North_Central,
+                8 => Self::North_East,
+                9 => Self::North_East,
+                10 => Self::North_East,
+                11 => Self::North_East,
+                12 => Self::North_East,
+                _ => panic!("White dice sum > 12 || < 2"),
+            }
+        } else {
+            match white_dice.0 + white_dice.1 {
+                2 => Self::South_West,
+                3 => Self::South_Central,
+                4 => Self::South_Central,
+                5 => Self::South_Central,
+                6 => Self::South_West,
+                7 => Self::South_West,
+                8 => Self::Plains,
+                9 => Self::North_West,
+                10 => Self::North_West,
+                11 => Self::Plains,
+                12 => Self::North_West,
+                _ => panic!("White dice sum > 12 || < 2"),
+            }
+        }
+    }
 }
