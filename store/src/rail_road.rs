@@ -162,3 +162,7 @@ rail_roads! {
     C::D(City::Detroit_MI), C::P(SubCity::Perrysburg_OH), C_AND_O;
 
 }
+
+lazy_static::lazy_static! {
+    pub static ref RAILROAD_GRAPH: HashMap<C, Vec<(C, Deed)>> = Deed::get_railroad_graph();
+}
