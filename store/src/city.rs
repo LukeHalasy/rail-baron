@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub use crate::deed::Deed;
-use crate::region::Region;
+
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;
 

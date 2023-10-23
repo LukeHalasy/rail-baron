@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use city::City;
 use deed::Deed;
-use dice::{Dice, DiceRoll};
+use dice::{DiceRoll};
 use rail_road::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
 
-use std::borrow::Cow;
+
 
 use crate::rail_road::RAILROAD_GRAPH;
 type PlayerId = u64;
@@ -130,8 +130,8 @@ impl State {
             Move { player_id, route } => {
                 // Add the route to the players route history
                 self.players.entry(*player_id).and_modify(|player| {
-                    &mut player.route_history.push(*route);
-                    let (city, rail_road) = route;
+                    player.route_history.push(*route);
+                    let (_city, _rail_road) = route;
 
                     // if city = player.destination.unwrap() {
 
@@ -213,7 +213,7 @@ impl State {
 
                 // Verify that the user has a destination
                 let player = self.players.get(player_id).unwrap();
-                if let None = player.destination {
+                if player.destination.is_none() {
                     return false;
                 }
 
@@ -265,7 +265,7 @@ impl State {
                 }
 
                 // Verify that the user doesn't already have a home-city
-                if let Some(_) = self.players.get(player_id).unwrap().home_city {
+                if self.players.get(player_id).unwrap().home_city.is_some() {
                     return false;
                 }
             }
@@ -280,7 +280,7 @@ impl State {
                 }
 
                 // Verify that the user doesn't already have a destination
-                if let Some(_) = self.players.get(player_id).unwrap().destination {
+                if self.players.get(player_id).unwrap().destination.is_some() {
                     return false;
                 }
             }
@@ -295,7 +295,7 @@ impl State {
                 }
 
                 // Check that the player isn't in the middle-of-moving
-                if let Some(_) = self.players.get(player_id).unwrap().spaces_left_to_move {
+                if self.players.get(player_id).unwrap().spaces_left_to_move.is_some() {
                     return false;
                 }
             }
