@@ -1,13 +1,12 @@
-
 pub use crate::Cash;
 
 use serde::{Deserialize, Serialize};
-
+use strum::EnumIter;
 
 macro_rules! deeds {
     ($(($abbrev:tt, $full_name:literal, $cost:literal)),*$(,)?) => {
         paste::paste! {
-            #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
+            #[derive(Clone, Copy, Debug, Deserialize, EnumIter, Serialize, Eq, PartialEq, Hash)]
             #[allow(non_camel_case_types)]
             pub enum Deed { $($abbrev),* }
             impl Deed {
