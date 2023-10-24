@@ -2,12 +2,10 @@ use std::collections::HashMap;
 
 use city::City;
 use deed::Deed;
-use dice::{DiceRoll};
+use dice::DiceRoll;
 use rail_road::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
-
-
 
 use crate::rail_road::RAILROAD_GRAPH;
 type PlayerId = u64;
@@ -128,18 +126,25 @@ impl State {
         use Event::*;
         match valid_event {
             Move { player_id, route } => {
+                let (city, _) = route;
+
                 // Add the route to the players route history
                 self.players.entry(*player_id).and_modify(|player| {
                     player.route_history.push(*route);
-                    let (_city, _rail_road) = route;
 
-                    // if city = player.destination.unwrap() {
-
-                    // }
+                    // Check if the user is at their destination
+                    match city {
+                        C::D(main_city) => {
+                            // NOTE: Should I also check for a win here
+                            if *main_city == player.destination.unwrap() {
+                                player.route_history = vec![];
+                                player.destination = None
+                            }
+                        }
+                        _ => {}
+                    }
                 });
 
-                // Check if the player is at their destination
-                // let player =
                 // Check for Rover
                 // Win Check
             }
@@ -295,7 +300,13 @@ impl State {
                 }
 
                 // Check that the player isn't in the middle-of-moving
-                if self.players.get(player_id).unwrap().spaces_left_to_move.is_some() {
+                if self
+                    .players
+                    .get(player_id)
+                    .unwrap()
+                    .spaces_left_to_move
+                    .is_some()
+                {
                     return false;
                 }
             }
