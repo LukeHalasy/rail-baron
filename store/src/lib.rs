@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use city::City;
 use deed::Deed;
@@ -6,6 +6,7 @@ use dice::DiceRoll;
 use rail_road::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 
 use crate::rail_road::RAILROAD_GRAPH;
 type PlayerId = u64;
@@ -66,7 +67,7 @@ pub enum Train {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Player {
-    pub cash: u64,
+    pub cash: i64,
     pub name: String,
     pub piece: Piece,
     pub home_city: Option<City>,
@@ -84,6 +85,7 @@ pub struct State {
     pub players: HashMap<PlayerId, Player>,
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
+    pub deed_ledger: HashMap<Deed, Option<PlayerId>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -135,7 +137,6 @@ impl State {
                     // Check if the user is at their destination
                     match city {
                         C::D(main_city) => {
-                            // NOTE: Should I also check for a win here
                             if *main_city == player.destination.unwrap() {
                                 player.route_history = vec![];
                                 player.destination = None
@@ -143,7 +144,60 @@ impl State {
                         }
                         _ => {}
                     }
+
+                    // decrease the number of spaces the user has left to move
+                    player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
                 });
+
+                // handle payouts
+                if self.players.get(player_id).unwrap().spaces_left_to_move == Some(0) {
+                    self.players.entry(*player_id).and_modify(|player| {
+                        player.spaces_left_to_move = None;
+                    });
+
+                    // determine which rail-roads the player used along their route
+                    let mut unique_rail_roads_on_route: HashSet<Deed> = HashSet::new();
+                    for route in &self.players.get(player_id).unwrap().route_history {
+                        let (_, rail) = route;
+                        unique_rail_roads_on_route.insert(*rail);
+                    }
+
+                    for rail_road in unique_rail_roads_on_route.into_iter() {
+                        // TODO:
+                        // Need to handle rail-road prices increasing 2x once all rail_roads are bought
+
+                        // TODO:
+                        // Need to handle grand-fathering
+                        // so that if a user was on a rail-road
+                        // before a player buys that road they should only pay $1000 to the bank
+                        // for that rail-road
+                        if let Some(rail_road_owner_id) = self.deed_ledger.get(&rail_road).unwrap()
+                        {
+                            let payout = 5000;
+
+                            // Pay owner
+                            self.players
+                                .entry(*rail_road_owner_id)
+                                .and_modify(|player| player.cash = player.cash + payout);
+
+                            // Subtract from player
+                            self.players
+                                .entry(*player_id)
+                                .and_modify(|player| player.cash = player.cash - payout);
+                        } else {
+                            let payout = 1000;
+
+                            // QUESTION: Should I keep track of the bank ?
+                            // and pay a bank here ?
+
+                            // Subtract from player
+                            self.players
+                                .entry(*player_id)
+                                .and_modify(|player| player.cash = player.cash - payout);
+                        }
+                    }
+                }
+                // NOTE: Should I also check for a win here
 
                 // Check for Rover
                 // Win Check
@@ -324,6 +378,7 @@ impl Default for State {
             players: HashMap::new(),
             player_order: Vec::new(),
             history: Vec::new(),
+            deed_ledger: Deed::iter().map(|deed| (deed, None)).collect(),
         }
     }
 }
