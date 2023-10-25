@@ -1,5 +1,5 @@
-pub use crate::city::City;
 pub use crate::deed::Deed;
+pub use crate::main_city::City;
 pub use crate::sub_city::SubCity;
 use serde::{Deserialize, Serialize};
 

@@ -2,9 +2,9 @@ use std::ops::Add;
 
 use rand::Rng;
 
-pub use crate::city::City;
+pub use crate::main_city::City;
 pub use crate::region::Region;
-use crate::Train;
+use crate::Engine;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
@@ -91,9 +91,9 @@ impl DiceRoll {
         }
     }
 
-    pub fn movement_roll(train: &Train) -> Self {
+    pub fn movement_roll(train: &Engine) -> Self {
         match train {
-            Train::Freight => {
+            Engine::Freight => {
                 let mut roll = Self::white();
 
                 if roll.white_dice.0 == Dice::Six && roll.white_dice.1 == Dice::Six {
@@ -102,7 +102,7 @@ impl DiceRoll {
 
                 roll
             }
-            Train::Express => {
+            Engine::Express => {
                 let mut roll = Self::white();
 
                 if roll.white_dice.0 == roll.white_dice.1 {
@@ -111,7 +111,7 @@ impl DiceRoll {
 
                 roll
             }
-            Train::SuperChief => Self::red_and_white(),
+            Engine::SuperChief => Self::red_and_white(),
         }
     }
 }

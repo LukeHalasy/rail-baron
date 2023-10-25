@@ -1,4 +1,4 @@
-use crate::city::City;
+use crate::main_city::City;
 use serde::{Deserialize, Serialize};
 
 #[allow(non_camel_case_types)]
