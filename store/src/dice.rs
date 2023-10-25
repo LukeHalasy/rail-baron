@@ -91,6 +91,32 @@ impl DiceRoll {
         }
     }
 
+    pub fn movement_roll(train: &Train) -> Self {
+        match train {
+            Train::Freight => {
+                let mut roll = Self::white();
+
+                if roll.white_dice.0 == Dice::Six && roll.white_dice.1 == Dice::Six {
+                    roll.red_dice = Some(Dice::new());
+                }
+
+                roll
+            }
+            Train::Express => {
+                let mut roll = Self::white();
+
+                if roll.white_dice.0 == roll.white_dice.1 {
+                    roll.red_dice = Some(Dice::new());
+                }
+
+                roll
+            }
+            Train::SuperChief => Self::red_and_white(),
+        }
+    }
+}
+
+impl DiceRoll {
     pub fn region() -> (Self, Region) {
         let dice_roll: Self = Self::red_and_white();
         let red_dice = dice_roll.red_dice.unwrap();
@@ -129,30 +155,6 @@ impl DiceRoll {
         };
 
         (dice_roll, region_match)
-    }
-
-    pub fn movement_roll(train: &Train) -> Self {
-        match train {
-            Train::Freight => {
-                let mut roll = Self::white();
-
-                if roll.white_dice.0 == Dice::Six && roll.white_dice.1 == Dice::Six {
-                    roll.red_dice = Some(Dice::new());
-                }
-
-                roll
-            }
-            Train::Express => {
-                let mut roll = Self::white();
-
-                if roll.white_dice.0 == roll.white_dice.1 {
-                    roll.red_dice = Some(Dice::new());
-                }
-
-                roll
-            }
-            Train::SuperChief => Self::red_and_white(),
-        }
     }
 }
 
