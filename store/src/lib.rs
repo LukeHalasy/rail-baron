@@ -8,7 +8,11 @@ use region::Region;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::rail_road::RAILROAD_GRAPH;
+use crate::{
+    dice::Dice,
+    payout::{payout, travel_payout},
+    rail_road::RAILROAD_GRAPH,
+};
 type PlayerId = u64;
 pub type Cash = u64;
 
@@ -71,7 +75,8 @@ pub struct Player {
     pub name: String,
     pub piece: Piece,
     pub home_city: Option<City>,
-    pub route_history: Vec<(crate::rail_road::C, deed::Deed)>, // Default is to home-city
+    pub route_history: Vec<(crate::rail_road::C, deed::Deed)>,
+    pub start: Option<City>, // Default is home-city
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
     pub deeds: Vec<Deed>,
@@ -86,6 +91,7 @@ pub struct State {
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
     pub deed_ledger: HashMap<Deed, Option<PlayerId>>,
+    pub all_roads_bought: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -130,24 +136,49 @@ impl State {
             Move { player_id, route } => {
                 let (city, _) = route;
 
-                // Add the route to the players route history
                 self.players.entry(*player_id).and_modify(|player| {
+                    // Add the route to the players route history
                     player.route_history.push(*route);
-
-                    // Check if the user is at their destination
-                    match city {
-                        C::D(main_city) => {
-                            if *main_city == player.destination.unwrap() {
-                                player.route_history = vec![];
-                                player.destination = None
-                            }
-                        }
-                        _ => {}
-                    }
 
                     // decrease the number of spaces the user has left to move
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
                 });
+
+                // Check if the user is at their destination
+                match city {
+                    C::D(main_city) => {
+                        if *main_city == self.players.get(player_id).unwrap().destination.unwrap() {
+                            self.players.entry(*player_id).and_modify(|player| {
+                                // Pay the player for reaching their destination
+                                player.cash += travel_payout(
+                                    player.start.unwrap(),
+                                    player.destination.unwrap(),
+                                ) as i64;
+
+                                // Reset the user's route history
+                                player.route_history = vec![];
+
+                                // Set the start of the user's next route
+                                player.start = Some(*main_city);
+
+                                // Act as if the user initiated a destination selection dice roll
+                                // Will need to think through whether I actually want to auto-roll
+                                let (region_roll, region) = DiceRoll::region();
+                                let (city_roll, city) = DiceRoll::city_in_region(region);
+
+                                player.destination = Some(city);
+                                self.history.push(Event::DestinationCityRoll {
+                                    player_id: *player_id,
+                                    region_roll,
+                                    city_roll,
+                                    region,
+                                    city,
+                                })
+                            });
+                        }
+                    }
+                    _ => {}
+                }
 
                 // handle payouts
                 if self.players.get(player_id).unwrap().spaces_left_to_move == Some(0) {
@@ -164,16 +195,16 @@ impl State {
 
                     for rail_road in unique_rail_roads_on_route.into_iter() {
                         // TODO:
-                        // Need to handle rail-road prices increasing 2x once all rail_roads are bought
-
-                        // TODO:
                         // Need to handle grand-fathering
                         // so that if a user was on a rail-road
                         // before a player buys that road they should only pay $1000 to the bank
                         // for that rail-road
                         if let Some(rail_road_owner_id) = self.deed_ledger.get(&rail_road).unwrap()
                         {
-                            let payout = 5000;
+                            let mut payout = 5000;
+                            if self.all_roads_bought {
+                                payout *= 2;
+                            }
 
                             // Pay owner
                             self.players
@@ -186,9 +217,9 @@ impl State {
                                 .and_modify(|player| player.cash = player.cash - payout);
                         } else {
                             let payout = 1000;
-
-                            // QUESTION: Should I keep track of the bank ?
-                            // and pay a bank here ?
+                            if self.all_roads_bought {
+                                payout *= 2;
+                            }
 
                             // Subtract from player
                             self.players
@@ -217,21 +248,21 @@ impl State {
                     city,
                 })
             }
-            DestinationCityRollRequest { player_id } => {
-                self.history.push(valid_event.clone());
+            // DestinationCityRollRequest { player_id } => {
+            //     self.history.push(valid_event.clone());
 
-                let (region_roll, region) = DiceRoll::region();
-                let (city_roll, city) = DiceRoll::city_in_region(region);
+            //     let (region_roll, region) = DiceRoll::region();
+            //     let (city_roll, city) = DiceRoll::city_in_region(region);
 
-                self.players.get_mut(player_id).unwrap().destination = Some(city);
-                self.history.push(Event::DestinationCityRoll {
-                    player_id: *player_id,
-                    region_roll,
-                    city_roll,
-                    region,
-                    city,
-                })
-            }
+            //     self.players.get_mut(player_id).unwrap().destination = Some(city);
+            //     self.history.push(Event::DestinationCityRoll {
+            //         player_id: *player_id,
+            //         region_roll,
+            //         city_roll,
+            //         region,
+            //         city,
+            //     })
+            // }
             MovementRollRequest { player_id } => {
                 self.history.push(valid_event.clone());
 
@@ -379,6 +410,7 @@ impl Default for State {
             player_order: Vec::new(),
             history: Vec::new(),
             deed_ledger: Deed::iter().map(|deed| (deed, None)).collect(),
+            all_roads_bought: false,
         }
     }
 }
