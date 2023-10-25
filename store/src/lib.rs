@@ -1,56 +1,46 @@
 use std::collections::{HashMap, HashSet};
 
-use city::City;
 use deed::Deed;
 use dice::DiceRoll;
+use main_city::City;
 use rail_road::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::{
-    dice::Dice,
-    payout::{payout, travel_payout},
-    rail_road::RAILROAD_GRAPH,
-};
+use crate::{rail_road::RAILROAD_GRAPH, travel_payout::travel_payout};
 type PlayerId = u64;
 pub type Cash = u64;
 
-pub mod city;
 pub mod deed;
 pub mod dice;
-pub mod payout;
+pub mod main_city;
 pub mod rail_road;
 pub mod region;
 pub mod state;
 pub mod sub_city;
+pub mod travel_payout;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Stage {
     PreGame,
-    InGame,
+    InGame(InGameStage),
     Ended,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum InGameStage {
+    // DiceRoll(DiceRollStage),
+    Movement,
+    Purchase,
+}
+
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-// pub enum InGameStage {
-//     DiceRoll(DiceRollStage),
-//     Purchase(PurchaseStage),
+// pub enum DiceRollStage {
+//     HomeCityRoll,
+//     DestinationRoll,
+//     MovementRoll,
 // }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum DiceRollStage {
-    HomeCityRoll,
-    DestinationRoll,
-    MovementRoll,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum PurchaseStage {
-    DeedPurchase,
-    ExpressPurchase,
-    SuperChiefPurchase,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Piece {
@@ -63,10 +53,20 @@ pub enum Piece {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
-pub enum Train {
+pub enum Engine {
     Freight,
     Express,
     SuperChief,
+}
+
+impl Engine {
+    pub const fn cost(&self) -> u64 {
+        match self {
+            Engine::Freight => 0,
+            Engine::Express => 4000,
+            Engine::SuperChief => 40000,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ pub struct Player {
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
     pub deeds: Vec<Deed>,
-    pub train: Train,
+    pub engine: Engine,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -127,6 +127,17 @@ pub enum Event {
         player_id: PlayerId,
         route: (C, Deed),
     },
+    PurchaseDeed {
+        player_id: PlayerId,
+        deed: Deed,
+    },
+    PurchaseEngine {
+        player_id: PlayerId,
+        engine: Engine,
+    },
+    EndPurchaseStage {
+        player_id: PlayerId,
+    },
 }
 
 impl State {
@@ -143,42 +154,6 @@ impl State {
                     // decrease the number of spaces the user has left to move
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
                 });
-
-                // Check if the user is at their destination
-                match city {
-                    C::D(main_city) => {
-                        if *main_city == self.players.get(player_id).unwrap().destination.unwrap() {
-                            self.players.entry(*player_id).and_modify(|player| {
-                                // Pay the player for reaching their destination
-                                player.cash += travel_payout(
-                                    player.start.unwrap(),
-                                    player.destination.unwrap(),
-                                ) as i64;
-
-                                // Reset the user's route history
-                                player.route_history = vec![];
-
-                                // Set the start of the user's next route
-                                player.start = Some(*main_city);
-
-                                // Act as if the user initiated a destination selection dice roll
-                                // Will need to think through whether I actually want to auto-roll
-                                let (region_roll, region) = DiceRoll::region();
-                                let (city_roll, city) = DiceRoll::city_in_region(region);
-
-                                player.destination = Some(city);
-                                self.history.push(Event::DestinationCityRoll {
-                                    player_id: *player_id,
-                                    region_roll,
-                                    city_roll,
-                                    region,
-                                    city,
-                                })
-                            });
-                        }
-                    }
-                    _ => {}
-                }
 
                 // handle payouts
                 if self.players.get(player_id).unwrap().spaces_left_to_move == Some(0) {
@@ -216,7 +191,7 @@ impl State {
                                 .entry(*player_id)
                                 .and_modify(|player| player.cash = player.cash - payout);
                         } else {
-                            let payout = 1000;
+                            let mut payout = 1000;
                             if self.all_roads_bought {
                                 payout *= 2;
                             }
@@ -228,6 +203,46 @@ impl State {
                         }
                     }
                 }
+
+                // Check if the user is at their destination
+                match city {
+                    C::D(main_city) => {
+                        if *main_city == self.players.get(player_id).unwrap().destination.unwrap() {
+                            self.players.entry(*player_id).and_modify(|player| {
+                                // Pay the player for reaching their destination
+                                player.cash += travel_payout(
+                                    player.start.unwrap(),
+                                    player.destination.unwrap(),
+                                ) as i64;
+
+                                // Reset the user's route history
+                                player.route_history = vec![];
+
+                                // Set the start of the user's next route
+                                player.start = Some(*main_city);
+
+                                // Act as if the user initiated a destination selection dice roll
+                                // Will need to think through whether I actually want to auto-roll
+                                let (region_roll, region) = DiceRoll::region();
+                                let (city_roll, city) = DiceRoll::city_in_region(region);
+
+                                player.destination = Some(city);
+                                self.history.push(Event::DestinationCityRoll {
+                                    player_id: *player_id,
+                                    region_roll,
+                                    city_roll,
+                                    region,
+                                    city,
+                                });
+
+                                // Set the stage to purchasing
+                                self.stage = Stage::InGame(InGameStage::Purchase)
+                            });
+                        }
+                    }
+                    _ => {}
+                }
+
                 // NOTE: Should I also check for a win here
 
                 // Check for Rover
@@ -267,7 +282,7 @@ impl State {
                 self.history.push(valid_event.clone());
 
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
-                let roll = DiceRoll::movement_roll(&player.train);
+                let roll = DiceRoll::movement_roll(&player.engine);
 
                 player.spaces_left_to_move = Some(roll.sum());
 
@@ -395,6 +410,77 @@ impl State {
                     return false;
                 }
             }
+            PurchaseDeed { player_id, deed } => {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+                // Check player is currently the one making their move
+                if self.active_player_id != *player_id {
+                    return false;
+                }
+
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return false;
+                }
+
+                // ensure that the deed is not owned
+                if self.deed_ledger.get(&deed).unwrap().is_some() {
+                    return false;
+                }
+
+                // ensure the player has enough money to purchase it
+                if self.players.get(player_id).unwrap().cash < (deed.cost() as i64) {
+                    return false;
+                }
+            }
+            PurchaseEngine { player_id, engine } => {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+                // Check player is currently the one making their move
+                if self.active_player_id != *player_id {
+                    return false;
+                }
+
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return false;
+                }
+
+                // ensure the player has enough money to purchase it
+                if self.players.get(player_id).unwrap().cash < (engine.cost() as i64) {
+                    return false;
+                }
+
+                // a player shouldn't buy an engine they already have
+                if self.players.get(player_id).unwrap().engine == *engine {
+                    return false;
+                }
+
+                // a player shouldn't buy a less-expensive engine then the one they already have
+                if self.players.get(player_id).unwrap().engine.cost() >= engine.cost() {
+                    return false;
+                }
+            }
+            EndPurchaseStage { player_id } => {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+                // Check player is currently the one making their move
+                if self.active_player_id != *player_id {
+                    return false;
+                }
+
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return false;
+                }
+            }
+            _ => {}
         }
 
         true
