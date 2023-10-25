@@ -9,7 +9,7 @@ macro_rules! any_order {
     };
 }
 
-pub fn payout(start: City, destination: City) -> Cash {
+pub fn travel_payout(start: City, destination: City) -> Cash {
     match (start, destination) {
         (City::Albany_NY, City::Albany_NY) => 0,
         any_order!(Atlanta_GA, Albany_NY) => 10000,
