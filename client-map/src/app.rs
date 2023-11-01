@@ -27,47 +27,12 @@ pub fn App() -> impl IntoView {
     }
 
     let d = rail_road::Deed::get_edges();
+    let player_one = main_city::City::Cleveland_OH;
 
     view! {
-        <MapContainer style="top:0;left:0;height:100vh;width:100vh,position:absolute" center=Position::new(38.8951100, -77.0363700) zoom=5.0 set_view=true>
+        <MapContainer style="top:0;left:0;height:100vh;width:100vh,position:absolute" center=Position::new(39.8283, -98.5795) zoom=5.0 min_zoom=5.0 set_view=true>
             // TODO: need to add attribution
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-            {
-                cities
-                .into_iter()
-                .map(|n| {
-                    let latitude = n.coordinates().latitude();
-                    let longitude = n.coordinates().longitude();
-                    let radius = 9000.0;
-                    let city_name = n.to_string();
-
-                    view! {
-                        <Circle color="black" center=position!(latitude, longitude) radius=radius>
-                            <Popup>
-                                <strong>{city_name}</strong>
-                            </Popup>
-                        </Circle>
-                    }
-                }).collect_view()
-            }
-            {
-                sub_cities
-                .into_iter()
-                .map(|n| {
-                    let latitude = n.coordinates().latitude();
-                    let longitude = n.coordinates().longitude();
-                    let radius = 9000.0;
-                    let city_name = n.to_string();
-
-                    view! {
-                        <Circle color="grey" center=position!(latitude, longitude) radius=radius>
-                            <Popup>
-                                <strong>{city_name}</strong>
-                            </Popup>
-                        </Circle>
-                    }
-                }).collect_view()
-            }
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"/>
             {
                 d
                 .into_iter()
@@ -95,6 +60,44 @@ pub fn App() -> impl IntoView {
                     }).collect_view()
                 }).collect_view();
             }
+            {
+                cities
+                .into_iter()
+                .map(|n| {
+                    let latitude = n.coordinates().latitude();
+                    let longitude = n.coordinates().longitude();
+                    let city_name = n.to_string();
+
+                    view! {
+                        // TODO: Change to CircleMarker for consistent radius
+                        <Circle fill_opacity=1.0 fill_color="black" color="transparent" center=position!(latitude, longitude) radius=17000.0>
+                            <Popup>
+                                <strong>{city_name}</strong>
+                            </Popup>
+                        </Circle>
+                    }
+                }).collect_view()
+            }
+            {
+                sub_cities
+                .into_iter()
+                .map(|n| {
+                    let latitude = n.coordinates().latitude();
+                    let longitude = n.coordinates().longitude();
+                    let city_name = n.to_string();
+
+                    view! {
+                        // TODO: Change to CircleMarker for consistent radius
+                        <Circle fill_opacity=1.0 fill_color="grey" color="transparent" center=position!(latitude, longitude) radius=9000.0>
+                            <Popup>
+                                <strong>{city_name}</strong>
+                            </Popup>
+                        </Circle>
+                    }
+                }).collect_view()
+            }
+            <Marker title="player_one" position=position!({player_one.coordinates().latitude()}, {player_one.coordinates().longitude()})>
+            </Marker>
         </MapContainer>
     }
 }

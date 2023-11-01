@@ -6,7 +6,7 @@ use js_sys::{Array, Function};
 use leaflet::{
     Circle, Control, LatLng, LatLngBounds, Map, Polygon, Polyline, Rectangle, TileLayer,
 };
-use random_color::RandomColor;
+
 use serde::{Deserialize, Serialize};
 use store::{city, deed, rail_road, sub_city};
 use wasm_bindgen::{prelude::*, JsCast};
@@ -73,7 +73,7 @@ pub fn main() -> Result<(), JsValue> {
                 city.coordinates().longitude(),
             ),
             &JsValue::from_serde(&CircleOptions {
-                radius: 7000.0,
+                radius: 17000.0.into(),
                 color: Some("grey".into()),
             })
             .expect("Unable to serialize circle options"),
