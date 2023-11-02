@@ -1,6 +1,7 @@
 use leptos::*;
 
 mod app;
+mod city;
 
 use crate::app::App;
 

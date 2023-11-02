@@ -40,6 +40,7 @@ macro_rules! sub_cities {
 }
 
 // I think I should get rid of the railroad part of this..
+
 sub_cities! {
     [Concord: NH] => (43.2081, -71.5376),
     [Springfield: MA] => (42.1015, -72.5898),
@@ -214,5 +215,4 @@ sub_cities! {
     [Bloomfield: MT] => (47.5285, -104.4985),
     [Terry: MT] => (46.7838, -105.3162),
     [Wibaux: MT] => (46.9857, -104.1921)
-
 }

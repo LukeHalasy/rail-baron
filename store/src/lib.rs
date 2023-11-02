@@ -1,3 +1,5 @@
+#![feature(const_fn_floating_point_arithmetic)]
+
 use std::collections::{HashMap, HashSet};
 
 use deed::Deed;
@@ -31,6 +33,7 @@ pub enum Stage {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum InGameStage {
     // DiceRoll(DiceRollStage),
+    BankruptcyAuction,
     Movement,
     Purchase,
 }
@@ -155,8 +158,11 @@ impl State {
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
                 });
 
+                let is_last_move =
+                    self.players.get(player_id).unwrap().spaces_left_to_move == Some(0);
+
                 // handle payouts
-                if self.players.get(player_id).unwrap().spaces_left_to_move == Some(0) {
+                if is_last_move {
                     self.players.entry(*player_id).and_modify(|player| {
                         player.spaces_left_to_move = None;
                     });
@@ -244,6 +250,11 @@ impl State {
                 }
 
                 // NOTE: Should I also check for a win here
+                if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
+                    self.stage = Stage::InGame(InGameStage::BankruptcyAuction);
+
+                    self.advance_turn();
+                }
 
                 // Check for Rover
                 // Win Check
@@ -291,6 +302,9 @@ impl State {
                     roll,
                 })
             }
+            EndPurchaseStage { .. } => {
+                self.advance_turn();
+            }
             // TODO: Remove
             _ => {}
         }
@@ -300,6 +314,26 @@ impl State {
             DestinationCityRollRequest { player_id: _ } => {}
             MovementRollRequest { player_id: _ } => {}
             _ => self.history.push(valid_event.clone()),
+        }
+    }
+
+    fn advance_turn(&mut self) {
+        // Advance stage
+        self.stage = Stage::InGame(InGameStage::Movement);
+
+        // Change active player
+        for (index, player_id) in self.player_order.iter().enumerate() {
+            // find the index of the current player
+            if player_id == &self.active_player_id {
+                // Check if we need to wrap around to first player
+                if index == self.player_order.len() - 1 {
+                    self.active_player_id = self.player_order[0];
+                } else {
+                    self.active_player_id = self.player_order[index + 1];
+                }
+
+                break;
+            }
         }
     }
 
