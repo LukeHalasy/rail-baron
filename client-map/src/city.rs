@@ -1,5 +1,5 @@
 use leptos::*;
-use leptos_leaflet::{position, Circle};
+use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents, Position};
 use store::rail_road::C;
 
 #[component]
@@ -19,9 +19,18 @@ pub fn City(city: C) -> impl IntoView {
         }
     };
 
+    let set_player_location =
+        use_context::<WriteSignal<Position>>().expect("Expected a player location setter");
+
+    let move_player = move |event: MouseEvent| {
+        set_player_location.update(|location| {
+            *location = Position::new(event.latlng().lat(), event.latlng().lng());
+        })
+    };
+
     view! {
         // TODO: Change to CircleMarker for consistent radius
-        <Circle fill_opacity=1.0 fill_color={color} color="transparent" center=position!(latitude, longitude) radius={radius}>
+        <Circle fill_opacity=1.0 mouse_events={MouseEvents::new().on_click(move_player)} fill_color={color} color="transparent" center=position!(latitude, longitude) radius={radius}>
         </Circle>
     }
 }

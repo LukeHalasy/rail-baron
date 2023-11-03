@@ -1,7 +1,9 @@
 use leptos::*;
 
 mod app;
+mod cities;
 mod city;
+mod rails;
 
 use crate::app::App;
 
