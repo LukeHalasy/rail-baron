@@ -56,19 +56,19 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
         println!("Received a message from {}: {:?}", addr, event);
 
         // Consume the event
-        // println!("Consumed event respones {:?}", store::consume_event(event));
+        println!("Consumed event respones {:?}", store::consume_event(event));
 
-        let peers = peer_map.lock().unwrap();
+        // let peers = peer_map.lock().unwrap();
 
-        // We want to broadcast the message to everyone except ourselves.
-        let broadcast_recipients = peers
-            .iter()
-            .filter(|(peer_addr, _)| peer_addr != &&addr)
-            .map(|(_, ws_sink)| ws_sink);
+        // // We want to broadcast the message to everyone except ourselves.
+        // let broadcast_recipients = peers
+        //     .iter()
+        //     .filter(|(peer_addr, _)| peer_addr != &&addr)
+        //     .map(|(_, ws_sink)| ws_sink);
 
-        for recp in broadcast_recipients {
-            recp.unbounded_send(msg.clone()).unwrap();
-        }
+        // for recp in broadcast_recipients {
+        //     recp.unbounded_send(msg.clone()).unwrap();
+        // }
 
         future::ok(())
     });
@@ -86,7 +86,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
 async fn main() -> Result<(), IoError> {
     let addr = env::args()
         .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
+        .unwrap_or_else(|| "127.0.0.1:8000".to_string());
 
     let state = PeerMap::new(Mutex::new(HashMap::new()));
 

@@ -10,12 +10,9 @@ use crate::city::City;
 
 #[component]
 pub fn Cities() -> impl IntoView {
-    let cities = main_city::City::cities();
-    let sub_cities = sub_city::SubCity::sub_cities();
-
     view! {
         {
-            cities
+            main_city::City::cities()
             .into_iter()
             .map(|n| {
                 view! {
@@ -24,7 +21,7 @@ pub fn Cities() -> impl IntoView {
             }).collect_view()
         }
         {
-            sub_cities
+            sub_city::SubCity::sub_cities()
             .into_iter()
             .map(|n| {
                 view! {
