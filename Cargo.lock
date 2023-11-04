@@ -881,6 +881,7 @@ dependencies = [
 [[package]]
 name = "leaflet"
 version = "1.9.3"
+source = "git+https://github.com/LukeHalasy/leptos-leaflet.git#dc267301e47472eb918c569543b1749c8d45eb0f"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -910,6 +911,7 @@ dependencies = [
 [[package]]
 name = "leptos-leaflet"
 version = "0.6.1-beta"
+source = "git+https://github.com/LukeHalasy/leptos-leaflet.git#dc267301e47472eb918c569543b1749c8d45eb0f"
 dependencies = [
  "getrandom 0.2.10",
  "js-sys",
