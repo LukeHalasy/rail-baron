@@ -1,7 +1,10 @@
-pub use crate::deed::Deed;
 pub use crate::main_city::City;
 pub use crate::sub_city::SubCity;
 use serde::{Deserialize, Serialize};
+
+pub use crate::Cash;
+
+use strum::EnumIter;
 
 use std::collections::HashMap;
 // // Should replace the railroad part in subcities with the below syntax.. that way I can have all railroads
@@ -24,25 +27,92 @@ impl C {
     }
 }
 
-macro_rules! rail_roads {
+macro_rules! rails {
+    ($(($abbrev:tt, $full_name:literal, $cost:literal)),*$(,)?) => {
+        paste::paste! {
+            #[derive(Clone, Copy, Debug, Deserialize, EnumIter, Serialize, Eq, PartialEq, Hash)]
+            #[allow(non_camel_case_types)]
+            pub enum Rail { $($abbrev),* }
+            impl Rail {
+                pub const fn rails() -> &'static [Self] {
+                    &[$(Self::$abbrev),*]
+                }
+
+                pub const fn cost(&self) -> Cash {
+                    match self {
+                        $(Self::$abbrev => $cost),*
+                    }
+                }
+
+                pub const fn full_name(&self) -> &str {
+                    match self {
+                        $(Self::$abbrev => $full_name),*
+                    }
+                }
+            }
+
+            impl std::fmt::Display for Rail {
+                fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    match self {
+                        $(Self::$abbrev => write!(f, "{}", stringify!($abbrev))),*
+                    }
+                }
+            }
+        }
+    }
+}
+
+// NOTE: TEMPORARY: LM = Label's made for every city (and subcity) on the route
+rails! {
+    (ACL,	            "Atlantic Coast Line",	                    12000),
+    (AT_AND_SF,	        "Atchison, Topeka, & Santa Fe",	            40000), // LM
+    (B_AND_M,	        "Boston & Maine",	                        4000), // LM
+    (B_AND_O,	        "Baltimore & Ohio",	                        24000), // LM
+    (CB_AND_Q,	        "Chicago, Burlington & Quincy",	            20000),
+    (CMSTP_AND_P,	    "Chicago, Milwaukee, St. Paul, & Pacific",	18000),
+    (C_AND_NW,	        "Chicago & NorthWestern",	                14000),
+    (C_AND_O,	        "Chesapeake & Ohio",	                    20000),
+    (CRI_AND_P,	        "Chicago, Rock Island, & Pacific",	        29000),
+    (D_AND_RGW,	        "Denver & Rio Grande Western",	            6000), // LM
+    (GM_AND_O,	        "Gulf, Mobile & Ohio",	                    12000), // LM
+    (GN,	            "Great Northern",	                        17000), // LM
+    (IC,	            "Illinois Central",	                        14000),
+    (MP,	            "Missouri Pacific",	                        21000),
+    (L_AND_N,	        "Louisville & Nashville",	                18000),
+    (NP,	            "Northern Pacific",	                        14000), // LM
+    (N_AND_W,	        "Norfolk & Western",	                    12000),
+    (NYC,	            "New York Central",	                        28000), // LM
+    (NYNH_AND_H,	    "New York, New Haven & Hartford",	        4000), // LM
+    (PA,	            "Pennsylvania",	                            30000), // LM
+    (RF_AND_P,	        "Richmond, Fredericksburg, & Potomac",	    4000), // LM
+    (SAL,	            "Seaboard Air Line",	                    14000),
+    (SOU,	            "Southern",	                                20000),
+    (SP,	            "Southern Pacific",	                        42000), // LM
+    (SLSF,	            "St. Louis-San Francisco",	                19000),
+    (T_AND_P,	        "Texas & Pacific",	                        10000), // LM
+    (UP,	            "Union Pacific",	                        40000),
+    (WP,	            "Western Pacific",	                        8000), // LM
+}
+
+macro_rules! graph_out_rails {
     // Will need to change this so that you can specify either a city or subcity in both parts
     ($($c1:expr, $c2:expr, $rr:tt);*$(;)?) => {
         paste::paste! {
-            impl Deed {
-                pub fn get_railroad_graph() -> HashMap<C, Vec<(C, Deed)>> {
-                    let mut graph: HashMap<C, Vec<(C, Deed)>> = HashMap::new();
+            impl Rail {
+                pub fn get_railroad_graph() -> HashMap<C, Vec<(C, Rail)>> {
+                    let mut graph: HashMap<C, Vec<(C, Rail)>> = HashMap::new();
 
                     $(
                     if let Some(rf) = graph.get_mut(&$c1) {
-                        rf.push(($c2, Deed::$rr))
+                        rf.push(($c2, Rail::$rr))
                     } else {
-                        graph.insert($c1, vec![($c2, Deed::$rr)]);
+                        graph.insert($c1, vec![($c2, Rail::$rr)]);
                     }
 
                     if let Some(rf) = graph.get_mut(&$c2) {
-                        rf.push(($c1, Deed::$rr))
+                        rf.push(($c1, Rail::$rr))
                     } else {
-                        graph.insert($c2, vec![($c1, Deed::$rr)]);
+                        graph.insert($c2, vec![($c1, Rail::$rr)]);
                     }
                     )*
 
@@ -50,14 +120,14 @@ macro_rules! rail_roads {
                 }
 
                 // Create a method here that is just for rendering
-                pub fn get_edges() -> HashMap<(C, C), Vec<Deed>> {
-                    let mut graph: HashMap<(C, C), Vec<Deed>> = HashMap::new();
+                pub fn get_edges() -> HashMap<(C, C), Vec<Rail>> {
+                    let mut graph: HashMap<(C, C), Vec<Rail>> = HashMap::new();
 
                     $(
                     if let Some(edge) = graph.get_mut(&($c1, $c2)) {
-                        edge.push(Deed::$rr);
+                        edge.push(Rail::$rr);
                     } else {
-                        graph.insert(($c1, $c2), vec![Deed::$rr]);
+                        graph.insert(($c1, $c2), vec![Rail::$rr]);
                     }
                     )*
 
@@ -68,7 +138,7 @@ macro_rules! rail_roads {
     };
 }
 
-rail_roads! {
+graph_out_rails! {
     // B_AND_M
     C::P(SubCity::Springfield_MA), C::D(City::Albany_NY), B_AND_M ;
     C::P(SubCity::Springfield_MA), C::D(City::Boston_MA), B_AND_M ;
@@ -164,5 +234,5 @@ rail_roads! {
 }
 
 lazy_static::lazy_static! {
-    pub static ref RAILROAD_GRAPH: HashMap<C, Vec<(C, Deed)>> = Deed::get_railroad_graph();
+    pub static ref RAILROAD_GRAPH: HashMap<C, Vec<(C, Rail)>> = Rail::get_railroad_graph();
 }

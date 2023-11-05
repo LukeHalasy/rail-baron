@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub use crate::deed::Deed;
+pub use crate::rail::Rail;
 
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;
