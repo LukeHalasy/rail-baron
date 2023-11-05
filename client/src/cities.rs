@@ -2,7 +2,7 @@ use leptos::*;
 
 use store::{
     main_city,
-    rail_road::C,
+    rail::C,
     sub_city::{self},
 };
 

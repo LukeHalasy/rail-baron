@@ -3,21 +3,18 @@ use std::collections::HashMap;
 use leptos::*;
 
 use leptos_leaflet::{positions, Polyline};
-use store::{
-    deed,
-    rail_road::{self},
-};
+use store::rail::{self};
 
 #[component]
 pub fn Rails() -> impl IntoView {
-    let mut rail_colors: HashMap<&deed::Deed, String> = HashMap::new();
-    for rail in deed::Deed::rails() {
+    let mut rail_colors: HashMap<&rail::Rail, String> = HashMap::new();
+    for rail in rail::Rail::rails() {
         let color = match rail {
-            rail_road::Deed::B_AND_M => "#2C3073",
-            rail_road::Deed::B_AND_O => "#0077B0",
-            rail_road::Deed::NYC => "#295536",
-            rail_road::Deed::NYNH_AND_H => "#662D2D",
-            rail_road::Deed::PA => "#A12D2A",
+            rail::Rail::B_AND_M => "#2C3073",
+            rail::Rail::B_AND_O => "#0077B0",
+            rail::Rail::NYC => "#295536",
+            rail::Rail::NYNH_AND_H => "#662D2D",
+            rail::Rail::PA => "#A12D2A",
             _ => "#ff007f",
         };
         rail_colors.insert(rail, color.into());
@@ -25,7 +22,7 @@ pub fn Rails() -> impl IntoView {
 
     view! {
         {
-            rail_road::Deed::get_edges()
+            rail::Rail::get_edges()
             .into_iter()
             .map(|(city_pair, rail_roads)| {
                 rail_roads.into_iter().enumerate().map(|(index, rail_road)| {

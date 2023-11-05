@@ -2,22 +2,21 @@
 
 use std::collections::{HashMap, HashSet};
 
-use deed::Deed;
 use dice::DiceRoll;
 use main_city::City;
-use rail_road::C;
+use rail::Rail;
+use rail::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::{rail_road::RAILROAD_GRAPH, travel_payout::travel_payout};
+use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
 type PlayerId = u64;
 pub type Cash = u64;
 
-pub mod deed;
 pub mod dice;
 pub mod main_city;
-pub mod rail_road;
+pub mod rail;
 pub mod region;
 pub mod state;
 pub mod sub_city;
@@ -78,11 +77,11 @@ pub struct Player {
     pub name: String,
     pub piece: Piece,
     pub home_city: Option<City>,
-    pub route_history: Vec<(crate::rail_road::C, deed::Deed)>,
+    pub route_history: Vec<(crate::rail::C, Rail)>,
     pub start: Option<City>, // Default is home-city
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
-    pub deeds: Vec<Deed>,
+    pub deeds: Vec<Rail>,
     pub engine: Engine,
 }
 
@@ -93,7 +92,7 @@ pub struct State {
     pub players: HashMap<PlayerId, Player>,
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
-    pub deed_ledger: HashMap<Deed, Option<PlayerId>>,
+    pub deed_ledger: HashMap<Rail, Option<PlayerId>>,
     pub all_roads_bought: bool,
 }
 
@@ -128,11 +127,11 @@ pub enum Event {
     },
     Move {
         player_id: PlayerId,
-        route: (C, Deed),
+        route: (C, Rail),
     },
-    PurchaseDeed {
+    PurchaseRail {
         player_id: PlayerId,
-        deed: Deed,
+        deed: Rail,
     },
     PurchaseEngine {
         player_id: PlayerId,
@@ -168,7 +167,7 @@ impl State {
                     });
 
                     // determine which rail-roads the player used along their route
-                    let mut unique_rail_roads_on_route: HashSet<Deed> = HashSet::new();
+                    let mut unique_rail_roads_on_route: HashSet<Rail> = HashSet::new();
                     for route in &self.players.get(player_id).unwrap().route_history {
                         let (_, rail) = route;
                         unique_rail_roads_on_route.insert(*rail);
@@ -440,7 +439,7 @@ impl State {
                     return false;
                 }
             }
-            PurchaseDeed { player_id, deed } => {
+            PurchaseRail { player_id, deed } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return false;
@@ -524,7 +523,7 @@ impl Default for State {
             players: HashMap::new(),
             player_order: Vec::new(),
             history: Vec::new(),
-            deed_ledger: Deed::iter().map(|deed| (deed, None)).collect(),
+            deed_ledger: Rail::iter().map(|deed| (deed, None)).collect(),
             all_roads_bought: false,
         }
     }
