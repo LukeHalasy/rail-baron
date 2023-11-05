@@ -1,3 +1,4 @@
+use crate::city::C;
 pub use crate::main_city::MainCity;
 pub use crate::sub_city::SubCity;
 use serde::{Deserialize, Serialize};
@@ -7,25 +8,6 @@ pub use crate::Cash;
 use strum::EnumIter;
 
 use std::collections::HashMap;
-// // Should replace the railroad part in subcities with the below syntax.. that way I can have all railroads
-// // cleary documented and don't need to replicate paths twice (for start -> destination and destination -> start)
-// // also it's clear as I am making progress
-// // also I can have a test that ensures all *city* are reachable
-
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
-pub enum C {
-    D(MainCity), // Destination
-    P(SubCity),  // Path
-}
-
-impl C {
-    pub fn coordinates(&self) -> geoutils::Location {
-        match self {
-            C::D(city) => city.coordinates(),
-            C::P(city) => city.coordinates(),
-        }
-    }
-}
 
 macro_rules! rails {
     ($(($abbrev:tt, $full_name:literal, $cost:literal)),*$(,)?) => {

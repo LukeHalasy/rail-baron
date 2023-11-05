@@ -1,7 +1,7 @@
 use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents, Position};
-use store::{rail::C, Event};
+use store::{city::C, Event};
 
 #[component]
 pub fn City(city: C) -> impl IntoView {

@@ -1,8 +1,8 @@
 use leptos::*;
 
 use store::{
+    city::C,
     main_city,
-    rail::C,
     sub_city::{self},
 };
 
