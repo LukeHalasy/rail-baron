@@ -13,7 +13,7 @@ pub fn Cities() -> impl IntoView {
     view! {
         {
             main_city::City::cities()
-            .into_iter()
+            .iter()
             .map(|n| {
                 view! {
                     <City city={C::D(*n)}></City>
@@ -22,7 +22,7 @@ pub fn Cities() -> impl IntoView {
         }
         {
             sub_city::SubCity::sub_cities()
-            .into_iter()
+            .iter()
             .map(|n| {
                 view! {
                     <City city={C::P(*n)}></City>

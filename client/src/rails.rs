@@ -65,7 +65,7 @@ pub fn Rails() -> impl IntoView {
                         <Polyline color={color} positions=positions(&[(lat_0, lon_0), (lat_1, lon_1)]) />
                     }
                 }).collect_view()
-            }).collect_view();
+            }).collect_view()
         }
     }
 }

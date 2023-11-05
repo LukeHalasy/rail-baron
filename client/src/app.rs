@@ -1,16 +1,9 @@
 use futures::{SinkExt, StreamExt};
 use reqwasm::websocket::{futures::WebSocket, Message};
-use std::collections::HashMap;
-use web_sys::console::log;
 
-use leptos::{logging::log, *};
+use leptos::*;
 use leptos_leaflet::*;
-use store::{
-    deed, main_city,
-    rail_road::{self},
-    sub_city::{self},
-    Event,
-};
+use store::{main_city, Event};
 
 use crate::{cities::Cities, rails::Rails};
 
@@ -24,7 +17,7 @@ pub fn App() -> impl IntoView {
 
     let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
 
-    let (mut write, mut read) = ws.split();
+    let (mut write, _) = ws.split();
     let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<Event>(1000);
 
     provide_context(in_tx);

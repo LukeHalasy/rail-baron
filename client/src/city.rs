@@ -33,7 +33,8 @@ pub fn City(city: C) -> impl IntoView {
         set_player_location.update(|location| {
             *location = Position::new(event.latlng().lat(), event.latlng().lng());
         });
-        tx.clone()
+        let _ = tx
+            .clone()
             .try_send(Event::DestinationCityRollRequest { player_id: 54 });
     };
 
