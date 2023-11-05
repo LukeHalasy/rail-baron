@@ -5,13 +5,13 @@ pub use crate::rail::Rail;
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;
 
-macro_rules! cities {
+macro_rules! main_cities {
     ($([$c:tt: $s:tt] => ($lat:literal, $long:literal)),*$(,)?) => {
         paste::paste! {
             #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
             #[allow(non_camel_case_types)]
-            pub enum City { $([<$c _ $s>]),* }
-            impl City {
+            pub enum MainCity { $([<$c _ $s>]),* }
+            impl MainCity {
                 pub const fn cities() -> &'static [Self] {
                     &[$(Self::[<$c _ $s>]),*]
                 }
@@ -29,7 +29,7 @@ macro_rules! cities {
                 }
             }
 
-            impl std::fmt::Display for City {
+            impl std::fmt::Display for MainCity {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                     match self {
                         $(Self::[<$c _ $s>] => write!(f, "{}, {}", stringify!($c), stringify!($s))),*
@@ -40,7 +40,7 @@ macro_rules! cities {
     }
 }
 
-cities! {
+main_cities! {
     [Albany: NY] => (42.6526, -73.7562),
     [Atlanta: GA] => (33.7490, -84.3879),
     [Baltimore: MD] => (39.2904, -76.6122),

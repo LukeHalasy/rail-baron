@@ -1,4 +1,4 @@
-pub use crate::main_city::City;
+pub use crate::main_city::MainCity;
 pub use crate::sub_city::SubCity;
 use serde::{Deserialize, Serialize};
 
@@ -14,8 +14,8 @@ use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
 pub enum C {
-    D(City),    // Destination
-    P(SubCity), // Path
+    D(MainCity), // Destination
+    P(SubCity),  // Path
 }
 
 impl C {
@@ -140,96 +140,96 @@ macro_rules! graph_out_rails {
 
 graph_out_rails! {
     // B_AND_M
-    C::P(SubCity::Springfield_MA), C::D(City::Albany_NY), B_AND_M ;
-    C::P(SubCity::Springfield_MA), C::D(City::Boston_MA), B_AND_M ;
+    C::P(SubCity::Springfield_MA), C::D(MainCity::Albany_NY), B_AND_M ;
+    C::P(SubCity::Springfield_MA), C::D(MainCity::Boston_MA), B_AND_M ;
     C::P(SubCity::Springfield_MA), C::P(SubCity::Concord_NH), B_AND_M ;
-    C::P(SubCity::Concord_NH), C::D(City::Portland_ME), B_AND_M;
+    C::P(SubCity::Concord_NH), C::D(MainCity::Portland_ME), B_AND_M;
 
     // NYNH_AND_H
-    C::P(SubCity::Providence_RI), C::D(City::Boston_MA), NYNH_AND_H;
+    C::P(SubCity::Providence_RI), C::D(MainCity::Boston_MA), NYNH_AND_H;
     C::P(SubCity::Providence_RI), C::P(SubCity::New_Haven_CT), NYNH_AND_H;
-    C::P(SubCity::New_Haven_CT), C::D(City::New_York_NY), NYNH_AND_H;
+    C::P(SubCity::New_Haven_CT), C::D(MainCity::New_York_NY), NYNH_AND_H;
 
     // NYC
-    C::P(SubCity::Kingston_NY), C::D(City::New_York_NY), NYC;
-    C::P(SubCity::Kingston_NY), C::D(City::Albany_NY), NYC;
-    C::P(SubCity::Syracuse_NY), C::D(City::Albany_NY), NYC;
+    C::P(SubCity::Kingston_NY), C::D(MainCity::New_York_NY), NYC;
+    C::P(SubCity::Kingston_NY), C::D(MainCity::Albany_NY), NYC;
+    C::P(SubCity::Syracuse_NY), C::D(MainCity::Albany_NY), NYC;
     C::P(SubCity::Syracuse_NY), C::P(SubCity::Rochester_NY), NYC;
-    C::P(SubCity::Rochester_NY), C::D(City::Buffalo_NY), NYC;
-    C::P(SubCity::Erie_PA), C::D(City::Buffalo_NY), NYC;
-    C::P(SubCity::Erie_PA), C::D(City::Cleveland_OH), NYC;
-    C::P(SubCity::Perrysburg_OH), C::D(City::Cleveland_OH), NYC;
-    C::P(SubCity::Perrysburg_OH), C::D(City::Detroit_MI), NYC;
+    C::P(SubCity::Rochester_NY), C::D(MainCity::Buffalo_NY), NYC;
+    C::P(SubCity::Erie_PA), C::D(MainCity::Buffalo_NY), NYC;
+    C::P(SubCity::Erie_PA), C::D(MainCity::Cleveland_OH), NYC;
+    C::P(SubCity::Perrysburg_OH), C::D(MainCity::Cleveland_OH), NYC;
+    C::P(SubCity::Perrysburg_OH), C::D(MainCity::Detroit_MI), NYC;
     C::P(SubCity::Perrysburg_OH), C::P(SubCity::Shipshewana_IN), NYC;
     C::P(SubCity::Shipshewana_IN), C::P(SubCity::South_Bend_IN), NYC;
-    C::P(SubCity::South_Bend_IN), C::D(City::Chicago_IL), NYC;
+    C::P(SubCity::South_Bend_IN), C::D(MainCity::Chicago_IL), NYC;
     C::P(SubCity::Perrysburg_OH), C::P(SubCity::Fort_Wayne_IN), NYC;
     C::P(SubCity::Fort_Wayne_IN), C::P(SubCity::Dayton_OH), NYC;
-    C::P(SubCity::Dayton_OH), C::D(City::Cincinnati_OH), NYC;
+    C::P(SubCity::Dayton_OH), C::D(MainCity::Cincinnati_OH), NYC;
     C::P(SubCity::Fort_Wayne_IN), C::P(SubCity::Muncie_IN), NYC;
-    C::P(SubCity::Muncie_IN), C::D(City::Indianapolis_IN), NYC;
-    C::P(SubCity::Terre_Haute_IN), C::D(City::Indianapolis_IN), NYC;
+    C::P(SubCity::Muncie_IN), C::D(MainCity::Indianapolis_IN), NYC;
+    C::P(SubCity::Terre_Haute_IN), C::D(MainCity::Indianapolis_IN), NYC;
     C::P(SubCity::Terre_Haute_IN), C::P(SubCity::Arcola_IL), NYC;
-    C::P(SubCity::Arcola_IL), C::D(City::St_Louis_MO), NYC;
+    C::P(SubCity::Arcola_IL), C::D(MainCity::St_Louis_MO), NYC;
 
     // PA
-    C::P(SubCity::Trenton_NJ), C::D(City::New_York_NY), PA;
-    C::P(SubCity::Trenton_NJ), C::D(City::Philadelphia_PA), PA;
-    C::P(SubCity::Pottstown_PA), C::D(City::Philadelphia_PA), PA;
-    C::P(SubCity::Pottstown_PA), C::D(City::Baltimore_MD), PA;
+    C::P(SubCity::Trenton_NJ), C::D(MainCity::New_York_NY), PA;
+    C::P(SubCity::Trenton_NJ), C::D(MainCity::Philadelphia_PA), PA;
+    C::P(SubCity::Pottstown_PA), C::D(MainCity::Philadelphia_PA), PA;
+    C::P(SubCity::Pottstown_PA), C::D(MainCity::Baltimore_MD), PA;
     C::P(SubCity::Pottstown_PA), C::P(SubCity::Lancaster_PA), PA;
     C::P(SubCity::Bedford_PA), C::P(SubCity::Lancaster_PA), PA;
-    C::P(SubCity::Bedford_PA), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::Youngstown_OH), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::New_Philadelphia_OH), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::New_Philadelphia_OH), C::D(City::Columbus_OH), PA;
+    C::P(SubCity::Bedford_PA), C::D(MainCity::Pittsburgh_PA), PA;
+    C::P(SubCity::Youngstown_OH), C::D(MainCity::Pittsburgh_PA), PA;
+    C::P(SubCity::New_Philadelphia_OH), C::D(MainCity::Pittsburgh_PA), PA;
+    C::P(SubCity::New_Philadelphia_OH), C::D(MainCity::Columbus_OH), PA;
     C::P(SubCity::Youngstown_OH), C::P(SubCity::Akron_OH), PA;
     C::P(SubCity::Youngstown_OH), C::P(SubCity::Erie_PA), PA;
-    C::P(SubCity::Erie_PA), C::D(City::Buffalo_NY), PA;
-    C::P(SubCity::Akron_OH), C::D(City::Cleveland_OH), PA;
-    C::P(SubCity::Akron_OH), C::D(City::Columbus_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Columbus_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Cincinnati_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::Columbus_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::Columbus_IN), C::D(City::Louisville_KY), PA;
-    C::P(SubCity::Terre_Haute_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::West_Lafayette_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::West_Lafayette_IN), C::D(City::Chicago_IL), PA;
+    C::P(SubCity::Erie_PA), C::D(MainCity::Buffalo_NY), PA;
+    C::P(SubCity::Akron_OH), C::D(MainCity::Cleveland_OH), PA;
+    C::P(SubCity::Akron_OH), C::D(MainCity::Columbus_OH), PA;
+    C::P(SubCity::Dayton_OH), C::D(MainCity::Columbus_OH), PA;
+    C::P(SubCity::Dayton_OH), C::D(MainCity::Cincinnati_OH), PA;
+    C::P(SubCity::Dayton_OH), C::D(MainCity::Indianapolis_IN), PA;
+    C::P(SubCity::Columbus_IN), C::D(MainCity::Indianapolis_IN), PA;
+    C::P(SubCity::Columbus_IN), C::D(MainCity::Louisville_KY), PA;
+    C::P(SubCity::Terre_Haute_IN), C::D(MainCity::Indianapolis_IN), PA;
+    C::P(SubCity::West_Lafayette_IN), C::D(MainCity::Indianapolis_IN), PA;
+    C::P(SubCity::West_Lafayette_IN), C::D(MainCity::Chicago_IL), PA;
     C::P(SubCity::Terre_Haute_IN), C::P(SubCity::Effingham_IL), PA;
-    C::P(SubCity::Effingham_IL), C::D(City::St_Louis_MO), PA;
-    C::D(City::Baltimore_MD), C::D(City::Philadelphia_PA), PA;
+    C::P(SubCity::Effingham_IL), C::D(MainCity::St_Louis_MO), PA;
+    C::D(MainCity::Baltimore_MD), C::D(MainCity::Philadelphia_PA), PA;
 
     // RF_AND_P
-    C::D(City::Baltimore_MD), C::D(City::Richmond_VA), RF_AND_P;
+    C::D(MainCity::Baltimore_MD), C::D(MainCity::Richmond_VA), RF_AND_P;
 
     // B_AND_O
-    C::D(City::Baltimore_MD), C::D(City::Washington_DC), B_AND_O;
-    C::D(City::Baltimore_MD), C::P(SubCity::Frederick_MD), B_AND_O;
-    C::D(City::Washington_DC), C::P(SubCity::Frederick_MD), B_AND_O;
+    C::D(MainCity::Baltimore_MD), C::D(MainCity::Washington_DC), B_AND_O;
+    C::D(MainCity::Baltimore_MD), C::P(SubCity::Frederick_MD), B_AND_O;
+    C::D(MainCity::Washington_DC), C::P(SubCity::Frederick_MD), B_AND_O;
     C::P(SubCity::Cumberland_MD), C::P(SubCity::Frederick_MD), B_AND_O;
     C::P(SubCity::Cumberland_MD), C::P(SubCity::Uniontown_PA), B_AND_O;
-    C::D(City::Pittsburgh_PA), C::P(SubCity::Uniontown_PA), B_AND_O;
-    C::D(City::Pittsburgh_PA), C::P(SubCity::Youngstown_OH), B_AND_O;
+    C::D(MainCity::Pittsburgh_PA), C::P(SubCity::Uniontown_PA), B_AND_O;
+    C::D(MainCity::Pittsburgh_PA), C::P(SubCity::Youngstown_OH), B_AND_O;
     C::P(SubCity::Akron_OH), C::P(SubCity::Youngstown_OH), B_AND_O;
     C::P(SubCity::Akron_OH), C::P(SubCity::Fremont_OH), B_AND_O;
     C::P(SubCity::Ligonier_IN), C::P(SubCity::Fremont_OH), B_AND_O;
     C::P(SubCity::Ligonier_IN), C::P(SubCity::Argos_IN), B_AND_O;
-    C::D(City::Chicago_IL), C::P(SubCity::Argos_IN), B_AND_O;
+    C::D(MainCity::Chicago_IL), C::P(SubCity::Argos_IN), B_AND_O;
     // C::P(SubCity::Cumberland_MD), C::P(SubCity::Brideport_WV), B_AND_O;
     C::P(SubCity::Clarksburg_WV), C::P(SubCity::Parkersburg_WV), B_AND_O;
     C::P(SubCity::Chillicothe_OH), C::P(SubCity::Parkersburg_WV), B_AND_O;
-    C::P(SubCity::Chillicothe_OH), C::D(City::Cincinnati_OH), B_AND_O;
-    C::P(SubCity::Columbus_IN), C::D(City::Cincinnati_OH), B_AND_O;
+    C::P(SubCity::Chillicothe_OH), C::D(MainCity::Cincinnati_OH), B_AND_O;
+    C::P(SubCity::Columbus_IN), C::D(MainCity::Cincinnati_OH), B_AND_O;
     C::P(SubCity::Columbus_IN), C::P(SubCity::Vincennes_IN), B_AND_O;
     C::P(SubCity::Centralia_IL), C::P(SubCity::Vincennes_IN), B_AND_O;
-    C::P(SubCity::Centralia_IL), C::D(City::St_Louis_MO), B_AND_O;
+    C::P(SubCity::Centralia_IL), C::D(MainCity::St_Louis_MO), B_AND_O;
 
     // C_AND_O
-    C::D(City::Buffalo_NY), C::P(SubCity::Brantford_ON), C_AND_O;
+    C::D(MainCity::Buffalo_NY), C::P(SubCity::Brantford_ON), C_AND_O;
     C::P(SubCity::London_ON), C::P(SubCity::Brantford_ON), C_AND_O;
-    C::D(City::Detroit_MI), C::P(SubCity::London_ON), C_AND_O;
-    C::D(City::Detroit_MI), C::P(SubCity::Perrysburg_OH), C_AND_O;
+    C::D(MainCity::Detroit_MI), C::P(SubCity::London_ON), C_AND_O;
+    C::D(MainCity::Detroit_MI), C::P(SubCity::Perrysburg_OH), C_AND_O;
 
 }
 

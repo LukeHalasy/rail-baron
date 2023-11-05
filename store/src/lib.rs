@@ -3,7 +3,7 @@
 use std::collections::{HashMap, HashSet};
 
 use dice::DiceRoll;
-use main_city::City;
+use main_city::MainCity;
 use rail::Rail;
 use rail::C;
 use region::Region;
@@ -76,10 +76,10 @@ pub struct Player {
     pub cash: i64,
     pub name: String,
     pub piece: Piece,
-    pub home_city: Option<City>,
+    pub home_city: Option<MainCity>,
     pub route_history: Vec<(crate::rail::C, Rail)>,
-    pub start: Option<City>, // Default is home-city
-    pub destination: Option<City>,
+    pub start: Option<MainCity>, // Default is home-city
+    pub destination: Option<MainCity>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
     pub rails: Vec<Rail>,
     pub engine: Engine,
@@ -112,14 +112,14 @@ pub enum Event {
         region_roll: DiceRoll,
         city_roll: DiceRoll,
         region: Region,
-        city: City,
+        city: MainCity,
     },
     DestinationCityRoll {
         player_id: PlayerId,
         region_roll: DiceRoll,
         city_roll: DiceRoll,
         region: Region,
-        city: City,
+        city: MainCity,
     },
     MovementRoll {
         player_id: PlayerId,

@@ -1,4 +1,4 @@
-pub use crate::main_city::City;
+pub use crate::main_city::MainCity;
 pub use crate::state::State;
 
 use serde::{Deserialize, Serialize};

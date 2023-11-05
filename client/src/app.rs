@@ -10,8 +10,8 @@ use crate::{cities::Cities, rails::Rails};
 #[component]
 pub fn App() -> impl IntoView {
     let (player_location, set_player_location) = create_signal(Position::new(
-        main_city::City::Albany_NY.coordinates().latitude(),
-        main_city::City::Albany_NY.coordinates().longitude(),
+        main_city::MainCity::Albany_NY.coordinates().latitude(),
+        main_city::MainCity::Albany_NY.coordinates().longitude(),
     ));
     provide_context(set_player_location);
 

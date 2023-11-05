@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use rand::Rng;
 
-pub use crate::main_city::City;
+pub use crate::main_city::MainCity;
 pub use crate::region::Region;
 use crate::Engine;
 use serde::{Deserialize, Serialize};
@@ -168,7 +168,7 @@ macro_rules! city_from_dice_roll {
     ($($region:tt => {$($sum:literal: ($c_odd:tt, $c_even:tt)),*$(,)?}),*$(,)?) => {
         paste::paste! {
             impl DiceRoll {
-                pub fn city_in_region(region: Region) -> (Self, City) {
+                pub fn city_in_region(region: Region) -> (Self, MainCity) {
                     let dice_roll: Self = Self::red_and_white();
                     let red_dice = dice_roll.red_dice.unwrap();
                     let white_dice = dice_roll.white_dice;
@@ -178,9 +178,9 @@ macro_rules! city_from_dice_roll {
                             match (white_dice.0 + white_dice.1) {
                                 $($sum => {
                                     if red_dice.is_odd() {
-                                        City::$c_odd
+                                        MainCity::$c_odd
                                     } else {
-                                        City::$c_even
+                                        MainCity::$c_even
                                     }
                                 }),*
                                 _ => panic!("White dice sum (two dice) < 2 or > 12")
