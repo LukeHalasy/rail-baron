@@ -28,7 +28,6 @@ use std::{
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
-use store::travel_payout::City;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::tungstenite::protocol::Message;
 
@@ -56,7 +55,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
         println!("Received a message from {}: {:?}", addr, event);
 
         // Consume the event
-        println!("Consumed event respones {:?}", store::consume_event(event));
+        // println!("Consumed event respones {:?}", store::consume_event(event));
 
         // let peers = peer_map.lock().unwrap();
 

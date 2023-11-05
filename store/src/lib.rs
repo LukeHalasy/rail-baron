@@ -190,12 +190,12 @@ impl State {
                             // Pay owner
                             self.players
                                 .entry(*rail_road_owner_id)
-                                .and_modify(|player| player.cash = player.cash + payout);
+                                .and_modify(|player| player.cash += payout);
 
                             // Subtract from player
                             self.players
                                 .entry(*player_id)
-                                .and_modify(|player| player.cash = player.cash - payout);
+                                .and_modify(|player| player.cash -= payout);
                         } else {
                             let mut payout = 1000;
                             if self.all_roads_bought {
@@ -205,48 +205,44 @@ impl State {
                             // Subtract from player
                             self.players
                                 .entry(*player_id)
-                                .and_modify(|player| player.cash = player.cash - payout);
+                                .and_modify(|player| player.cash -= payout);
                         }
                     }
                 }
 
                 // Check if the user is at their destination
-                match city {
-                    C::D(main_city) => {
-                        if *main_city == self.players.get(player_id).unwrap().destination.unwrap() {
-                            self.players.entry(*player_id).and_modify(|player| {
-                                // Pay the player for reaching their destination
-                                player.cash += travel_payout(
-                                    player.start.unwrap(),
-                                    player.destination.unwrap(),
-                                ) as i64;
+                if let C::D(main_city) = city {
+                    if *main_city == self.players.get(player_id).unwrap().destination.unwrap() {
+                        self.players.entry(*player_id).and_modify(|player| {
+                            // Pay the player for reaching their destination
+                            player.cash +=
+                                travel_payout(player.start.unwrap(), player.destination.unwrap())
+                                    as i64;
 
-                                // Reset the user's route history
-                                player.route_history = vec![];
+                            // Reset the user's route history
+                            player.route_history = vec![];
 
-                                // Set the start of the user's next route
-                                player.start = Some(*main_city);
+                            // Set the start of the user's next route
+                            player.start = Some(*main_city);
 
-                                // Act as if the user initiated a destination selection dice roll
-                                // Will need to think through whether I actually want to auto-roll
-                                let (region_roll, region) = DiceRoll::region();
-                                let (city_roll, city) = DiceRoll::city_in_region(region);
+                            // Act as if the user initiated a destination selection dice roll
+                            // Will need to think through whether I actually want to auto-roll
+                            let (region_roll, region) = DiceRoll::region();
+                            let (city_roll, city) = DiceRoll::city_in_region(region);
 
-                                player.destination = Some(city);
-                                self.history.push(Event::DestinationCityRoll {
-                                    player_id: *player_id,
-                                    region_roll,
-                                    city_roll,
-                                    region,
-                                    city,
-                                });
-
-                                // Set the stage to purchasing
-                                self.stage = Stage::InGame(InGameStage::Purchase)
+                            player.destination = Some(city);
+                            self.history.push(Event::DestinationCityRoll {
+                                player_id: *player_id,
+                                region_roll,
+                                city_roll,
+                                region,
+                                city,
                             });
-                        }
+
+                            // Set the stage to purchasing
+                            self.stage = Stage::InGame(InGameStage::Purchase)
+                        });
                     }
-                    _ => {}
                 }
 
                 // NOTE: Should I also check for a win here
@@ -460,7 +456,7 @@ impl State {
                 }
 
                 // ensure that the deed is not owned
-                if self.deed_ledger.get(&deed).unwrap().is_some() {
+                if self.deed_ledger.get(deed).unwrap().is_some() {
                     return false;
                 }
 
@@ -514,7 +510,6 @@ impl State {
                     return false;
                 }
             }
-            _ => {}
         }
 
         true

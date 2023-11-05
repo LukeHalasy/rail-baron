@@ -1,76 +1,14 @@
-<!DOCTYPE html>
 <html>
 
 <head>
-  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-    integrity="sha512-mD70nAW2ThLsWH0zif8JPbfraZ8hbCtjQ+5RU1m4+ztZq6/MymyZeB55pWsi4YAX+73yvcaJyk61mzfYMvtm9w=="
-    crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-    integrity="sha512-Dqm3h1Y4qiHUjbhxTuBGQsza0Tfppn53SHlu/uj1f+RT+xfShfe7r6czRf5r2NmllO2aKx+tYJgoxboOkn1Scg=="
-    crossorigin="">
-    </script>
-  <style>
-    #map {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 100vw;
-    }
-  </style>
+  <title>Simple Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
+
 <body>
-  <div id="map"></div>
 
-  <!-- Note the usage of `type=module` here as this is an ES6 module -->
-  <script type="module">
-    // Use ES module import syntax to import functionality from the module
-    // that we have compiled.
-    //
-    // Note that the `default` import is an initialization function which
-    // will "boot" the module and make it ready to use. Currently browsers
-    // don't support natively imported WebAssembly as an ES module, but
-    // eventually the manual initialization won't be required!
-    import init from './pkg/client.js';
-
-    function callback() {
-      console.log("Callback");
-    }
-
-    async function run() {
-      // First up we need to actually load the wasm file, so we use the
-      // default export to inform it where the wasm file is located on the
-      // server, and then we wait on the returned promise to wait for the
-      // wasm to be loaded.
-      //
-      // It may look like this: `await init('./pkg/leaflet_rs_example_bg.wasm');`,
-      // but there is also a handy default inside `init` function, which uses
-      // `import.meta` to locate the wasm file relatively to js file.
-      //
-      // Note that instead of a string you can also pass in any of the
-      // following things:
-      //
-      // * `WebAssembly.Module`
-      //
-      // * `ArrayBuffer`
-      //
-      // * `Response`
-      //
-      // * `Promise` which returns any of the above, e.g. `fetch("./path/to/wasm")`
-      //
-      // This gives you complete control over how the module is loaded
-      // and compiled.
-      //
-      // Also note that the promise, when resolved, yields the wasm module's
-      // exports which is the same as importing the `*_bg` module in other
-      // modes
-      await init();
-    }
-
-    run();
-  </script>
 </body>
 
 </html>
