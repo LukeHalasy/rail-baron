@@ -1,3 +1,5 @@
 /target
 /leaflet-test
 /csv-parsing
+dist
+.idea
