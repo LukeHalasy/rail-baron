@@ -8,10 +8,11 @@ use rail::Rail;
 use rail::C;
 use region::Region;
 use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 use strum::IntoEnumIterator;
 
 use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
-type PlayerId = u64;
+pub type PlayerId = u64;
 pub type Cash = u64;
 
 pub mod dice;
@@ -44,7 +45,7 @@ pub enum InGameStage {
 //     MovementRoll,
 // }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, EnumIter)]
 pub enum Piece {
     Yellow,
     Green,
@@ -52,6 +53,34 @@ pub enum Piece {
     Orange,
     Purple,
     Red,
+}
+
+impl std::fmt::Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Piece::Red => write!(f, "Red"),
+            Piece::Blue => write!(f, "Blue"),
+            Piece::Green => write!(f, "Green"),
+            Piece::Yellow => write!(f, "Yellow"),
+            Piece::Orange => write!(f, "Orange"),
+            Piece::Purple => write!(f, "Purple"),
+        }
+    }
+}
+
+// create a from string method for Piece
+impl Piece {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "Red" => Some(Piece::Red),
+            "Blue" => Some(Piece::Blue),
+            "Green" => Some(Piece::Green),
+            "Yellow" => Some(Piece::Yellow),
+            "Orange" => Some(Piece::Orange),
+            "Purple" => Some(Piece::Purple),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
@@ -139,6 +168,11 @@ pub enum Event {
     },
     EndPurchaseStage {
         player_id: PlayerId,
+    },
+    PlayerJoined {
+        player_id: PlayerId,
+        name: String,
+        color: Piece
     },
 }
 
@@ -299,6 +333,25 @@ impl State {
             }
             EndPurchaseStage { .. } => {
                 self.advance_turn();
+            }
+            PlayerJoined { player_id, name, color } => {
+                self.players.insert(
+                    *player_id,
+                    Player {
+                        cash: 0,
+                        name: name.clone(),
+                        piece: color.clone(),
+                        home_city: None,
+                        route_history: vec![],
+                        start: None,
+                        destination: None,
+                        spaces_left_to_move: None,
+                        rails: vec![],
+                        engine: Engine::Freight,
+                    },
+                );
+
+                self.player_order.push(*player_id);
             }
             // TODO: Remove
             _ => {}
@@ -506,6 +559,22 @@ impl State {
 
                 // ensure that it's the purchase stage
                 if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return false;
+                }
+            }
+            PlayerJoined { player_id, name, color } => {
+                // Check player doesn't already exist
+                if self.players.contains_key(player_id) {
+                    return false;
+                }
+
+                // Check that no other player has the same color
+                if self.players.values().any(|player| player.piece == *color) {
+                    return false;
+                }
+                
+                // Check that the player name is unique
+                if self.players.values().any(|player| player.name == *name) {
                     return false;
                 }
             }
