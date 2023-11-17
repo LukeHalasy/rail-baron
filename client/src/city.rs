@@ -1,7 +1,7 @@
 use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents, Position};
-use store::{rail::C, Event};
+use store::{rail::C, Event, Player};
 
 #[component]
 pub fn City(city: C) -> impl IntoView {
@@ -20,33 +20,28 @@ pub fn City(city: C) -> impl IntoView {
         }
     };
 
-    let set_player_location =
-        use_context::<WriteSignal<Position>>().expect("Expected a player location setter");
-
-    // let add_todo_action = create_action(|input: &String| {
-    //     let input = input.to_owned();
-    //     async move { add_todo_request(&input).await }
-    // });
+    let set_player_information = use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
 
     let tx = use_context::<Sender<Event>>().expect("Expected the tx sender");
     let move_player = move |event: MouseEvent| {
-        set_player_location.update(|location| {
-            *location = Position::new(event.latlng().lat(), event.latlng().lng());
+        // .update(|location| {
+        //     *location = Position::new(event.latlng().lat(), event.latlng().lng());
+        // });
+        // update the player's location to be the clicked city
+        // TODO: Send a player move request
+
+        // let _ = tx
+        //     .clone()
+        //     .try_send(Event::DestinationCityRollRequest { player_id: 54 });
+
+        set_player_information.update(|player| {
+            // add the city to the player's route history
+            // TODO: HANDLE RAILROAD SELECTION
+            // player.unwrap().route_history.push(city);
+            // player.route = Position::new(event.latlng().lat(), event.latlng().lng());
         });
-        let _ = tx
-            .clone()
-            .try_send(Event::DestinationCityRollRequest { player_id: 54 });
+
     };
-
-    // let move_player = create_action(|input: &MouseEvent| async move {
-    //     tx.clone()
-    //         .try_send(Event::DestinationCityRollRequest { player_id: 54 })
-    // });
-
-    // let move_player = leptos::spawn_local(async move |event: MouseEvent| {
-    //     tx.clone()
-    //         .try_send(Event::DestinationCityRollRequest { player_id: 54 })
-    // });
 
     view! {
         // TODO: Change to CircleMarker for consistent radius

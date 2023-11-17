@@ -28,13 +28,14 @@ use std::{
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
+use store::State;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::tungstenite::protocol::Message;
 
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
 
-async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
+async fn handle_connection(peer_map: PeerMap, game_state: Arc<Mutex<State>>, raw_stream: TcpStream, addr: SocketAddr) {
     println!("Incoming TCP connection from: {}", addr);
 
     let ws_stream = tokio_tungstenite::accept_async(raw_stream)
@@ -51,23 +52,28 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
     let broadcast_incoming = incoming.try_for_each(|msg| {
         // deserealize message into an Event
         let event: store::Event = bincode::deserialize(&msg.clone().into_data()).unwrap();
-
         println!("Received a message from {}: {:?}", addr, event);
 
-        // Consume the event
-        // println!("Consumed event respones {:?}", store::consume_event(event));
+        // validate the event. if the event is invalid print an error message
+        if game_state.lock().unwrap().validate(&event) {
+            game_state.lock().unwrap().consume(&event);
+            println!("Game state: {:?}", game_state.lock().unwrap());
 
-        // let peers = peer_map.lock().unwrap();
+            let peers = peer_map.lock().unwrap();
 
-        // // We want to broadcast the message to everyone except ourselves.
-        // let broadcast_recipients = peers
-        //     .iter()
-        //     .filter(|(peer_addr, _)| peer_addr != &&addr)
-        //     .map(|(_, ws_sink)| ws_sink);
+            // We want to broadcast the event to everyone except ourselves.
+            let broadcast_recipients = peers
+                .iter()
+                .filter(|(peer_addr, _)| peer_addr != &&addr)
+                .map(|(_, ws_sink)| ws_sink);
 
-        // for recp in broadcast_recipients {
-        //     recp.unbounded_send(msg.clone()).unwrap();
-        // }
+            for recp in broadcast_recipients {
+                recp.unbounded_send(msg.clone()).unwrap();
+            }
+        } else {
+            // would be cool to add more detailed info here
+            println!("Invalid event: {:?}", event);
+        }
 
         future::ok(())
     });
@@ -87,7 +93,8 @@ async fn main() -> Result<(), IoError> {
         .nth(1)
         .unwrap_or_else(|| "127.0.0.1:8000".to_string());
 
-    let state = PeerMap::new(Mutex::new(HashMap::new()));
+    let peer_map = PeerMap::new(Mutex::new(HashMap::new()));
+    let game_state = Arc::new(Mutex::new(store::State::default()));
 
     // Create the event loop and TCP listener we'll accept connections on.
     let try_socket = TcpListener::bind(&addr).await;
@@ -96,7 +103,7 @@ async fn main() -> Result<(), IoError> {
 
     // Let's spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
-        tokio::spawn(handle_connection(state.clone(), stream, addr));
+        tokio::spawn(handle_connection(peer_map.clone(), game_state.clone(), stream, addr));
     }
 
     Ok(())
