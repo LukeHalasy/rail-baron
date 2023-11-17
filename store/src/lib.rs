@@ -13,6 +13,7 @@ use strum::IntoEnumIterator;
 
 use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
 pub type PlayerId = u64;
+
 pub type Cash = u64;
 
 pub mod dice;
@@ -114,6 +115,23 @@ pub struct Player {
     pub engine: Engine,
 }
 
+impl Default for Player {
+    fn default() -> Self {
+        Self {
+            cash: 20000,
+            name: String::new(),
+            piece: Piece::Red,
+            home_city: None,
+            route_history: vec![],
+            start: None,
+            destination: None,
+            spaces_left_to_move: None,
+            rails: vec![],
+            engine: Engine::Freight,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct State {
     pub stage: Stage,
@@ -172,7 +190,7 @@ pub enum Event {
     PlayerJoined {
         player_id: PlayerId,
         name: String,
-        color: Piece
+        piece: Piece
     },
 }
 
@@ -334,21 +352,14 @@ impl State {
             EndPurchaseStage { .. } => {
                 self.advance_turn();
             }
-            PlayerJoined { player_id, name, color } => {
+            PlayerJoined { player_id, name, piece } => {
                 self.players.insert(
                     *player_id,
                     Player {
-                        cash: 0,
                         name: name.clone(),
-                        piece: color.clone(),
-                        home_city: None,
-                        route_history: vec![],
-                        start: None,
-                        destination: None,
-                        spaces_left_to_move: None,
-                        rails: vec![],
-                        engine: Engine::Freight,
-                    },
+                        piece: piece.clone(),
+                        ..Player::default() 
+                    }
                 );
 
                 self.player_order.push(*player_id);
@@ -562,14 +573,14 @@ impl State {
                     return false;
                 }
             }
-            PlayerJoined { player_id, name, color } => {
+            PlayerJoined { player_id, name, piece } => {
                 // Check player doesn't already exist
                 if self.players.contains_key(player_id) {
                     return false;
                 }
 
                 // Check that no other player has the same color
-                if self.players.values().any(|player| player.piece == *color) {
+                if self.players.values().any(|player| player.piece == *piece) {
                     return false;
                 }
                 

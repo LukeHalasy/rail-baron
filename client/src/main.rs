@@ -4,6 +4,9 @@ mod app;
 mod cities;
 mod city;
 mod rails;
+mod login;
+mod player;
+mod map;
 
 use crate::app::App;
 
