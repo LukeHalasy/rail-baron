@@ -78,12 +78,8 @@ pub fn Login() -> impl IntoView {
                             // </select>
                             // <input type="submit" value="Join Game"/>
                             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 10px;">
-                                    <input type="text" placeholder="Enter Lobby #" style="background-color: #1A4176; color: white; font-size: 16px; padding: 10px 20px; margin-right: 10px; border: none; cursor: pointer;"/>
-                                    <input type="submit" value="Join Lobby" style="background-color: #1A4176; color: white; font-size: 16px; padding: 10px 20px; border: none; cursor: pointer;"/>
-                                </div>
-                                <hr style="width: 100%; margin-bottom: 20px;" />
-                                <button type="button" style="background-color: #1A4176; color: white; font-size: 16px; padding: 10px 20px; border: none; cursor: pointer;">Create Game</button>
+                                <input type="submit" value="Create Game" style="background-color: #1A4176; width: 200px; color: #DDDDDD; font-size: 16px; padding: 10px 20px; margin-bottom: 15px; border: none; cursor: pointer;" />
+                                <input type="submit" value="Join Lobby" style="background-color: #1A4176; width: 200px; color: #DDDDDD; font-size: 16px; padding: 10px 20px;  border: none; cursor: pointer;"/>
                             </div>
                         </div>
                     </form>
