@@ -6,7 +6,7 @@ use store::{
     sub_city::{self},
 };
 
-use crate::city::City;
+use crate::game::city::City;
 
 #[component]
 pub fn Cities() -> impl IntoView {

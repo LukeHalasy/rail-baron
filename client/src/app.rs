@@ -6,12 +6,13 @@ use leptos::*;
 use leptos_router::{Router, Routes, Route};
 use store::{Event, PlayerId, Player};
 
-use crate::{login::Login, map::Map};
+use crate::pre_game::home::Home;
+use crate::game::game::Game;
 
 #[component]
 pub fn App() -> impl IntoView {
     let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
-    let (mut write, _) = ws.split();
+    let (mut write, mut read) = ws.split();
 
     let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<Event>(1000);
     provide_context(in_tx);
@@ -26,6 +27,20 @@ pub fn App() -> impl IntoView {
         }
     });
 
+    leptos::spawn_local(async move {
+        while let Some(msg) = read.next().await {
+            match msg.unwrap() {
+                Message::Text(error_message) => {
+                    web_sys::console::error_1(&format!("got error from server! {}", error_message).into());
+                },
+                Message::Bytes(bytes) => {
+                    let event: Event = bincode::deserialize(&bytes).unwrap();
+                    web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
+                },
+            }
+        }
+    });
+
     let (player, set_player_information) = create_signal(None::<Player>);
     provide_context(player);
     provide_context(set_player_information);
@@ -37,8 +52,8 @@ pub fn App() -> impl IntoView {
     view! {
         <Router>
             <Routes>
-                <Route path="/" view=Login />
-                <Route path="/map" view=Map />
+                <Route path="/" view=Home />
+                <Route path="/map" view=Game />
             </Routes>
         </Router>
     }
