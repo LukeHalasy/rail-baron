@@ -1,12 +1,8 @@
 use leptos::*;
 
 mod app;
-mod cities;
-mod city;
-mod rails;
-mod login;
-mod player;
-mod map;
+mod game;
+mod pre_game;
 
 use crate::app::App;
 

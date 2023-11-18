@@ -2,10 +2,10 @@ use leptos::{*};
 use leptos_leaflet::{Position, MapContainer, TileLayer};
 use leptos_router::A;
 
-use crate::{rails::Rails, cities::Cities, player::Player};
+use crate::game::{rails::Rails, cities::Cities, player::Player};
 
 #[component]
-pub fn Map() -> impl IntoView {
+pub fn Game() -> impl IntoView {
     // TODO: throw an error if the player is not set (which maens a user navigated to /map without logging in)
     // in which case navigate them back to the login page
     let player = use_context::<ReadSignal<Option<store::Player>>>().expect("A player signal should exist");
@@ -35,8 +35,8 @@ pub fn Map() -> impl IntoView {
                             // TODO: need to add attribution
                             <TileLayer url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"/>
 
-                            <Rails></Rails>
-                            <Cities></Cities>
+                            // <Rails></Rails>
+                            // <Cities></Cities>
 
                             {
                                 if player.get().unwrap().route_history.len() > 0 {

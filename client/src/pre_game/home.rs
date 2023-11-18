@@ -7,7 +7,7 @@ use web_sys::SubmitEvent;
 use strum::IntoEnumIterator;
 
 #[component]
-pub fn Login() -> impl IntoView {
+pub fn Home() -> impl IntoView {
     let player_id_input: NodeRef<Input> = create_node_ref();
     let name_input: NodeRef<Input> = create_node_ref();
     let piece_input: NodeRef<Select> = create_node_ref();
