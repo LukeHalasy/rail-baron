@@ -1,4 +1,5 @@
 use futures::{SinkExt, StreamExt};
+use leptos_meta::{provide_meta_context, Stylesheet};
 use reqwasm::websocket::{futures::WebSocket, Message};
 
 use leptos::*;
@@ -48,8 +49,10 @@ pub fn App() -> impl IntoView {
     let (player_id, set_player_id) = create_signal(None::<PlayerId>);
     provide_context(player_id);
     provide_context(set_player_id);
-
+    
+    provide_meta_context();
     view! {
+        <Stylesheet id="leptos" href="/pkg/tailwind.css"/>
         <Router>
             <Routes>
                 <Route path="/" view=Home />

@@ -265,6 +265,7 @@ dependencies = [
  "futures",
  "leptos",
  "leptos-leaflet",
+ "leptos_meta",
  "leptos_router",
  "reqwasm",
  "store",

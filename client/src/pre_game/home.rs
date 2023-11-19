@@ -57,13 +57,13 @@ pub fn Home() -> impl IntoView {
     };
     
     view! {
-        <div style="position: relative; height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('assets/images/rail-riches.png'); background-size: 100% 100%;"></div>
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: flex-start;">
-                    <form on:submit=join_game style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
-                        <h1 style="text-align: center; margin-bottom: 20px; font-family: 'OldTimey', sans-serif; font-size: 88px; color: #1A4176; text-decoration: underline dashed; text-shadow: -2px -2px 0 #999999, 2px -2px 0 #999999, -2px 2px 0 #999999, 2px 2px 0 #999999; color: #0000a0;">Railway Riches</h1>
-                        <div style="background-color: rgba(153, 153, 153, 1); padding: 30px;">
+        <div class="relative h-screen w-screen flex justify-center items-center">
+            <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center" style="background-image: url('assets/images/rail-riches.png');"></div>
+            <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center">
+                <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-start">
+                    <form on:submit=join_game class="flex flex-col items-center mt-20">
+                        <h1 class="text-center mb-10 text-8xl font-oldtimey underline-dashed text-blue-800" style="text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;">Railway Riches</h1>
+                        <div class="bg-gray-400 p-6">
                             // <input type="text" node_ref=player_id_input placeholder="Enter Player ID" pattern="[0-9]*" style="margin-bottom: 10px;"/>
                             // <input type="text" node_ref=name_input placeholder="Enter your name" style="margin-bottom: 10px;"/>
                             // <select node_ref=piece_input style="margin-bottom: 10px;">
@@ -77,9 +77,9 @@ pub fn Home() -> impl IntoView {
                             //     }
                             // </select>
                             // <input type="submit" value="Join Game"/>
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                <input type="submit" value="Create Game" style="background-color: #1A4176; width: 200px; color: #DDDDDD; font-size: 16px; padding: 10px 20px; margin-bottom: 15px; border: none; cursor: pointer;" />
-                                <input type="submit" value="Join Lobby" style="background-color: #1A4176; width: 200px; color: #DDDDDD; font-size: 16px; padding: 10px 20px;  border: none; cursor: pointer;"/>
+                            <div class="flex flex-col items-center justify-center space-y-3">
+                                <input type="submit" value="Create Game" class="bg-blue-800 text-gray-300 w-64 font-bold p-4 cursor-pointer button" />
+                                <input type="submit" value="Join Lobby" class="bg-blue-800 text-gray-300 w-64 font-bold p-4 cursor-pointer button" />
                             </div>
                         </div>
                     </form>
