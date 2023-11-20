@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    input[type="text"] {
+        @apply border-2 border-blue-800 bg-gray-300 font-serif text-xl w-64 p-4 cursor-pointer text-center;
+        &:focus {
+            @apply outline-none border-blue-800 border-dashed;
+        }
+    }
+    input[type="submit"] {
+        @apply border-2 border-blue-800 bg-blue-800 font-serif text-xl text-gray-300 w-64 p-4 cursor-pointer;
+    }
+    hr {
+        @apply w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700;
+    }
+}
