@@ -26,8 +26,8 @@ pub fn Lobby() -> impl IntoView {
 
     view! {
         <Layout>
-            // <input type="submit" value="Create Game" class="bg-blue-800 font-serif text-xl text-gray-300 w-64 p-4 cursor-pointer button" />
-            // <input type="submit" value="Join Lobby" class="bg-blue-800 font-serif text-xl text-gray-300 w-64 p-4 cursor-pointer button" />
+            // <input type="submit" value="Create Game" class="w-64 p-4 font-serif text-xl text-gray-300 bg-blue-800 cursor-pointer button" />
+            // <input type="submit" value="Join Lobby" class="w-64 p-4 font-serif text-xl text-gray-300 bg-blue-800 cursor-pointer button" />
             <h1>{format!("Lobby {}", id())}</h1>
         </Layout>
     }
