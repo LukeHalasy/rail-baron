@@ -1,11 +1,15 @@
 use futures::channel::mpsc::Sender;
 
 use leptos::{*, html::{Input, Select}};
+use leptos_router::{Router, Routes, Route};
 use store::{Event, Piece, Player, PlayerId};
 use web_sys::SubmitEvent;
 
 use strum::IntoEnumIterator;
 
+use crate::pre_game::layout::Layout;
+
+/// Page where player's can create a new game or join an existing game.
 #[component]
 pub fn Home() -> impl IntoView {
     let player_id_input: NodeRef<Input> = create_node_ref();
@@ -16,75 +20,57 @@ pub fn Home() -> impl IntoView {
     let set_player_information = use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
     let set_player_id = use_context::<WriteSignal<Option<PlayerId>>>().expect("Expected a player ID setter");
 
-    let join_game = move |ev: SubmitEvent| {
-        ev.prevent_default();
+   
+    // this all would be much easier with accounts...
+
+    // by the end of this PR, I want to be able to do this:
+    // Clicking the "Create Game" button will call a method within the server to create a new game.
+    // The server will return a game ID and take the user to /lobby/<game_id>.
+    // so as not to need to deal with names for now (and to make it easier to test), the game ID will be the player ID.
+    // each subsequent player will be able to join the game by entering the game ID into the "Join Lobby" input.
+    // the server will then add the player to the game and take them to /lobby/<game_id>.
+    // their name, and all other connected players, will be displayed on the page.
+    // the host will be able to start the game, which will take them to /map/<game_id>.
+
+    // within the page
+
+    // let create_game = move |ev: SubmitEvent| {
+    //     let _ = tx
+    //         .clone()
+    //         .try_send(Event::PlayerJoined {
+    //             player_id,
+    //             name: name.clone(),
+    //             piece: Piece::from_str(&piece).unwrap(),
+    //         });
+
+    //     // Update the player information
+    //     // set_player_information.update(|player| {
+    //     //     *player = Some(Player {
+    //     //         name: name.clone(),
+    //     //         piece: Piece::from_str(&piece).unwrap(),
+    //     //         ..Default::default()
+    //     //     });
+    //     // });
+
+    //     // set_player_id.update(|id| {
+    //     //     *id = Some(player_id);
+    //     // });
         
-        let player_id = player_id_input()
-            .expect("id <input> to exist")
-            .value()
-            .parse::<PlayerId>()
-            .expect("Failed to parse player ID");
+    //     // let navigate = leptos_router::use_navigate();
+    //     // navigate("/lobby", Default::default());
+    // };
 
-        let name = name_input().expect("name <input> to exist").value();
-
-        let piece = piece_input()
-            .expect("<select> to exist")
-            .value();
-
-        let _ = tx
-            .clone()
-            .try_send(Event::PlayerJoined {
-                player_id,
-                name: name.clone(),
-                piece: Piece::from_str(&piece).unwrap(),
-            });
-
-        // Update the player information
-        set_player_information.update(|player| {
-            *player = Some(Player {
-                name: name.clone(),
-                piece: Piece::from_str(&piece).unwrap(),
-                ..Default::default()
-            });
-        });
-
-        set_player_id.update(|id| {
-            *id = Some(player_id);
-        });
-        
-        let navigate = leptos_router::use_navigate();
-        navigate("/map", Default::default());
-    };
-    
     view! {
-        <div class="relative h-screen w-screen flex justify-center items-center">
-            <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center" style="background-image: url('assets/images/rail-riches.png');"></div>
-            <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center">
-                <div class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-start">
-                    <form on:submit=join_game class="flex flex-col items-center mt-20">
-                        <h1 class="text-center mb-10 text-8xl font-oldtimey underline-dashed text-blue-800" style="text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;">Railway Riches</h1>
-                        <div class="bg-gray-400 p-6">
-                            // <input type="text" node_ref=player_id_input placeholder="Enter Player ID" pattern="[0-9]*" style="margin-bottom: 10px;"/>
-                            // <input type="text" node_ref=name_input placeholder="Enter your name" style="margin-bottom: 10px;"/>
-                            // <select node_ref=piece_input style="margin-bottom: 10px;">
-                            //     {
-                            //         Piece::iter()
-                            //         .map(move |p| {
-                            //             view! {
-                            //                 <option value=p.to_string()>{p.to_string()}</option>
-                            //             }
-                            //         }).collect_view()
-                            //     }
-                            // </select>
-                            // <input type="submit" value="Join Game"/>
-                            <div class="flex flex-col items-center justify-center space-y-3">
-                                <input type="submit" value="Create Game" class="bg-blue-800 text-gray-300 w-64 font-bold p-4 cursor-pointer button" />
-                                <input type="submit" value="Join Lobby" class="bg-blue-800 text-gray-300 w-64 font-bold p-4 cursor-pointer button" />
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <Layout>
+            <input type="submit" value="Create Game" />
+            <input type="submit" value="Join Lobby" on:click={|_| {
+                let navigate = leptos_router::use_navigate();
+                navigate("/join", Default::default());
+            }} />
+            <input type="submit" value="Rules" on:click={|_| {
+                let navigate = leptos_router::use_navigate();
+                navigate("/rules", Default::default());
+            }}/>
+        </Layout>
     }
 }

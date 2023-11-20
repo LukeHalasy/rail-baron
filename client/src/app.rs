@@ -9,6 +9,9 @@ use store::{Event, PlayerId, Player};
 
 use crate::pre_game::home::Home;
 use crate::game::game::Game;
+use crate::pre_game::join::Join;
+use crate::pre_game::lobby::Lobby;
+use crate::pre_game::rules::Rules;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -56,7 +59,10 @@ pub fn App() -> impl IntoView {
         <Router>
             <Routes>
                 <Route path="/" view=Home />
-                <Route path="/map" view=Game />
+                <Route path="/join" view=Join />
+                <Route path="/rules" view=Rules />
+                <Route path="/lobby/:id" view=Lobby />
+                <Route path="/game/:id" view=Game />
             </Routes>
         </Router>
     }
