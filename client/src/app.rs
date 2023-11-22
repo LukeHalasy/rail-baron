@@ -14,6 +14,8 @@ use crate::pre_game::join::Join;
 use crate::pre_game::lobby::Lobby;
 use crate::pre_game::rules::Rules;
 
+pub type Error = String;
+
 #[component]
 pub fn App() -> impl IntoView {
     let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
@@ -29,6 +31,9 @@ pub fn App() -> impl IntoView {
     let (player_id, set_player_id) = create_signal(None::<PlayerId>);
     provide_context(player_id);
     provide_context(set_player_id);
+
+    let (error, set_error) = create_signal(None::<Error>);
+    provide_context(error);
 
     leptos::spawn_local(async move {
         while let Some(msg) = in_rx.next().await {
@@ -65,6 +70,8 @@ pub fn App() -> impl IntoView {
                             web_sys::console::error_1(
                                 &format!("got error from server! {:?}", error).into(),
                             );
+
+                            set_error.update(|e| *e = Some(error));
                         }
                         ServerMessage::Connection(player_id) => {
                             web_sys::console::log_1(
