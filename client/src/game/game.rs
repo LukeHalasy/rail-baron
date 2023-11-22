@@ -1,5 +1,5 @@
-use leptos::{*};
-use leptos_leaflet::{Position, MapContainer, TileLayer};
+use leptos::*;
+use leptos_leaflet::{MapContainer, Position, TileLayer};
 use leptos_router::A;
 
 use crate::game::player::Player;
@@ -8,19 +8,20 @@ use crate::game::player::Player;
 pub fn Game() -> impl IntoView {
     // TODO: throw an error if the player is not set (which maens a user navigated to /map without logging in)
     // in which case navigate them back to the login page
-    let player = use_context::<ReadSignal<Option<store::Player>>>().expect("A player signal should exist");
-    
+    let player =
+        use_context::<ReadSignal<Option<store::Player>>>().expect("A player signal should exist");
+
     // create_effect(move |_| {
     //     if player.clone().is_none() {
     //         let navigate = leptos_router::use_navigate();
     //         navigate("/", Default::default());
     //     }
     // });
-    
+
     view! {
         <main>
         {
-            move || 
+            move ||
                 if player.get().is_none() {
                     view! {
                         // <div>"You are not logged in. Please "<a href="/">log in</a>" to view the map."</div>
@@ -43,14 +44,14 @@ pub fn Game() -> impl IntoView {
                                     view! {
                                         <Player player={player.get().unwrap()}></Player>
                                     }.into_view()
-                                } else { 
+                                } else {
                                     view! {}.into_view()
                                 }
                             }
                         </MapContainer>
                     }.into_view()
                 }
-            
+
         }
         </main>
     }

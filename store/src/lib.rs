@@ -33,15 +33,13 @@ pub enum ServerMessage {
     Error(String),
     Connection(PlayerId),
     GameCreated(GameId),
-    GameJoined(GameId)
+    GameJoined(GameId),
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum ClientMessage {
     Event(Event),
-    JoinGame(
-        GameId,
-    ),
+    JoinGame(GameId),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -231,7 +229,7 @@ impl State {
                 if let Create { player_id } = valid_event {
                     self.game_host = *player_id;
                 }
-                
+
                 // Am auto-assigning names, piece colors, home cities, and destinations for now
                 let name = format!("Player {}", player_id);
                 // Choose a piece that hasn't been chosen yet
@@ -479,7 +477,7 @@ impl State {
                 if self.players.contains_key(player_id) {
                     return Err("Player already exists".to_string());
                 }
-            },
+            }
             Start { player_id } => {
                 // Check that the game hasn't already started
                 if self.stage != Stage::PreGame {
@@ -500,7 +498,7 @@ impl State {
                 if self.players.len() < 2 {
                     return Err("Game does not have enough players (2)".to_string());
                 }
-            },
+            }
             Move { player_id, route } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
@@ -549,7 +547,11 @@ impl State {
                 city_roll: _,
                 region: _,
                 city: _,
-            } => return Err("DestinationCityRoll should only be sent from server to client".to_string()),
+            } => {
+                return Err(
+                    "DestinationCityRoll should only be sent from server to client".to_string(),
+                )
+            }
             MovementRoll {
                 player_id: _,
                 roll: _,
@@ -685,7 +687,7 @@ impl State {
                 // if self.players.values().any(|player| player.piece == *piece) {
                 //     return Err("Another player already has this piece color".to_string());
                 // }
-                
+
                 // Check that the player name is unique
                 // if self.players.values().any(|player| player.name == *name) {
                 //     return Err("Player name already exists".to_string());

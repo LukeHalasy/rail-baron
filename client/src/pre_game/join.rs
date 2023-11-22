@@ -1,5 +1,5 @@
 use futures::channel::mpsc::Sender;
-use leptos::{*, html::Input};
+use leptos::{html::Input, *};
 use web_sys::console;
 
 use crate::pre_game::layout::Layout;
@@ -14,7 +14,7 @@ pub fn Join() -> impl IntoView {
         <Layout>
             <input type="number" placeholder="Lobby #" autofocus node_ref=lobby_input />
             <input type="submit" value="Join" on:click={
-                let mut tx = tx.clone(); 
+                let mut tx = tx.clone();
                 move |_| {
                     console::log_1(&"attempting it".into());
                     let value = lobby_input().expect("<input> to exist").value();

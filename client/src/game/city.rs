@@ -20,7 +20,8 @@ pub fn City(city: C) -> impl IntoView {
         }
     };
 
-    let set_player_information = use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
+    let set_player_information =
+        use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
 
     let _tx = use_context::<Sender<Event>>().expect("Expected the tx sender");
     let move_player = move |_event: MouseEvent| {
@@ -40,7 +41,6 @@ pub fn City(city: C) -> impl IntoView {
             // player.unwrap().route_history.push(city);
             // player.route = Position::new(event.latlng().lat(), event.latlng().lng());
         });
-
     };
 
     view! {

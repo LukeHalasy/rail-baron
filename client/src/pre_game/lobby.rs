@@ -1,21 +1,18 @@
-use leptos::{*};
+use leptos::*;
 use leptos_router::*;
 
 use crate::pre_game::layout::Layout;
 
 #[derive(Params, PartialEq)]
 struct LobbyParams {
-    id: usize
+    id: usize,
 }
 
 #[component]
 pub fn Lobby() -> impl IntoView {
     let id = move || {
-        use_params::<LobbyParams>().with(|params| {
-            params.as_ref()
-                .map(|params| params.id)
-                .unwrap_or_default()
-        })
+        use_params::<LobbyParams>()
+            .with(|params| params.as_ref().map(|params| params.id).unwrap_or_default())
     };
 
     view! {

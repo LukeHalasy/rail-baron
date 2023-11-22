@@ -1,7 +1,7 @@
 use futures::channel::mpsc::Sender;
 
-use leptos::{*};
-use store::{Event, PlayerId, ClientMessage};
+use leptos::*;
+use store::{ClientMessage, Event, PlayerId};
 
 use crate::pre_game::layout::Layout;
 
@@ -14,7 +14,7 @@ pub fn Home() -> impl IntoView {
     view! {
         <Layout>
             <input type="submit" value="Create Game" on:click={
-                let mut tx = tx.clone(); 
+                let mut tx = tx.clone();
                 move |_| {
                     let _ = tx
                         .try_send(ClientMessage::Event(Event::Create {
