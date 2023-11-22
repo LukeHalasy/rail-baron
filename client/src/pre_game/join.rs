@@ -16,7 +16,7 @@ pub fn Join() -> impl IntoView {
             <input type="submit" value="Join" on:click={
                 let mut tx = tx.clone(); 
                 move |_| {
-                    console::log_1(&format!("attempting it").into());
+                    console::log_1(&"attempting it".into());
                     let value = lobby_input().expect("<input> to exist").value();
                     let _ = tx
                         .try_send(ClientMessage::JoinGame(

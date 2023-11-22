@@ -12,6 +12,7 @@ use strum::EnumIter;
 use strum::IntoEnumIterator;
 
 use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
+use std::str::FromStr;
 pub type PlayerId = u64;
 
 pub type Cash = u64;
@@ -89,16 +90,18 @@ impl std::fmt::Display for Piece {
 }
 
 // create a from string method for Piece
-impl Piece {
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for Piece {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "Red" => Some(Piece::Red),
-            "Blue" => Some(Piece::Blue),
-            "Green" => Some(Piece::Green),
-            "Yellow" => Some(Piece::Yellow),
-            "Orange" => Some(Piece::Orange),
-            "Purple" => Some(Piece::Purple),
-            _ => None,
+            "Red" => Ok(Piece::Red),
+            "Blue" => Ok(Piece::Blue),
+            "Green" => Ok(Piece::Green),
+            "Yellow" => Ok(Piece::Yellow),
+            "Orange" => Ok(Piece::Orange),
+            "Purple" => Ok(Piece::Purple),
+            _ => Err(()),
         }
     }
 }
@@ -244,7 +247,7 @@ impl State {
                         name,
                         piece,
                         home_city,
-                        destination: destination,
+                        destination,
                         ..Player::default()
                     },
                 );

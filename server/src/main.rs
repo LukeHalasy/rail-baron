@@ -67,7 +67,26 @@ async fn handle_connection(peer_maps: PeerMaps, peer_to_game_map: PeerToGameMap,
             store::ClientMessage::Event(event) => {
                 match event {
                     store::Event::Create { .. } => {
-                        if peer_to_game_map.lock().unwrap().contains_key(&addr) {
+                        if let std::collections::hash_map::Entry::Vacant(e) = peer_to_game_map.lock().unwrap().entry(addr) {
+                            println!("{} is creating a new game", &addr);
+                            let game_id = game_states.lock().unwrap().len() as u64;
+                            let game_state = State::default();
+
+                            game_states.lock().unwrap().insert(game_id, game_state);
+                            peer_maps.lock().unwrap().insert(game_id, HashMap::from([
+                                (addr, tx.clone())
+                            ]));
+                            e.insert(game_id);
+                            println!("{} is now in game {}", &addr, game_id);
+
+                            // send a ServerMessage::GameCreated to the client to let them know their game was created
+                            if let Err(e) = tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::GameCreated(game_id)).unwrap())) {
+                                println!("Error sending game created message to {:?}: {}", addr, e);
+                                return future::ok(())
+                            }
+
+                            (game_id, event)
+                        } else {
                             println!("{} is already in a game", &addr);
 
                             match bincode::serialize(&ServerMessage::Error("Player is already in a game".to_string())) {
@@ -82,25 +101,6 @@ async fn handle_connection(peer_maps: PeerMaps, peer_to_game_map: PeerToGameMap,
 
                             
                             return future::ok(())
-                        } else {
-                            println!("{} is creating a new game", &addr);
-                            let game_id = game_states.lock().unwrap().len() as u64;
-                            let game_state = State::default();
-
-                            game_states.lock().unwrap().insert(game_id, game_state);
-                            peer_maps.lock().unwrap().insert(game_id, HashMap::from([
-                                (addr, tx.clone())
-                            ]));
-                            peer_to_game_map.lock().unwrap().insert(addr, game_id);
-                            println!("{} is now in game {}", &addr, game_id);
-
-                            // send a ServerMessage::GameCreated to the client to let them know their game was created
-                            if let Err(e) = tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::GameCreated(game_id)).unwrap())) {
-                                println!("Error sending game created message to {:?}: {}", addr, e);
-                                return future::ok(())
-                            }
-
-                            (game_id, event)
                         }
                     }
                     _ => {

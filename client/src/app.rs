@@ -42,15 +42,11 @@ pub fn App() -> impl IntoView {
 
     leptos::spawn_local(async move {
         while let Some(msg) = read.next().await {
-            match msg.unwrap() {
-                // Message::Text(message) => {
-                //     // if the player doesn't have an id yet this must be the server sending their id 
-                //     web_sys::console::log_1(&format!("got message from server! {}", message).into());
-                // },
-                Message::Bytes(bytes) => {
-                    match bincode::deserialize::<ServerMessage>(&bytes).unwrap() {
-                        ServerMessage::Event(_event) => {
-                            // web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
+            if let Message::Bytes(bytes) = msg.unwrap() {
+                if let Ok(server_message) = bincode::deserialize::<ServerMessage>(&bytes) {
+                    match server_message {
+                        ServerMessage::Event(event) => {
+                            web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
                             // match event {
                             //     Event::PlayerJoined { player_id: joined_player_id } => {
                             //         // if the joined player is us 
@@ -87,9 +83,7 @@ pub fn App() -> impl IntoView {
                             
                         }
                     }
-                    // web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
-                },
-                _ => {}
+                }
             }
         }
     });

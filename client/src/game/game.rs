@@ -39,7 +39,7 @@ pub fn Game() -> impl IntoView {
                             // <Cities></Cities>
 
                             {
-                                if player.get().unwrap().route_history.len() > 0 {
+                                if !player.get().unwrap().route_history.is_empty() {
                                     view! {
                                         <Player player={player.get().unwrap()}></Player>
                                     }.into_view()
