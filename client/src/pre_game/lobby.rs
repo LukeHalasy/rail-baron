@@ -1,11 +1,5 @@
-use futures::channel::mpsc::Sender;
-
-use leptos::{*, html::{Input, Select}};
+use leptos::{*};
 use leptos_router::*;
-use store::{Event, Piece, Player, PlayerId};
-use web_sys::SubmitEvent;
-
-use strum::IntoEnumIterator;
 
 use crate::pre_game::layout::Layout;
 

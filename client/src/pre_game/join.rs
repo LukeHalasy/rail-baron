@@ -1,6 +1,5 @@
 use futures::channel::mpsc::Sender;
 use leptos::{*, html::Input};
-use store::{Event, PlayerId};
 use web_sys::console;
 
 use crate::pre_game::layout::Layout;
@@ -10,7 +9,6 @@ use store::ClientMessage;
 pub fn Join() -> impl IntoView {
     let lobby_input: NodeRef<Input> = create_node_ref();
     let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
-    let player_id = use_context::<ReadSignal<Option<PlayerId>>>().expect("Expected a player ID");
 
     view! {
         <Layout>

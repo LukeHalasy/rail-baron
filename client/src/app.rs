@@ -5,7 +5,7 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Router, Routes, Route};
-use store::{Event, PlayerId, Player, ServerMessage, ClientMessage};
+use store::{PlayerId, Player, ServerMessage, ClientMessage};
 // use server::ServerMessage;
 
 use crate::pre_game::home::Home;
@@ -49,7 +49,7 @@ pub fn App() -> impl IntoView {
                 // },
                 Message::Bytes(bytes) => {
                     match bincode::deserialize::<ServerMessage>(&bytes).unwrap() {
-                        ServerMessage::Event(event) => {
+                        ServerMessage::Event(_event) => {
                             // web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
                             // match event {
                             //     Event::PlayerJoined { player_id: joined_player_id } => {

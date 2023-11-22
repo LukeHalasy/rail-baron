@@ -1,6 +1,6 @@
 use futures::channel::mpsc::Sender;
 use leptos::*;
-use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents, Position};
+use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents};
 use store::{rail::C, Event, Player};
 
 #[component]
@@ -22,8 +22,8 @@ pub fn City(city: C) -> impl IntoView {
 
     let set_player_information = use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
 
-    let tx = use_context::<Sender<Event>>().expect("Expected the tx sender");
-    let move_player = move |event: MouseEvent| {
+    let _tx = use_context::<Sender<Event>>().expect("Expected the tx sender");
+    let move_player = move |_event: MouseEvent| {
         // .update(|location| {
         //     *location = Position::new(event.latlng().lat(), event.latlng().lng());
         // });
@@ -34,7 +34,7 @@ pub fn City(city: C) -> impl IntoView {
         //     .clone()
         //     .try_send(Event::DestinationCityRollRequest { player_id: 54 });
 
-        set_player_information.update(|player| {
+        set_player_information.update(|_player| {
             // add the city to the player's route history
             // TODO: HANDLE RAILROAD SELECTION
             // player.unwrap().route_history.push(city);

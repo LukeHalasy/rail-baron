@@ -2,7 +2,7 @@ use leptos::{*};
 use leptos_leaflet::{Position, MapContainer, TileLayer};
 use leptos_router::A;
 
-use crate::game::{rails::Rails, cities::Cities, player::Player};
+use crate::game::player::Player;
 
 #[component]
 pub fn Game() -> impl IntoView {
