@@ -1,5 +1,5 @@
 use futures::{SinkExt, StreamExt};
-use leptos_meta::{provide_meta_context, Stylesheet};
+use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use reqwasm::websocket::{futures::WebSocket, Message};
 
 use leptos::*;
@@ -109,6 +109,7 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
     view! {
         <Stylesheet id="leptos" href="/pkg/tailwind.css"/>
+        <Title formatter=|text| format!("Railway Riches - {text}")/>
         <Router>
             <Routes>
                 <Route path="/" view=Home />
