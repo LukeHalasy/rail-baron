@@ -3,7 +3,7 @@ use futures::channel::mpsc::Sender;
 use leptos::{*, html::{Input, Select}};
 use leptos_router::{Router, Routes, Route};
 use store::{Event, Piece, Player, PlayerId};
-use web_sys::SubmitEvent;
+use web_sys::{SubmitEvent, console};
 
 use strum::IntoEnumIterator;
 
@@ -17,6 +17,7 @@ pub fn Home() -> impl IntoView {
     let piece_input: NodeRef<Select> = create_node_ref();
     
     let tx = use_context::<Sender<Event>>().expect("Expected the tx sender");
+    let player_id = use_context::<ReadSignal<Option<PlayerId>>>().expect("Expected a player ID");
     let set_player_information = use_context::<WriteSignal<Option<Player>>>().expect("Expected a player information setter");
     let set_player_id = use_context::<WriteSignal<Option<PlayerId>>>().expect("Expected a player ID setter");
 
@@ -34,35 +35,35 @@ pub fn Home() -> impl IntoView {
 
     // within the page
 
-    // let create_game = move |ev: SubmitEvent| {
-    //     let _ = tx
-    //         .clone()
-    //         .try_send(Event::PlayerJoined {
-    //             player_id,
-    //             name: name.clone(),
-    //             piece: Piece::from_str(&piece).unwrap(),
-    //         });
+    // let create_game = move |_| {
+        // print that the player is attempting to create a game
 
-    //     // Update the player information
-    //     // set_player_information.update(|player| {
-    //     //     *player = Some(Player {
-    //     //         name: name.clone(),
-    //     //         piece: Piece::from_str(&piece).unwrap(),
-    //     //         ..Default::default()
-    //     //     });
-    //     // });
 
-    //     // set_player_id.update(|id| {
-    //     //     *id = Some(player_id);
-    //     // });
+        // Update the player information
+        // set_player_information.update(|player| {
+        //     *player = Some(Player {
+        //         name: name.clone(),
+        //         piece: Piece::from_str(&piece).unwrap(),
+        //         ..Default::default()
+        //     });
+        // });
+
+        // set_player_id.update(|id| {
+        //     *id = Some(player_id);
+        // });
         
-    //     // let navigate = leptos_router::use_navigate();
-    //     // navigate("/lobby", Default::default());
+        // let navigate = leptos_router::use_navigate();
+        // navigate("/lobby", Default::default());
     // };
 
     view! {
         <Layout>
-            <input type="submit" value="Create Game" />
+            <input type="submit" value="Create Game" on:click={let mut tx = tx.clone(); move |_| {
+                let _ = tx
+                    .try_send(Event::Create {
+                        player_id: player_id.get().unwrap(),
+                    });
+            }}/>
             <input type="submit" value="Join Lobby" on:click={|_| {
                 let navigate = leptos_router::use_navigate();
                 navigate("/join", Default::default());

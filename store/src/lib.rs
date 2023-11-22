@@ -24,6 +24,16 @@ pub mod state;
 pub mod sub_city;
 pub mod travel_payout;
 
+pub type GameId = u64;
+
+#[derive(Deserialize, Serialize, Debug)]
+pub enum ServerMessage {
+    Event(Event),
+    Error(String),
+    Connection(PlayerId),
+    GameCreated(GameId),
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Stage {
     PreGame,
@@ -136,6 +146,7 @@ impl Default for Player {
 pub struct State {
     pub stage: Stage,
     pub active_player_id: PlayerId,
+    pub game_host: PlayerId,
     pub players: HashMap<PlayerId, Player>,
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
@@ -145,6 +156,14 @@ pub struct State {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Event {
+    // Lobby based events
+    Create {
+        player_id: PlayerId,
+    },
+    Start {
+        player_id: PlayerId,
+    },
+    // In-game events
     HomeCityRollRequest {
         player_id: PlayerId,
     },
@@ -189,8 +208,6 @@ pub enum Event {
     },
     PlayerJoined {
         player_id: PlayerId,
-        name: String,
-        piece: Piece
     },
 }
 
@@ -198,6 +215,59 @@ impl State {
     pub fn consume(&mut self, valid_event: &Event) {
         use Event::*;
         match valid_event {
+            Create { player_id } | PlayerJoined { player_id } => {
+                if let Create { player_id } = valid_event {
+                    self.game_host = *player_id;
+                }
+                
+                // Am auto-assigning names, piece colors, home cities, and destinations for now
+                let name = format!("Player {}", player_id);
+                // Choose a piece that hasn't been chosen yet
+                let piece = Piece::iter()
+                    .find(|piece| !self.players.values().any(|player| player.piece == *piece))
+                    .unwrap();
+                let home_city = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
+                let destination = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
+
+                self.players.insert(
+                    *player_id,
+                    Player {
+                        name,
+                        piece,
+                        home_city,
+                        destination: destination,
+                        ..Player::default()
+                    },
+                );
+
+                self.player_order.push(*player_id);
+            }
+            Start { player_id } => {
+                self.stage = Stage::InGame(InGameStage::Movement);
+                self.active_player_id = *player_id;
+
+                // Set the start of the user's next route
+                self.players.entry(*player_id).and_modify(|player| {
+                    player.start = player.home_city;
+                });
+
+                // Act as if the user initiated a destination selection dice roll
+                // Will need to think through whether I actually want to auto-roll
+                let (region_roll, region) = DiceRoll::region();
+                let (city_roll, city) = DiceRoll::city_in_region(region);
+
+                self.players.entry(*player_id).and_modify(|player| {
+                    player.destination = Some(city);
+                });
+
+                self.history.push(Event::DestinationCityRoll {
+                    player_id: *player_id,
+                    region_roll,
+                    city_roll,
+                    region,
+                    city,
+                });
+            }
             Move { player_id, route } => {
                 let (city, _) = route;
 
@@ -352,18 +422,6 @@ impl State {
             EndPurchaseStage { .. } => {
                 self.advance_turn();
             }
-            PlayerJoined { player_id, name, piece } => {
-                self.players.insert(
-                    *player_id,
-                    Player {
-                        name: name.clone(),
-                        piece: piece.clone(),
-                        ..Player::default() 
-                    }
-                );
-
-                self.player_order.push(*player_id);
-            }
             // TODO: Remove
             _ => {}
         }
@@ -396,28 +454,60 @@ impl State {
         }
     }
 
-    pub fn validate(&self, event: &Event) -> bool {
+    pub fn validate(&self, event: &Event) -> Result<(), String> {
         use Event::*;
         match event {
+            Create { player_id } => {
+                // Check that the current state is equal to the default state
+                if *self != State::default() {
+                    return Err("Game already exists".to_string());
+                }
+
+                // Check player doesn't already exist
+                if self.players.contains_key(player_id) {
+                    return Err("Player already exists".to_string());
+                }
+            },
+            Start { player_id } => {
+                // Check that the game hasn't already started
+                if self.stage != Stage::PreGame {
+                    return Err("Game has already started".to_string());
+                }
+
+                // Check that the calling player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // Check that the player is the host
+                if self.game_host != *player_id {
+                    return Err("Player is not the host".to_string());
+                }
+
+                // Check that the game has at least 2 players
+                if self.players.len() < 2 {
+                    return Err("Game does not have enough players (2)".to_string());
+                }
+            },
             Move { player_id, route } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // Verify that the user has a destination
                 let player = self.players.get(player_id).unwrap();
                 if player.destination.is_none() {
-                    return false;
+                    return Err("Player does not have a destination".to_string());
                 }
 
                 // Verify that the user has more moves left
                 if player.spaces_left_to_move == Some(0) {
-                    return false;
+                    return Err("Player has no more moves left".to_string());
                 }
 
                 let (city, _) = route;
@@ -430,7 +520,7 @@ impl State {
                     .iter()
                     .any(|(r, _)| r == city)
                 {
-                    return false;
+                    return Err("City cannot be reached in one move".to_string());
                 }
             }
             // These should only be sent from server to client
@@ -440,56 +530,56 @@ impl State {
                 city_roll: _,
                 region: _,
                 city: _,
-            } => return false,
+            } => return Err("HomeCityRoll should only be sent from server to client".to_string()),
             DestinationCityRoll {
                 player_id: _,
                 region_roll: _,
                 city_roll: _,
                 region: _,
                 city: _,
-            } => return false,
+            } => return Err("DestinationCityRoll should only be sent from server to client".to_string()),
             MovementRoll {
                 player_id: _,
                 roll: _,
-            } => return false,
+            } => return Err("MovementRoll should only be sent from server to client".to_string()),
             HomeCityRollRequest { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // Verify that the user doesn't already have a home-city
                 if self.players.get(player_id).unwrap().home_city.is_some() {
-                    return false;
+                    return Err("Player already has a home city".to_string());
                 }
             }
             DestinationCityRollRequest { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // Verify that the user doesn't already have a destination
                 if self.players.get(player_id).unwrap().destination.is_some() {
-                    return false;
+                    return Err("Player already has a destination".to_string());
                 }
             }
             MovementRollRequest { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // Check that the player isn't in the middle-of-moving
@@ -500,98 +590,98 @@ impl State {
                     .spaces_left_to_move
                     .is_some()
                 {
-                    return false;
+                    return Err("Player is in the middle of moving".to_string());
                 }
             }
             PurchaseRail { player_id, rail } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // ensure that it's the purchase stage
                 if self.stage != Stage::InGame(InGameStage::Purchase) {
-                    return false;
+                    return Err("It is not the purchase stage".to_string());
                 }
 
                 // ensure that the rail is not owned
                 if self.rail_ledger.get(rail).unwrap().is_some() {
-                    return false;
+                    return Err("Rail is already owned".to_string());
                 }
 
                 // ensure the player has enough money to purchase it
                 if self.players.get(player_id).unwrap().cash < (rail.cost() as i64) {
-                    return false;
+                    return Err("Player does not have enough money to purchase rail".to_string());
                 }
             }
             PurchaseEngine { player_id, engine } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // ensure that it's the purchase stage
                 if self.stage != Stage::InGame(InGameStage::Purchase) {
-                    return false;
+                    return Err("It is not the purchase stage".to_string());
                 }
 
                 // ensure the player has enough money to purchase it
                 if self.players.get(player_id).unwrap().cash < (engine.cost() as i64) {
-                    return false;
+                    return Err("Player does not have enough money to purchase engine".to_string());
                 }
 
                 // a player shouldn't buy an engine they already have
                 if self.players.get(player_id).unwrap().engine == *engine {
-                    return false;
+                    return Err("Player already has this engine".to_string());
                 }
 
                 // a player shouldn't buy a less-expensive engine then the one they already have
                 if self.players.get(player_id).unwrap().engine.cost() >= engine.cost() {
-                    return false;
+                    return Err("Player already has a more expensive engine".to_string());
                 }
             }
             EndPurchaseStage { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
                 if self.active_player_id != *player_id {
-                    return false;
+                    return Err("It is not this player's turn".to_string());
                 }
 
                 // ensure that it's the purchase stage
                 if self.stage != Stage::InGame(InGameStage::Purchase) {
-                    return false;
+                    return Err("It is not the purchase stage".to_string());
                 }
             }
-            PlayerJoined { player_id, name, piece } => {
+            PlayerJoined { player_id } => {
                 // Check player doesn't already exist
                 if self.players.contains_key(player_id) {
-                    return false;
+                    return Err("Player already exists".to_string());
                 }
 
                 // Check that no other player has the same color
-                if self.players.values().any(|player| player.piece == *piece) {
-                    return false;
-                }
+                // if self.players.values().any(|player| player.piece == *piece) {
+                //     return Err("Another player already has this piece color".to_string());
+                // }
                 
                 // Check that the player name is unique
-                if self.players.values().any(|player| player.name == *name) {
-                    return false;
-                }
+                // if self.players.values().any(|player| player.name == *name) {
+                //     return Err("Player name already exists".to_string());
+                // }
             }
         }
 
-        true
+        Ok(())
     }
 }
 
@@ -600,6 +690,7 @@ impl Default for State {
         Self {
             stage: Stage::PreGame,
             active_player_id: 0,
+            game_host: 0,
             players: HashMap::new(),
             player_order: Vec::new(),
             history: Vec::new(),
