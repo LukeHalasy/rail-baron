@@ -155,6 +155,26 @@ async fn handle_connection(
             ),
         };
 
+        // ensure that the game with game_id exists
+        if let std::collections::hash_map::Entry::Vacant(_) =
+            game_states.lock().unwrap().entry(game_id)
+        {
+            println!("Lobby {} does not exist", game_id);
+
+            match tx.unbounded_send(Message::Binary(
+                bincode::serialize(&ServerMessage::Error(format!(
+                    "Lobby {} does not exist",
+                    game_id
+                )))
+                .unwrap(),
+            )) {
+                Ok(_) => println!("Error message sent to {:?}", addr),
+                Err(e) => println!("Error sending error message to {:?}: {}", addr, e),
+            }
+
+            return future::ok(());
+        }
+
         // validate the event. if the event is invalid print an error message
         if let Err(e) = game_states
             .lock()
