@@ -1,8 +1,9 @@
 use leptos::*;
 use leptos_leaflet::{MapContainer, Position, TileLayer};
-use leptos_router::A;
+use leptos_meta::Title;
+use leptos_router::{use_params, A};
 
-use crate::game::player::Player;
+use crate::{game::player::Player, pre_game::lobby::LobbyParams};
 
 #[component]
 pub fn Game() -> impl IntoView {
@@ -17,8 +18,13 @@ pub fn Game() -> impl IntoView {
     //         navigate("/", Default::default());
     //     }
     // });
+    let id = move || {
+        use_params::<LobbyParams>()
+            .with(|params| params.as_ref().map(|params| params.id).unwrap_or_default())
+    };
 
     view! {
+        <Title text={move || format!("Game {}", id())} />
         <main>
         {
             move ||

@@ -1,6 +1,7 @@
 use futures::channel::mpsc::Sender;
 
 use leptos::*;
+use leptos_meta::Title;
 use store::{ClientMessage, Event, PlayerId};
 
 use crate::pre_game::layout::Layout;
@@ -12,6 +13,7 @@ pub fn Home() -> impl IntoView {
     let player_id = use_context::<ReadSignal<Option<PlayerId>>>().expect("Expected a player ID");
 
     view! {
+        <Title text="Home"/>
         <Layout>
             <input type="submit" value="Create Game" on:click={
                 let mut tx = tx.clone();

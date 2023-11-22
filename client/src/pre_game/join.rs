@@ -1,5 +1,6 @@
 use futures::channel::mpsc::Sender;
 use leptos::{html::Input, *};
+use leptos_meta::Title;
 use web_sys::console;
 
 use crate::pre_game::layout::Layout;
@@ -11,6 +12,7 @@ pub fn Join() -> impl IntoView {
     let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
 
     view! {
+        <Title text="Join Lobby"/>
         <Layout>
             <input type="number" placeholder="Lobby #" autofocus node_ref=lobby_input />
             <input type="submit" value="Join" on:click={
