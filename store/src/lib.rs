@@ -12,6 +12,7 @@ use strum::EnumIter;
 use strum::IntoEnumIterator;
 
 use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
+use std::str::FromStr;
 pub type PlayerId = u64;
 
 pub type Cash = u64;
@@ -32,15 +33,13 @@ pub enum ServerMessage {
     Error(String),
     Connection(PlayerId),
     GameCreated(GameId),
-    GameJoined(GameId)
+    GameJoined(GameId),
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum ClientMessage {
     Event(Event),
-    JoinGame(
-        GameId,
-    ),
+    JoinGame(GameId),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -89,16 +88,18 @@ impl std::fmt::Display for Piece {
 }
 
 // create a from string method for Piece
-impl Piece {
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for Piece {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "Red" => Some(Piece::Red),
-            "Blue" => Some(Piece::Blue),
-            "Green" => Some(Piece::Green),
-            "Yellow" => Some(Piece::Yellow),
-            "Orange" => Some(Piece::Orange),
-            "Purple" => Some(Piece::Purple),
-            _ => None,
+            "Red" => Ok(Piece::Red),
+            "Blue" => Ok(Piece::Blue),
+            "Green" => Ok(Piece::Green),
+            "Yellow" => Ok(Piece::Yellow),
+            "Orange" => Ok(Piece::Orange),
+            "Purple" => Ok(Piece::Purple),
+            _ => Err(()),
         }
     }
 }
@@ -228,7 +229,7 @@ impl State {
                 if let Create { player_id } = valid_event {
                     self.game_host = *player_id;
                 }
-                
+
                 // Am auto-assigning names, piece colors, home cities, and destinations for now
                 let name = format!("Player {}", player_id);
                 // Choose a piece that hasn't been chosen yet
@@ -244,7 +245,7 @@ impl State {
                         name,
                         piece,
                         home_city,
-                        destination: destination,
+                        destination,
                         ..Player::default()
                     },
                 );
@@ -476,7 +477,7 @@ impl State {
                 if self.players.contains_key(player_id) {
                     return Err("Player already exists".to_string());
                 }
-            },
+            }
             Start { player_id } => {
                 // Check that the game hasn't already started
                 if self.stage != Stage::PreGame {
@@ -497,7 +498,7 @@ impl State {
                 if self.players.len() < 2 {
                     return Err("Game does not have enough players (2)".to_string());
                 }
-            },
+            }
             Move { player_id, route } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
@@ -546,7 +547,11 @@ impl State {
                 city_roll: _,
                 region: _,
                 city: _,
-            } => return Err("DestinationCityRoll should only be sent from server to client".to_string()),
+            } => {
+                return Err(
+                    "DestinationCityRoll should only be sent from server to client".to_string(),
+                )
+            }
             MovementRoll {
                 player_id: _,
                 roll: _,
@@ -682,7 +687,7 @@ impl State {
                 // if self.players.values().any(|player| player.piece == *piece) {
                 //     return Err("Another player already has this piece color".to_string());
                 // }
-                
+
                 // Check that the player name is unique
                 // if self.players.values().any(|player| player.name == *name) {
                 //     return Err("Player name already exists".to_string());

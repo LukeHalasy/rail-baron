@@ -1,11 +1,11 @@
-use leptos::{*};
+use leptos::*;
 
 /// Renders an image of old-timey railmen fighting with the title of the game and a centered gray box
 /// under the title
 #[component]
 pub fn Layout(
     /// The elements to display within the gray box. Elements will be centered and column aligned.
-    children: ChildrenFn
+    children: ChildrenFn,
 ) -> impl IntoView {
     view! {
         <div class="absolute top-0 left-0 w-full h-full bg-center bg-cover" style="background-image: url('/assets/images/rail-riches.png');"></div>
@@ -19,4 +19,3 @@ pub fn Layout(
         </div>
     }
 }
-   

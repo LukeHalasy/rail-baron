@@ -1,27 +1,18 @@
-use futures::channel::mpsc::Sender;
-
-use leptos::{*, html::{Input, Select}};
+use leptos::*;
 use leptos_router::*;
-use store::{Event, Piece, Player, PlayerId};
-use web_sys::SubmitEvent;
-
-use strum::IntoEnumIterator;
 
 use crate::pre_game::layout::Layout;
 
 #[derive(Params, PartialEq)]
 struct LobbyParams {
-    id: usize
+    id: usize,
 }
 
 #[component]
 pub fn Lobby() -> impl IntoView {
     let id = move || {
-        use_params::<LobbyParams>().with(|params| {
-            params.as_ref()
-                .map(|params| params.id)
-                .unwrap_or_default()
-        })
+        use_params::<LobbyParams>()
+            .with(|params| params.as_ref().map(|params| params.id).unwrap_or_default())
     };
 
     view! {
