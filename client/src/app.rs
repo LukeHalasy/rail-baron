@@ -5,7 +5,7 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Router, Routes, Route};
-use store::{Event, PlayerId, Player, ServerMessage};
+use store::{Event, PlayerId, Player, ServerMessage, ClientMessage};
 // use server::ServerMessage;
 
 use crate::pre_game::home::Home;
@@ -19,7 +19,7 @@ pub fn App() -> impl IntoView {
     let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
     let (mut write, mut read) = ws.split();
 
-    let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<Event>(1000);
+    let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
     provide_context(in_tx);
 
     let (player, set_player_information) = create_signal(None::<Player>);
@@ -31,10 +31,10 @@ pub fn App() -> impl IntoView {
     provide_context(set_player_id);
     
     leptos::spawn_local(async move {
-        while let Some(event) = in_rx.next().await {
+        while let Some(msg) = in_rx.next().await {
             // log::debug!("got event from channel! {}", s);
             write
-                .send(Message::Bytes(bincode::serialize(&event).unwrap()))
+                .send(Message::Bytes(bincode::serialize(&msg).unwrap()))
                 .await
                 .unwrap();
         }
@@ -50,7 +50,18 @@ pub fn App() -> impl IntoView {
                 Message::Bytes(bytes) => {
                     match bincode::deserialize::<ServerMessage>(&bytes).unwrap() {
                         ServerMessage::Event(event) => {
-                            web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
+                            // web_sys::console::log_1(&format!("got event from server! {:?}", event).into());
+                            // match event {
+                            //     Event::PlayerJoined { player_id: joined_player_id } => {
+                            //         // if the joined player is us 
+                            //         if joined_player_id == player_id.get().unwrap() {
+                            //             // navigate to the lobby
+                            //             let navigate = leptos_router::use_navigate();
+                            //             navigate(&format!("/lobby/{}", joined_player_id), Default::default());
+                            //         }
+                            //     }
+                            //     _ => {}
+                            // }
                         },
                         ServerMessage::Error(error) => {
                             web_sys::console::error_1(&format!("got error from server! {:?}", error).into());
@@ -67,6 +78,13 @@ pub fn App() -> impl IntoView {
                             // navigate to the lobby
                             let navigate = leptos_router::use_navigate();
                             navigate(&format!("/lobby/{}", game_id), Default::default());
+                        },
+                        ServerMessage::GameJoined(game_id) => {
+                            web_sys::console::log_1(&format!("succesfully joined game! {:?}", game_id).into());
+                            // navigate to the lobby
+                            let navigate = leptos_router::use_navigate();
+                            navigate(&format!("/lobby/{}", game_id), Default::default());
+                            
                         }
                     }
                     // web_sys::console::log_1(&format!("got event from server! {:?}", event).into());

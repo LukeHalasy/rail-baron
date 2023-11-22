@@ -31,7 +31,7 @@ use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use store::{State, PlayerId, GameId, ServerMessage};
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::tungstenite::protocol::Message;
+use tokio_tungstenite::tungstenite::{protocol::Message, client};
 
 type Tx = UnboundedSender<Message>;
 
@@ -63,61 +63,69 @@ async fn handle_connection(peer_maps: PeerMaps, peer_to_game_map: PeerToGameMap,
 
     let broadcast_incoming = incoming.try_for_each(|msg| {
         // deserialize message into an Event
-        let event: store::Event = bincode::deserialize(&msg.clone().into_data()).expect("Received a non-event");
-        println!("Received a message from {}: {:?}", addr, event);
+        let client_message: store::ClientMessage = bincode::deserialize(&msg.clone().into_data()).expect("Received a non-event");
+        println!("Received a message from {}: {:?}", addr, client_message);
+        
+        let (game_id, event) = match client_message {
+            store::ClientMessage::Event(event) => {
+                match event {
+                    store::Event::Create { .. } => {
+                        if peer_to_game_map.lock().unwrap().contains_key(&addr) {
+                            println!("{} is already in a game", &addr);
 
-        // if the event is to create a new game, first ensure the peer isn't already in a game
-        match event  {
-            store::Event::Create { .. } => {
-                if peer_to_game_map.lock().unwrap().contains_key(&addr) {
-                    println!("{} is already in a game", &addr);
+                            match bincode::serialize(&ServerMessage::Error("Player is already in a game".to_string())) {
+                                Ok(serialized) => {
+                                    match tx.unbounded_send(Message::Binary(serialized)) {
+                                        Ok(_) => println!("Error message sent to {:?}", addr),
+                                        Err(e) => println!("Error sending error message to {:?}: {}", addr, e),
+                                    }
+                                }
+                                Err(e) => println!("Error serializing error message: {}", e),
+                            }
 
-                    match bincode::serialize(&ServerMessage::Error("Player is already in a game".to_string())) {
-                        Ok(serialized) => {
-                            match tx.unbounded_send(Message::Binary(serialized)) {
+                            
+                            return future::ok(())
+                        } else {
+                            println!("{} is creating a new game", &addr);
+                            let game_id = game_states.lock().unwrap().len() as u64;
+                            let game_state = State::default();
+
+                            game_states.lock().unwrap().insert(game_id, game_state);
+                            peer_maps.lock().unwrap().insert(game_id, HashMap::from([
+                                (addr, tx.clone())
+                            ]));
+                            peer_to_game_map.lock().unwrap().insert(addr, game_id);
+                            println!("{} is now in game {}", &addr, game_id);
+
+                            // send a ServerMessage::GameCreated to the client to let them know their game was created
+                            tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::GameCreated(game_id)).unwrap()));
+
+                            (game_id, event)
+                        }
+                    }
+                    _ => {
+                        // ensure the user is in a game
+                        if !peer_to_game_map.lock().unwrap().contains_key(&addr) {
+                            println!("{} is not in a game", &addr);
+
+                            match tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::Error("Player is not in a game".to_string())).unwrap())) {
                                 Ok(_) => println!("Error message sent to {:?}", addr),
                                 Err(e) => println!("Error sending error message to {:?}: {}", addr, e),
                             }
-                        }
-                        Err(e) => println!("Error serializing error message: {}", e),
+
+                            return future::ok(())
+                        } 
+
+                        // return the game id that the user is in 
+                        let binding = peer_to_game_map.lock().unwrap();
+                        (binding.get(&addr).unwrap().to_owned(), event)
                     }
-
-                    return future::ok(())
-                } else {
-                    println!("{} is creating a new game", &addr);
-                    let game_id = game_states.lock().unwrap().len() as u64;
-                    let game_state = State::default();
-
-                    game_states.lock().unwrap().insert(game_id, game_state);
-                    peer_maps.lock().unwrap().insert(game_id, HashMap::from([
-                        (addr, tx.clone())
-                    ]));
-                    peer_to_game_map.lock().unwrap().insert(addr, game_id);
-                    println!("{} is now in game {}", &addr, game_id);
-
-                    // send a ServerMessage::GameCreated to the client to let them know their game was created
-                    tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::GameCreated(game_id)).unwrap()));
                 }
-            }
-            _ => {}
-        }
-
-        // ensure the user is in a game
-        if !peer_to_game_map.lock().unwrap().contains_key(&addr) {
-            println!("{} is not in a game", &addr);
-
-            match tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::Error("Player is not in a game".to_string())).unwrap())) {
-                Ok(_) => println!("Error message sent to {:?}", addr),
-                Err(e) => println!("Error sending error message to {:?}: {}", addr, e),
-            }
-
-            return future::ok(())
-        } 
-
-        // get the user's game 
-        let binding = peer_to_game_map.lock().unwrap();
-        let game_id = binding.get(&addr).unwrap().to_owned();
-        println!("hreh");
+            },
+            store::ClientMessage::JoinGame(game_id) => {
+                (game_id, store::Event::PlayerJoined { player_id: addr.port().into() })
+            },
+        };
 
         // validate the event. if the event is invalid print an error message
         if let Err(e) = game_states.lock().unwrap().get(&game_id).unwrap().validate(&event) {
@@ -128,16 +136,22 @@ async fn handle_connection(peer_maps: PeerMaps, peer_to_game_map: PeerToGameMap,
                 Err(e) => println!("Error sending error message to {:?}: {}", addr, e),
             }
         } else {
-            println!("HEYO");
             let game_states_clone = game_states.clone();
             let event_clone = event.clone();
             tokio::spawn(async move {
-                println!("Attempting to consume event: {:?}", event_clone);
                 game_states_clone.lock().unwrap().get_mut(&game_id).unwrap().consume(&event_clone);
                 println!("Consumed event: {:?}", event_clone);
             });
-                // .map(|(_, ws_sink)| ws_sink);
-            // broadcat the event to all peers in the game except the sender
+
+            // if the event is JoinGame, add the player to the peer_maps
+            if let store::Event::PlayerJoined { player_id } = event {
+                peer_maps.lock().unwrap().get_mut(&game_id).unwrap().insert(addr, tx.clone());
+                peer_to_game_map.lock().unwrap().insert(addr, game_id);
+
+                // send a ServerMessage::GameJoined to the client to let them know their game was joined
+                tx.unbounded_send(Message::Binary(bincode::serialize(&ServerMessage::GameJoined(game_id)).unwrap()));
+            }
+
             let peers = peer_maps.lock().unwrap();
             let broadcast_recipients = peers.get(&game_id).unwrap();
 
@@ -148,8 +162,6 @@ async fn handle_connection(peer_maps: PeerMaps, peer_to_game_map: PeerToGameMap,
                 }
             }
         }
-
-        println!("DOWN HERE");
     
         future::ok(())
     });

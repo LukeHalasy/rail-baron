@@ -32,6 +32,15 @@ pub enum ServerMessage {
     Error(String),
     Connection(PlayerId),
     GameCreated(GameId),
+    GameJoined(GameId)
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub enum ClientMessage {
+    Event(Event),
+    JoinGame(
+        GameId,
+    ),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
