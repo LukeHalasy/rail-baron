@@ -13,7 +13,7 @@ use web_sys::console;
 use crate::game::game::Game;
 use crate::pre_game::home::Home;
 use crate::pre_game::join::Join;
-use crate::pre_game::lobby::Lobby;
+use crate::pre_game::lobby::{Lobby, LobbyParams};
 use crate::pre_game::rules::Rules;
 
 pub type Error = String;
@@ -115,12 +115,18 @@ pub fn App() -> impl IntoView {
                                     });
                                 }
                                 Event::Start { player_id: _ } => {
+                                    // get the lobby id from the url
+                                    let lobby_id =
+                                        leptos_router::use_params::<LobbyParams>().with(|params| {
+                                            params
+                                                .as_ref()
+                                                .map(|params| params.id)
+                                                .unwrap_or_default()
+                                        });
+
                                     // navigate to the game
                                     let navigate = leptos_router::use_navigate();
-                                    navigate(
-                                        &format!("/game/{}", player_id.get().unwrap()),
-                                        Default::default(),
-                                    )
+                                    navigate(&format!("/game/{}", lobby_id), Default::default())
                                 }
                                 _ => {}
                             }
