@@ -1,11 +1,13 @@
 use futures::{SinkExt, StreamExt};
+
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use reqwasm::websocket::{futures::WebSocket, Message};
 
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
-use store::{ClientMessage, Player, PlayerId, ServerMessage};
+use store::{ClientMessage, Event, Player, PlayerId, ServerMessage, State};
+use web_sys::console;
 // use server::ServerMessage;
 
 use crate::game::game::Game;
@@ -27,6 +29,10 @@ pub fn App() -> impl IntoView {
     let (player, set_player_information) = create_signal(None::<Player>);
     provide_context(player);
     provide_context(set_player_information);
+
+    let (state, set_state) = create_signal(None::<State>);
+    provide_context(state);
+    provide_context(set_state);
 
     let (player_id, set_player_id) = create_signal(None::<PlayerId>);
     provide_context(player_id);
@@ -54,17 +60,66 @@ pub fn App() -> impl IntoView {
                             web_sys::console::log_1(
                                 &format!("got event from server! {:?}", event).into(),
                             );
-                            // match event {
-                            //     Event::PlayerJoined { player_id: joined_player_id } => {
-                            //         // if the joined player is us
-                            //         if joined_player_id == player_id.get().unwrap() {
-                            //             // navigate to the lobby
-                            //             let navigate = leptos_router::use_navigate();
-                            //             navigate(&format!("/lobby/{}", joined_player_id), Default::default());
-                            //         }
-                            //     }
-                            //     _ => {}
-                            // }
+                            match event {
+                                Event::PlayerJoined {
+                                    player_id: joined_player_id,
+                                } => {
+                                    // add the joined player to the game state
+                                    console::log_1(
+                                        &format!("got player joined from server! {:?}", event)
+                                            .into(),
+                                    );
+
+                                    set_state.update(|state| {
+                                        let state = state.as_mut().unwrap();
+                                        state.players.insert(
+                                            joined_player_id,
+                                            Player {
+                                                name: joined_player_id.to_string(),
+                                                ..Player::default()
+                                            },
+                                        );
+
+                                        state.player_order.push(joined_player_id);
+                                    });
+                                }
+                                Event::Create { player_id } => {
+                                    // navigate to the lobby
+                                    // let navigate = leptos_router::use_navigate();
+                                    // navigate(
+                                    //     &format!("/lobby/{}", player_id.get().unwrap()),
+                                    //     Default::default(),
+                                    // )
+                                    console::log_1(
+                                        &format!("got player creation from server! {:?}", event)
+                                            .into(),
+                                    );
+
+                                    set_state.update(|state| {
+                                        let state = state.as_mut().unwrap();
+
+                                        state.players.insert(
+                                            player_id,
+                                            Player {
+                                                name: player_id.to_string(),
+                                                ..Player::default()
+                                            },
+                                        );
+                                        state.player_order.push(player_id);
+                                        state.active_player_id = player_id;
+                                        state.game_host = player_id;
+                                    });
+                                }
+                                Event::Start { player_id: _ } => {
+                                    // navigate to the game
+                                    let navigate = leptos_router::use_navigate();
+                                    navigate(
+                                        &format!("/game/{}", player_id.get().unwrap()),
+                                        Default::default(),
+                                    )
+                                }
+                                _ => {}
+                            }
                         }
                         ServerMessage::Error(error) => {
                             web_sys::console::error_1(
@@ -88,6 +143,12 @@ pub fn App() -> impl IntoView {
                             web_sys::console::log_1(
                                 &format!("got game created from server! {:?}", game_id).into(),
                             );
+
+                            // initialize the game state
+                            set_state.update(|state| {
+                                *state = Some(State::default());
+                            });
+
                             // navigate to the lobby
                             let navigate = leptos_router::use_navigate();
                             navigate(&format!("/lobby/{}", game_id), Default::default());
@@ -96,6 +157,12 @@ pub fn App() -> impl IntoView {
                             web_sys::console::log_1(
                                 &format!("succesfully joined game! {:?}", game_id).into(),
                             );
+
+                            // initialize the game state
+                            set_state.update(|state| {
+                                *state = Some(State::default());
+                            });
+
                             // navigate to the lobby
                             let navigate = leptos_router::use_navigate();
                             navigate(&format!("/lobby/{}", game_id), Default::default());
