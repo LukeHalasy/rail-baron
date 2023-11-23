@@ -6,7 +6,7 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
-use store::{ClientMessage, Event, Player, PlayerId, ServerMessage, State};
+use store::{ClientMessage, Event, Player, ServerMessage, State};
 use web_sys::console;
 // use server::ServerMessage;
 
@@ -18,6 +18,12 @@ use crate::pre_game::rules::Rules;
 
 pub type Error = String;
 
+#[derive(Copy, Clone, Debug)]
+pub struct GameId(ReadSignal<Option<store::GameId>>);
+
+#[derive(Copy, Clone, Debug)]
+pub struct PlayerId(pub ReadSignal<Option<store::PlayerId>>);
+
 #[component]
 pub fn App() -> impl IntoView {
     let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
@@ -26,17 +32,15 @@ pub fn App() -> impl IntoView {
     let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
     provide_context(in_tx);
 
-    let (player, set_player_information) = create_signal(None::<Player>);
-    provide_context(player);
-    provide_context(set_player_information);
-
     let (state, set_state) = create_signal(None::<State>);
     provide_context(state);
     provide_context(set_state);
 
-    let (player_id, set_player_id) = create_signal(None::<PlayerId>);
-    provide_context(player_id);
-    provide_context(set_player_id);
+    let (player_id, set_player_id) = create_signal(None::<store::PlayerId>);
+    provide_context(PlayerId(player_id));
+
+    let (game_id, _set_game_id) = create_signal(None::<store::GameId>);
+    provide_context(GameId(game_id));
 
     let (error, set_error) = create_signal(None::<Error>);
     provide_context(error);
