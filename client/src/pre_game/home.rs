@@ -2,15 +2,15 @@ use futures::channel::mpsc::Sender;
 
 use leptos::*;
 use leptos_meta::Title;
-use store::{ClientMessage, Event, PlayerId};
+use store::{ClientMessage, Event};
 
-use crate::pre_game::layout::Layout;
+use crate::{app::PlayerId, pre_game::layout::Layout};
 
 /// Page where player's can create a new game or join an existing game.
 #[component]
 pub fn Home() -> impl IntoView {
     let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
-    let player_id = use_context::<ReadSignal<Option<PlayerId>>>().expect("Expected a player ID");
+    let player_id = use_context::<PlayerId>().expect("Expected a player ID");
 
     view! {
         <Title text="Home"/>
@@ -20,7 +20,7 @@ pub fn Home() -> impl IntoView {
                 move |_| {
                     let _ = tx
                         .try_send(ClientMessage::Event(Event::Create {
-                            player_id: player_id.get().unwrap(),
+                            player_id: player_id.0.get().unwrap(),
                         }));
                 }
             }/>
