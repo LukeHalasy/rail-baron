@@ -3,7 +3,11 @@ use leptos_leaflet::{MapContainer, Position, TileLayer};
 use leptos_meta::Title;
 use leptos_router::use_params;
 
-use crate::{app::PlayerId, game::player::Player, pre_game::lobby::LobbyParams};
+use crate::{
+    app::PlayerId,
+    game::{cities::Cities, player::Player, rails::Rails},
+    pre_game::lobby::LobbyParams,
+};
 
 #[component]
 pub fn Game() -> impl IntoView {
@@ -23,8 +27,8 @@ pub fn Game() -> impl IntoView {
                 // TODO: need to add attribution
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"/>
 
-                // <Rails></Rails>
-                // <Cities></Cities>
+                <Rails></Rails>
+                <Cities></Cities>
 
                 <For
                     each=move || game_state.get().unwrap().players

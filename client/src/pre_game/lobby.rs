@@ -1,6 +1,8 @@
+use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_meta::Title;
 use leptos_router::*;
+use store::{ClientMessage, Event};
 
 use crate::{app::PlayerId, pre_game::layout::Layout};
 
@@ -16,12 +18,10 @@ pub fn Lobby() -> impl IntoView {
             .with(|params| params.as_ref().map(|params| params.id).unwrap_or_default())
     };
 
-    // pull in the game state
     let game_state =
         use_context::<ReadSignal<Option<store::State>>>().expect("Expected a game state signal");
-
-    // pull in the player id
     let player_id = use_context::<PlayerId>().expect("Expected a player id signal");
+    let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
 
     view! {
         <Title text={move || format!("Lobby {}", lobby_id())} />
@@ -53,7 +53,15 @@ pub fn Lobby() -> impl IntoView {
                     }
                 />
             </ul>
-            <input type="submit" value="Start Game" />
+            <input type="submit" value="Start Game" on:click={
+                let mut tx = tx.clone();
+                move |_| {
+                    let _ = tx
+                        .try_send(ClientMessage::Event(Event::Start {
+                            player_id: player_id.0.get().unwrap(),
+                        }));
+                }
+            }/>
         </Layout>
     }
 }
