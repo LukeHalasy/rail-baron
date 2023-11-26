@@ -7,7 +7,7 @@ use crate::{
     app::PlayerId,
     game::{
         cities::Cities,
-        debug::{player::PlayerDebug, rail::RailDebug},
+        debug::{events::EventHistoryDebug, player::PlayerDebug, rail::RailDebug},
         player::Player,
         rails::Rails,
     },
@@ -68,6 +68,7 @@ pub fn Game() -> impl IntoView {
             <div style="position:absolute; left:0; bottom: 0; width:100vw; background-color:rgba(0,0,0,0.5); color:white; z-index:9999; overflow:auto;">
                 <RailDebug></RailDebug>
                 <PlayerDebug></PlayerDebug>
+                <EventHistoryDebug></EventHistoryDebug>
             </div>
         </main>
     }

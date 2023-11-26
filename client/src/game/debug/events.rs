@@ -18,18 +18,9 @@ pub fn EventHistoryDebug() -> impl IntoView {
         <details>
             <summary>Event History</summary>
             <div style="height:40vh;">
-                // TODO: Come up with a better key
-                <For each=move || game_state.get().unwrap().history key=|event| event.player_id children=move |(index, event)| {
-                    let event_clone = event;
-                    view! {
-                        <div style="display:inline-block; margin:0 1rem;">
-                            <pre class="language-json">
-                                <code class="language-jsonp">{serde_json::to_string_pretty(&event_clone).unwrap()}</code>
-                            </pre>
-                            <br/>
-                        </div>
-                    }
-                }/>
+                <pre class="language-json">
+                    <code class="language-json">{serde_json::to_string_pretty(&game_state.get().unwrap().history).unwrap()}</code>
+                </pre>
             </div>
         </details>
     }
