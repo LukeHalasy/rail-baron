@@ -31,7 +31,7 @@ pub fn RailDebug() -> impl IntoView {
                                             let player = game_state_clone.players.get(&player_id).unwrap();
                                             player.name.clone()
                                         } else {
-                                            "Unowned".to_string()
+                                            "".to_string()
                                         }
                                     };
                                     move || format!("{} - ${}, {}", rail_clone.full_name(), rail_clone.cost(), player_name)
