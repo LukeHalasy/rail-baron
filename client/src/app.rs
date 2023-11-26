@@ -82,6 +82,24 @@ pub fn App() -> impl IntoView {
                     },
                 ),
             ]),
+            history: vec![
+                Event::Create {
+                    player_id: 1,
+                    name: "Tom".to_string(),
+                    piece: Piece::Blue,
+                },
+                Event::PlayerJoined {
+                    player_id: 2,
+                    name: "Elliot".to_string(),
+                    piece: Piece::Purple,
+                },
+                Event::PlayerJoined {
+                    player_id: 3,
+                    name: "John".to_string(),
+                    piece: Piece::Yellow,
+                },
+                Event::Start { player_id: 1 },
+            ],
             rail_ledger: Rail::iter()
                 .map(|rail| match rail {
                     Rail::C_AND_O => (rail, Some(1)),
