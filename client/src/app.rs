@@ -12,6 +12,7 @@ use store::rail::Rail;
 use store::travel_payout::City;
 use store::{ClientMessage, Event, Player, ServerMessage, State};
 use strum::IntoEnumIterator;
+use web_sys::console;
 // use server::ServerMessage;
 
 use crate::game::game::Game;
