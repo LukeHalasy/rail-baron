@@ -23,12 +23,14 @@ pub fn Player(player: store::Player) -> impl IntoView {
     );
 
     let color = match player.piece {
-        store::Piece::Red => "red",
-        store::Piece::Blue => "blue",
-        store::Piece::Green => "green",
-        store::Piece::Yellow => "yellow",
-        store::Piece::Purple => "violet",
-        store::Piece::Orange => "orange",
+        Some(store::Piece::Red) => "red",
+        Some(store::Piece::Blue) => "blue",
+        Some(store::Piece::Green) => "green",
+        Some(store::Piece::Yellow) => "yellow",
+        Some(store::Piece::Purple) => "violet",
+        Some(store::Piece::Orange) => "orange",
+        // TODO: Handle no piece
+        _ => "black",
     };
 
     view! {

@@ -29,7 +29,7 @@ pub fn RailDebug() -> impl IntoView {
                                     let player_name = {
                                         if let Some(player_id) = _player {
                                             let player = game_state_clone.players.get(&player_id).unwrap();
-                                            player.name.clone()
+                                            player.name.clone().unwrap()
                                         } else {
                                             "".to_string()
                                         }

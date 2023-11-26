@@ -124,8 +124,8 @@ impl Engine {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Player {
     pub cash: i64,
-    pub name: String,
-    pub piece: Piece,
+    pub name: Option<String>, // Will be None before the user selects a name
+    pub piece: Option<Piece>, // Will be None before the user selects a piece
     pub home_city: Option<City>,
     pub route_history: Vec<(crate::rail::C, Rail)>,
     pub start: Option<City>, // Default is home-city
@@ -139,8 +139,8 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             cash: 20000,
-            name: String::new(),
-            piece: Piece::Red,
+            name: None,
+            piece: None,
             home_city: None,
             route_history: vec![],
             start: None,
@@ -172,6 +172,11 @@ pub enum Event {
     },
     Start {
         player_id: PlayerId,
+    },
+    SetPlayerAttributes {
+        player_id: PlayerId,
+        name: String,
+        piece: Piece,
     },
     // In-game events
     HomeCityRollRequest {
@@ -227,23 +232,15 @@ impl State {
         match valid_event {
             Create { player_id } | PlayerJoined { player_id } => {
                 if let Create { player_id } = valid_event {
-                    self.game_host = *player_id;
+                    self.game_host = Some(*player_id);
                 }
 
-                // Am auto-assigning names, piece colors, home cities, and destinations for now
-                let name = format!("Player {}", player_id);
-                // Choose a piece that hasn't been chosen yet
-                let piece = Piece::iter()
-                    .find(|piece| !self.players.values().any(|player| player.piece == *piece))
-                    .unwrap();
                 let home_city = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
                 let destination = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
 
                 self.players.insert(
                     *player_id,
                     Player {
-                        name,
-                        piece,
                         home_city,
                         destination,
                         ..Player::default()
@@ -276,6 +273,16 @@ impl State {
                     city_roll,
                     region,
                     city,
+                });
+            }
+            SetPlayerAttributes {
+                player_id,
+                name,
+                piece,
+            } => {
+                self.players.entry(*player_id).and_modify(|player| {
+                    player.name = Some(name.clone());
+                    player.piece = Some(*piece);
                 });
             }
             Move { player_id, route } => {
@@ -498,6 +505,87 @@ impl State {
                 if self.players.len() < 2 {
                     return Err("Game does not have enough players (2)".to_string());
                 }
+
+                // Check that all players have a name
+                if self.players.iter().any(|(_, player)| player.name.is_none()) {
+                    let players_without_name: Vec<_> = self
+                        .players
+                        .iter()
+                        .filter(|(_, player)| player.name.is_none())
+                        .map(|(id, _)| id)
+                        .collect();
+
+                    if !players_without_name.is_empty() {
+                        let players_without_name_str = players_without_name
+                            .iter()
+                            .map(|id| id.to_string())
+                            .collect::<Vec<_>>()
+                            .join(", ");
+                        return Err(format!(
+                            "Not all players have a name. Players without a name: {}",
+                            players_without_name_str
+                        ));
+                    }
+                }
+
+                // Check that all players have a piece
+                if self
+                    .players
+                    .iter()
+                    .any(|(_, player)| player.piece.is_none())
+                {
+                    let players_without_piece: Vec<_> = self
+                        .players
+                        .iter()
+                        .filter(|(_, player)| player.piece.is_none())
+                        .map(|(id, _)| id)
+                        .collect();
+
+                    if !players_without_piece.is_empty() {
+                        let players_without_piece_str = players_without_piece
+                            .iter()
+                            .map(|id| id.to_string())
+                            .collect::<Vec<_>>()
+                            .join(", ");
+                        return Err(format!(
+                            "Not all players have a piece. Players without a piece: {}",
+                            players_without_piece_str
+                        ));
+                    }
+                }
+            }
+            SetPlayerAttributes {
+                player_id,
+                name,
+                piece,
+            } => {
+                // check that the player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // check that we are in the pre-game stage
+                if self.stage != Stage::PreGame {
+                    return Err("Game has already started".to_string());
+                }
+
+                // check that the piece is not already taken
+                if self
+                    .players
+                    .iter()
+                    .any(|(_, player)| player.piece == Some(*piece))
+                {
+                    return Err("Piece is already taken".to_string());
+                }
+
+                // check that the name is not already taken
+                if self
+                    .players
+                    .iter()
+                    .any(|(_, player)| player.name == Some(name.clone()))
+                {
+                    return Err("Name is already taken".to_string());
+                }
             }
             Move { player_id, route } => {
                 // Check player exists
@@ -682,16 +770,6 @@ impl State {
                 if self.players.contains_key(player_id) {
                     return Err("Player already exists".to_string());
                 }
-
-                // Check that no other player has the same color
-                // if self.players.values().any(|player| player.piece == *piece) {
-                //     return Err("Another player already has this piece color".to_string());
-                // }
-
-                // Check that the player name is unique
-                // if self.players.values().any(|player| player.name == *name) {
-                //     return Err("Player name already exists".to_string());
-                // }
             }
         }
 
@@ -704,7 +782,7 @@ impl Default for State {
         Self {
             stage: Stage::PreGame,
             active_player_id: None,
-            game_host: 0,
+            game_host: None,
             players: HashMap::new(),
             player_order: Vec::new(),
             history: Vec::new(),
