@@ -20,7 +20,7 @@ pub fn City(city: C) -> impl IntoView {
         }
     };
 
-    let _tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
+    // let _tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
     let move_player = move |_event: MouseEvent| {
         // let _ tx.clone().try_send
         // .update(|location| {
