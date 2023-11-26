@@ -15,4 +15,32 @@
     hr {
         @apply w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700;
     }
+
+    .player-base {
+        @apply w-6 h-6 rotate-45 border-2 border-black rounded-2xl;
+    }
+
+    .player-green {
+        @apply player-base bg-green-600
+    }
+
+    .player-blue {
+        @apply player-base bg-blue-600
+    }
+
+    .player-yellow {
+        @apply player-base bg-yellow-600
+    }
+
+    .player-orange {
+        @apply player-base bg-orange-600
+    }
+
+    .player-purple {
+        @apply player-base bg-purple-600
+    }
+
+    .player-red {
+        @apply player-base bg-red-600
+    }
 }

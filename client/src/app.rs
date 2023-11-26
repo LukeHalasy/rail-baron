@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use futures::{SinkExt, StreamExt};
 
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
@@ -6,7 +8,10 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
+use store::rail::Rail;
+use store::travel_payout::City;
 use store::{ClientMessage, Event, Player, ServerMessage, State};
+use strum::IntoEnumIterator;
 use web_sys::console;
 // use server::ServerMessage;
 
@@ -32,7 +37,63 @@ pub fn App() -> impl IntoView {
     let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
     provide_context(in_tx);
 
-    let (state, set_state) = create_signal(None::<State>);
+    // TODO: Uncomment
+    // let (state, set_state) = create_signal(None::<State>);
+
+    let (state, set_state) = create_signal(Some({
+        State {
+            active_player_id: 1,
+            game_host: 2,
+            players: HashMap::from([
+                (
+                    1,
+                    store::Player {
+                        cash: 20000,
+                        name: "Luke".to_string(),
+                        piece: store::Piece::Blue,
+                        home_city: Some(City::Baltimore_MD),
+                        start: Some(City::Albany_NY),
+                        destination: Some(City::Buffalo_NY),
+                        ..store::Player::default()
+                    },
+                ),
+                (
+                    2,
+                    store::Player {
+                        cash: 2000,
+                        name: "Kyle".to_string(),
+                        piece: store::Piece::Red,
+                        home_city: Some(City::Butte_MT),
+                        start: Some(City::Atlanta_GA),
+                        destination: Some(City::Las_Vegas_NV),
+                        ..store::Player::default()
+                    },
+                ),
+                (
+                    3,
+                    store::Player {
+                        cash: 10000,
+                        name: "Simon".to_string(),
+                        piece: store::Piece::Yellow,
+                        home_city: Some(City::Los_Angeles_CA),
+                        start: Some(City::Tampa_FL),
+                        destination: Some(City::Casper_WY),
+                        ..store::Player::default()
+                    },
+                ),
+            ]),
+            rail_ledger: Rail::iter()
+                .map(|rail| match rail {
+                    Rail::C_AND_O => (rail, Some(1)),
+                    Rail::ACL => (rail, Some(2)),
+                    Rail::SAL => (rail, Some(2)),
+                    _ => (rail, None),
+                })
+                .collect(),
+            ..State::default()
+        }
+    }));
+
     provide_context(state);
     provide_context(set_state);
 

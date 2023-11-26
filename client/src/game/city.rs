@@ -1,7 +1,6 @@
-use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents};
-use store::{rail::C, ClientMessage, Event};
+use store::rail::C;
 
 #[component]
 pub fn City(city: C) -> impl IntoView {
@@ -20,7 +19,7 @@ pub fn City(city: C) -> impl IntoView {
         }
     };
 
-    let _tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
+    // let _tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
     let move_player = move |_event: MouseEvent| {
         // let _ tx.clone().try_send
         // .update(|location| {
