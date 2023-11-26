@@ -10,7 +10,7 @@ use leptos::*;
 use leptos_router::{Route, Router, Routes};
 use store::rail::Rail;
 use store::travel_payout::City;
-use store::{ClientMessage, Event, Player, ServerMessage, State};
+use store::{ClientMessage, Event, Piece, Player, ServerMessage, State};
 use strum::IntoEnumIterator;
 use web_sys::console;
 // use server::ServerMessage;
@@ -42,8 +42,8 @@ pub fn App() -> impl IntoView {
 
     let (state, set_state) = create_signal(Some({
         State {
-            active_player_id: 1,
-            game_host: 2,
+            active_player_id: Some(1),
+            game_host: Some(2),
             players: HashMap::from([
                 (
                     1,
@@ -171,8 +171,8 @@ pub fn App() -> impl IntoView {
                                             },
                                         );
                                         state.player_order.push(player_id);
-                                        state.active_player_id = player_id;
-                                        state.game_host = player_id;
+                                        state.active_player_id = Some(player_id);
+                                        state.game_host = Some(player_id);
                                     });
                                 }
                                 Event::Start { player_id: _ } => {

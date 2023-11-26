@@ -33,7 +33,7 @@ pub fn Lobby() -> impl IntoView {
                     key=|counter| counter.0
                     children=move |(id, _player)| {
                         let mut curr_id = id.to_string();
-                        if game_state.get().unwrap().game_host == id {
+                        if game_state.get().unwrap().game_host == Some(id) {
                             curr_id += " (host)";
                         }
 

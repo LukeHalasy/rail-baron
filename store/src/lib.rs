@@ -64,7 +64,7 @@ pub enum InGameStage {
 //     MovementRoll,
 // }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, EnumIter)]
 pub enum Piece {
     Yellow,
     Green,
@@ -155,8 +155,8 @@ impl Default for Player {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct State {
     pub stage: Stage,
-    pub active_player_id: PlayerId,
-    pub game_host: PlayerId,
+    pub active_player_id: Option<PlayerId>,
+    pub game_host: Option<PlayerId>,
     pub players: HashMap<PlayerId, Player>,
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
@@ -254,7 +254,7 @@ impl State {
             }
             Start { player_id } => {
                 self.stage = Stage::InGame(InGameStage::Movement);
-                self.active_player_id = *player_id;
+                self.active_player_id = Some(*player_id);
 
                 // Set the start of the user's next route
                 self.players.entry(*player_id).and_modify(|player| {
@@ -451,12 +451,12 @@ impl State {
         // Change active player
         for (index, player_id) in self.player_order.iter().enumerate() {
             // find the index of the current player
-            if player_id == &self.active_player_id {
+            if player_id == &self.active_player_id.expect("Active player should exist") {
                 // Check if we need to wrap around to first player
                 if index == self.player_order.len() - 1 {
-                    self.active_player_id = self.player_order[0];
+                    self.active_player_id = Some(self.player_order[0]);
                 } else {
-                    self.active_player_id = self.player_order[index + 1];
+                    self.active_player_id = Some(self.player_order[index + 1]);
                 }
 
                 break;
@@ -490,7 +490,7 @@ impl State {
                 }
 
                 // Check that the player is the host
-                if self.game_host != *player_id {
+                if self.game_host != Some(*player_id) {
                     return Err("Player is not the host".to_string());
                 }
 
@@ -505,7 +505,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -562,7 +562,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -577,7 +577,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -592,7 +592,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -613,7 +613,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -638,7 +638,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -668,7 +668,7 @@ impl State {
                     return Err("Player does not exist".to_string());
                 }
                 // Check player is currently the one making their move
-                if self.active_player_id != *player_id {
+                if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
                 }
 
@@ -703,7 +703,7 @@ impl Default for State {
     fn default() -> Self {
         Self {
             stage: Stage::PreGame,
-            active_player_id: 0,
+            active_player_id: None,
             game_host: 0,
             players: HashMap::new(),
             player_order: Vec::new(),
