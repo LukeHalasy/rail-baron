@@ -1,11 +1,7 @@
-use std::collections::HashMap;
-
 use leptos::*;
 use leptos_leaflet::{MapContainer, Position, TileLayer};
 use leptos_meta::Title;
 use leptos_router::use_params;
-use serde_json;
-use store::{travel_payout::City, State};
 
 use crate::{
     app::PlayerId,

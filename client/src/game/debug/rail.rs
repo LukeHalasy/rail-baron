@@ -21,9 +21,21 @@ pub fn RailDebug() -> impl IntoView {
                 <ul>
                     <For each=move || game_state.get().unwrap().rail_ledger key=|ledger_map| ledger_map.0 children=move |(rail, _player)| {
                         let rail_clone = rail;
+                        let game_state_clone = game_state.get().unwrap().clone();
+
                         view! {
                             <li class="text-center text-gray-300" style="background-color:#272822;">
-                                {move || format!("{} - ${}", rail_clone.full_name(), rail_clone.cost())}
+                                {
+                                    let player_name = {
+                                        if let Some(player_id) = _player {
+                                            let player = game_state_clone.players.get(&player_id).unwrap();
+                                            player.name.clone()
+                                        } else {
+                                            "Unowned".to_string()
+                                        }
+                                    };
+                                    move || format!("{} - ${}, {}", rail_clone.full_name(), rail_clone.cost(), player_name)
+                                }
                             </li>
                         }
                     }/>

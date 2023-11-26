@@ -8,8 +8,10 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
+use store::rail::Rail;
 use store::travel_payout::City;
 use store::{ClientMessage, Event, Player, ServerMessage, State};
+use strum::IntoEnumIterator;
 use web_sys::console;
 // use server::ServerMessage;
 
@@ -40,6 +42,8 @@ pub fn App() -> impl IntoView {
 
     let (state, set_state) = create_signal(Some({
         State {
+            active_player_id: 1,
+            game_host: 2,
             players: HashMap::from([
                 (
                     1,
@@ -78,6 +82,14 @@ pub fn App() -> impl IntoView {
                     },
                 ),
             ]),
+            rail_ledger: Rail::iter()
+                .map(|rail| match rail {
+                    Rail::C_AND_O => (rail, Some(1)),
+                    Rail::ACL => (rail, Some(2)),
+                    Rail::SAL => (rail, Some(2)),
+                    _ => (rail, None),
+                })
+                .collect(),
             ..State::default()
         }
     }));
