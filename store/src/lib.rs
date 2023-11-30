@@ -235,14 +235,9 @@ impl State {
                     self.game_host = Some(*player_id);
                 }
 
-                let home_city = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
-                let destination = Some(DiceRoll::city_in_region(DiceRoll::region().1).1);
-
                 self.players.insert(
                     *player_id,
                     Player {
-                        home_city,
-                        destination,
                         ..Player::default()
                     },
                 );
@@ -251,7 +246,6 @@ impl State {
             }
             Start { player_id } => {
                 self.stage = Stage::InGame(InGameStage::Movement);
-                self.active_player_id = Some(*player_id);
 
                 // Set the start of the user's next route
                 self.players.entry(*player_id).and_modify(|player| {
@@ -516,7 +510,10 @@ impl State {
                         .collect();
 
                     if !players_without_name.is_empty() {
-                        let players_without_name_str = players_without_name
+                        let mut players_without_name_sorted = players_without_name.clone();
+                        players_without_name_sorted.sort();
+
+                        let players_without_name_str = players_without_name_sorted
                             .iter()
                             .map(|id| id.to_string())
                             .collect::<Vec<_>>()
@@ -585,6 +582,11 @@ impl State {
                     .any(|(_, player)| player.name == Some(name.clone()))
                 {
                     return Err("Name is already taken".to_string());
+                }
+
+                // ensure the name is not blank
+                if name.is_empty() {
+                    return Err("Name cannot be blank".to_string());
                 }
             }
             Move { player_id, route } => {
@@ -789,5 +791,196 @@ impl Default for State {
             rail_ledger: Rail::iter().map(|rail| (rail, None)).collect(),
             all_roads_bought: false,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    macro_rules! consume {
+        ($state:ident, $event:expr) => {
+            assert_eq!($state.validate(&$event), Ok(()));
+            $state.consume(&$event);
+        };
+    }
+
+    // for these tests, come up with a game state, and then ensure that the events in the history create that game state
+
+    #[test]
+    fn create_a_game() {
+        let mut state = State::default();
+
+        let player_id = 101;
+        let event = Event::Create { player_id };
+
+        assert_eq!(state.validate(&event), Ok(()));
+        state.consume(&event);
+
+        assert_eq!(
+            state,
+            State {
+                players: HashMap::from([(
+                    player_id,
+                    Player {
+                        ..Player::default()
+                    }
+                )]),
+                game_host: Some(player_id),
+                player_order: vec![player_id],
+                history: vec![event],
+                ..State::default()
+            }
+        );
+    }
+
+    #[test]
+    fn start_a_game() {
+        let mut state = State::default();
+
+        let player_ids = [70, 102, 130];
+        consume!(
+            state,
+            Event::Create {
+                player_id: player_ids[0]
+            }
+        );
+        consume!(
+            state,
+            Event::PlayerJoined {
+                player_id: player_ids[1],
+            }
+        );
+        consume!(
+            state,
+            Event::PlayerJoined {
+                player_id: player_ids[2],
+            }
+        );
+
+        // ensure the game can't be started before all players have a name and piece
+        assert_eq!(
+            state.validate(&Event::Start {
+                player_id: player_ids[0]
+            }),
+            Err("Not all players have a name. Players without a name: 70, 102, 130".to_string())
+        );
+
+        // grant all players a name and piece
+        consume!(
+            state,
+            Event::SetPlayerAttributes {
+                player_id: player_ids[0],
+                name: "Archie Flagstaff".to_string(),
+                piece: Piece::Red,
+            }
+        );
+
+        // ensure the player can't set a blank name
+        assert_eq!(
+            state.validate(&Event::SetPlayerAttributes {
+                player_id: player_ids[1],
+                name: "".to_string(),
+                piece: Piece::Blue,
+            }),
+            Err("Name cannot be blank".to_string())
+        );
+
+        // ensure the player can't choose a piece that is already taken
+        assert_eq!(
+            state.validate(&Event::SetPlayerAttributes {
+                player_id: player_ids[1],
+                name: "Bobby Flagstaff".to_string(),
+                piece: Piece::Red,
+            }),
+            Err("Piece is already taken".to_string())
+        );
+
+        // have the 1st player join the game
+        consume!(
+            state,
+            Event::SetPlayerAttributes {
+                player_id: player_ids[1],
+                name: "Bobby Flagstaff".to_string(),
+                piece: Piece::Blue,
+            }
+        );
+
+        // have the 2nd player join the game
+        consume!(
+            state,
+            Event::SetPlayerAttributes {
+                player_id: player_ids[2],
+                name: "Cindy Flagstaff".to_string(),
+                piece: Piece::Green,
+            }
+        );
+
+        // ensure a non-host player can't start the game
+        assert_eq!(
+            state.validate(&Event::Start {
+                player_id: player_ids[1]
+            }),
+            Err("Player is not the host".to_string())
+        );
+
+        // start the game
+        consume!(
+            state,
+            Event::Start {
+                player_id: player_ids[0]
+            }
+        );
+
+        assert_eq!(
+            State {
+                history: Vec::new(),
+                players: HashMap::new(),
+                ..state
+            },
+            State {
+                stage: Stage::InGame(InGameStage::Movement),
+                active_player_id: None,
+                game_host: Some(player_ids[0]),
+                player_order: vec![player_ids[0], player_ids[1], player_ids[2]],
+                all_roads_bought: false,
+                ..State::default()
+            }
+        );
+    }
+
+    // write a test ensuring the Create event can't be called on a non-default state
+    #[test]
+    fn cant_create_a_game_that_already_exists() {
+        // Try to create a game on a non-default state
+        let mut state = State::default();
+        state.all_roads_bought = !state.all_roads_bought;
+
+        let event = Event::Create { player_id: 102 };
+
+        assert_eq!(
+            state.validate(&event),
+            Err("Game already exists".to_string())
+        );
+    }
+
+    // test that a player can't create a game and then join it
+    #[test]
+    fn same_player_that_created_a_game_cant_join_it() {
+        let mut state = State::default();
+
+        let player_id = 103;
+        let event = Event::Create { player_id };
+
+        assert_eq!(state.validate(&event), Ok(()));
+        state.consume(&event);
+
+        let event = Event::PlayerJoined { player_id };
+
+        assert_eq!(
+            state.validate(&event),
+            Err("Player already exists".to_string())
+        );
     }
 }
