@@ -131,6 +131,7 @@ pub struct Player {
     pub start: Option<City>, // Default is home-city
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
+    pub going_home: bool,
     pub rails: Vec<Rail>,
     pub engine: Engine,
 }
@@ -146,6 +147,7 @@ impl Default for Player {
             start: None,
             destination: None,
             spaces_left_to_move: None,
+            going_home: false,
             rails: vec![],
             engine: Engine::Freight,
         }
@@ -161,6 +163,7 @@ pub struct State {
     pub player_order: Vec<PlayerId>,
     pub history: Vec<Event>,
     pub rail_ledger: HashMap<Rail, Option<PlayerId>>,
+    pub winner: Option<PlayerId>,
     pub all_roads_bought: bool,
 }
 
@@ -375,17 +378,24 @@ impl State {
                             self.stage = Stage::InGame(InGameStage::Purchase)
                         });
                     }
+
+                    // check for win
+                    if let Some(player) = self.players.get(player_id) {
+                        if player.cash >= 200000
+                            && *main_city == player.home_city.unwrap()
+                            && player.going_home
+                        {
+                            self.stage = Stage::Ended;
+                            self.winner = Some(player_id.clone());
+                        }
+                    }
                 }
 
-                // NOTE: Should I also check for a win here
                 if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
                     self.stage = Stage::InGame(InGameStage::BankruptcyAuction);
 
                     self.advance_turn();
                 }
-
-                // Check for Rover
-                // Win Check
             }
             HomeCityRollRequest { player_id } => {
                 self.history.push(valid_event.clone());
