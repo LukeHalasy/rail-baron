@@ -52,6 +52,9 @@ pub enum Stage {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum InGameStage {
     // DiceRoll(DiceRollStage),
+    OrderRoll,
+    HomeRoll,
+    DestinationRoll,
     BankruptcyAuction,
     Movement,
     Purchase,
@@ -182,23 +185,30 @@ pub enum Event {
         piece: Piece,
     },
     // In-game events
-    HomeCityRollRequest {
+    OrderRollRequest {
         player_id: PlayerId,
     },
-    DestinationCityRollRequest {
+    HomeRollRequest {
+        player_id: PlayerId,
+    },
+    DestinationRollRequest {
         player_id: PlayerId,
     },
     MovementRollRequest {
         player_id: PlayerId,
     },
-    HomeCityRoll {
+    OrderRoll {
+        player_id: PlayerId,
+        roll: DiceRoll,
+    },
+    HomeRoll {
         player_id: PlayerId,
         region_roll: DiceRoll,
         city_roll: DiceRoll,
         region: Region,
         city: City,
     },
-    DestinationCityRoll {
+    DestinationRoll {
         player_id: PlayerId,
         region_roll: DiceRoll,
         city_roll: DiceRoll,
@@ -248,29 +258,7 @@ impl State {
                 self.player_order.push(*player_id);
             }
             Start { player_id } => {
-                self.stage = Stage::InGame(InGameStage::Movement);
-
-                // Set the start of the user's next route
-                self.players.entry(*player_id).and_modify(|player| {
-                    player.start = player.home_city;
-                });
-
-                // Act as if the user initiated a destination selection dice roll
-                // Will need to think through whether I actually want to auto-roll
-                let (region_roll, region) = DiceRoll::region();
-                let (city_roll, city) = DiceRoll::city_in_region(region);
-
-                self.players.entry(*player_id).and_modify(|player| {
-                    player.destination = Some(city);
-                });
-
-                self.history.push(Event::DestinationCityRoll {
-                    player_id: *player_id,
-                    region_roll,
-                    city_roll,
-                    region,
-                    city,
-                });
+                self.stage = Stage::InGame(InGameStage::OrderRoll);
             }
             SetPlayerAttributes {
                 player_id,
@@ -310,8 +298,7 @@ impl State {
                     }
 
                     for rail_road in unique_rail_roads_on_route.into_iter() {
-                        // TODO:
-                        // Need to handle grand-fathering
+                        // TODO: Need to handle grand-fathering
                         // so that if a user was on a rail-road
                         // before a player buys that road they should only pay $1000 to the bank
                         // for that rail-road
@@ -360,22 +347,7 @@ impl State {
                             // Set the start of the user's next route
                             player.start = Some(*main_city);
 
-                            // Act as if the user initiated a destination selection dice roll
-                            // Will need to think through whether I actually want to auto-roll
-                            let (region_roll, region) = DiceRoll::region();
-                            let (city_roll, city) = DiceRoll::city_in_region(region);
-
-                            player.destination = Some(city);
-                            self.history.push(Event::DestinationCityRoll {
-                                player_id: *player_id,
-                                region_roll,
-                                city_roll,
-                                region,
-                                city,
-                            });
-
-                            // Set the stage to purchasing
-                            self.stage = Stage::InGame(InGameStage::Purchase)
+                            self.stage = Stage::InGame(InGameStage::DestinationRoll);
                         });
                     }
 
@@ -397,21 +369,136 @@ impl State {
                     self.advance_turn();
                 }
             }
-            HomeCityRollRequest { player_id } => {
+            HomeRollRequest { player_id } => {
                 self.history.push(valid_event.clone());
 
                 let (region_roll, region) = DiceRoll::region();
                 let (city_roll, city) = DiceRoll::city_in_region(region);
 
                 self.players.get_mut(player_id).unwrap().home_city = Some(city);
-                self.history.push(Event::HomeCityRoll {
+                self.history.push(Event::HomeRoll {
                     player_id: *player_id,
                     region_roll,
                     city_roll,
                     region,
                     city,
-                })
+                });
+
+                // if all player's have rolled for their home city then change the stage
+                if self
+                    .history
+                    .iter()
+                    .filter(|event| match event {
+                        Event::HomeRoll { .. } => true,
+                        _ => false,
+                    })
+                    .count()
+                    == self.players.len()
+                {
+                    self.stage = Stage::InGame(InGameStage::DestinationRoll);
+                }
+
+                // move to the next player
+                self.advance_turn();
             }
+            OrderRollRequest { player_id } => {
+                self.history.push(valid_event.clone());
+
+                let roll = DiceRoll::red_and_white();
+
+                self.history.push(Event::OrderRoll {
+                    player_id: *player_id,
+                    roll,
+                });
+
+                // TODO: Handle Ties
+                if self
+                    .history
+                    .iter()
+                    .filter(|event| match event {
+                        Event::OrderRoll { .. } => true,
+                        _ => false,
+                    })
+                    .count()
+                    == self.players.len()
+                {
+                    // sort the players by their roll
+                    let mut players_sorted_by_roll: Vec<_> = self.players.iter().collect();
+                    players_sorted_by_roll.sort_by(|(a_id, a), (b_id, b)| {
+                        let a_roll = self
+                            .history
+                            .iter()
+                            .find_map(|event| match event {
+                                Event::OrderRoll {
+                                    player_id: event_player_id,
+                                    roll,
+                                } if event_player_id == *a_id => Some(roll),
+                                _ => None,
+                            })
+                            .unwrap();
+                        let b_roll = self
+                            .history
+                            .iter()
+                            .find_map(|event| match event {
+                                Event::OrderRoll {
+                                    player_id: event_player_id,
+                                    roll,
+                                } if event_player_id == *b_id => Some(roll),
+                                _ => None,
+                            })
+                            .unwrap();
+
+                        b_roll.sum().cmp(&a_roll.sum())
+                    });
+
+                    // set the player order
+                    self.player_order = players_sorted_by_roll.iter().map(|(id, _)| **id).collect();
+
+                    // set the active player
+                    self.active_player_id = Some(self.player_order[0]);
+
+                    // set the stage to home roll
+                    self.stage = Stage::InGame(InGameStage::HomeRoll);
+                }
+            }
+            DestinationRollRequest { player_id } => {
+                self.history.push(valid_event.clone());
+
+                let (region_roll, region) = DiceRoll::region();
+                let (city_roll, city) = DiceRoll::city_in_region(region);
+
+                self.history.push(Event::DestinationRoll {
+                    player_id: *player_id,
+                    region_roll,
+                    city_roll,
+                    region,
+                    city,
+                });
+
+                // if the player currently has a destination then set the next stage to purchasing
+                if self.players.get(player_id).unwrap().destination.is_some() {
+                    self.stage = Stage::InGame(InGameStage::Purchase);
+                } else {
+                    // must be rolling for first destinations
+                    // check if all players have rolled for their destination
+                    if self
+                        .history
+                        .iter()
+                        .filter(|event| match event {
+                            Event::DestinationRoll { .. } => true,
+                            _ => false,
+                        })
+                        .count()
+                        == self.players.len()
+                    {
+                        self.stage = Stage::InGame(InGameStage::Movement);
+                        self.advance_turn();
+                    }
+                }
+
+                self.players.get_mut(player_id).unwrap().destination = Some(city);
+            }
+
             // DestinationCityRollRequest { player_id } => {
             //     self.history.push(valid_event.clone());
 
@@ -448,22 +535,17 @@ impl State {
         }
 
         match valid_event {
-            HomeCityRollRequest { player_id: _ } => {}
-            DestinationCityRollRequest { player_id: _ } => {}
+            OrderRollRequest { player_id: _ } => {}
+            HomeRollRequest { player_id: _ } => {}
+            DestinationRollRequest { player_id: _ } => {}
             MovementRollRequest { player_id: _ } => {}
             _ => self.history.push(valid_event.clone()),
         }
     }
 
     fn advance_turn(&mut self) {
-        // Advance stage
-        self.stage = Stage::InGame(InGameStage::Movement);
-
-        // Change active player
         for (index, player_id) in self.player_order.iter().enumerate() {
-            // find the index of the current player
             if player_id == &self.active_player_id.expect("Active player should exist") {
-                // Check if we need to wrap around to first player
                 if index == self.player_order.len() - 1 {
                     self.active_player_id = Some(self.player_order[0]);
                 } else {
@@ -599,6 +681,7 @@ impl State {
                     return Err("Name cannot be blank".to_string());
                 }
             }
+
             Move { player_id, route } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
@@ -634,33 +717,54 @@ impl State {
                 }
             }
             // These should only be sent from server to client
-            HomeCityRoll {
+            HomeRoll {
                 player_id: _,
                 region_roll: _,
                 city_roll: _,
                 region: _,
                 city: _,
-            } => return Err("HomeCityRoll should only be sent from server to client".to_string()),
-            DestinationCityRoll {
+            } => return Err("HomeRoll should only be sent from server to client".to_string()),
+            DestinationRoll {
                 player_id: _,
                 region_roll: _,
                 city_roll: _,
                 region: _,
                 city: _,
             } => {
-                return Err(
-                    "DestinationCityRoll should only be sent from server to client".to_string(),
-                )
+                return Err("DestinationRoll should only be sent from server to client".to_string())
             }
             MovementRoll {
                 player_id: _,
                 roll: _,
             } => return Err("MovementRoll should only be sent from server to client".to_string()),
-            HomeCityRollRequest { player_id } => {
+            OrderRoll {
+                player_id: _,
+                roll: _,
+            } => return Err("OrderRoll should only be sent from server to client".to_string()),
+            HomeRoll {
+                player_id: _,
+                region_roll: _,
+                city_roll,
+                region,
+                city,
+            } => return Err("HomeRoll should only be sent from server to client".to_string()),
+            OrderRollRequest { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
                 }
+
+                // check that we are in the order roll stage
+                if self.stage != Stage::InGame(InGameStage::OrderRoll) {
+                    return Err("It is not the order roll stage".to_string());
+                }
+            }
+            HomeRollRequest { player_id } => {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
                 // Check player is currently the one making their move
                 if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
@@ -670,8 +774,13 @@ impl State {
                 if self.players.get(player_id).unwrap().home_city.is_some() {
                     return Err("Player already has a home city".to_string());
                 }
+
+                // verify that is the home roll stage
+                if self.stage != Stage::InGame(InGameStage::HomeRoll) {
+                    return Err("It is not the home roll stage".to_string());
+                }
             }
-            DestinationCityRollRequest { player_id } => {
+            DestinationRollRequest { player_id } => {
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -800,6 +909,7 @@ impl Default for State {
             history: Vec::new(),
             rail_ledger: Rail::iter().map(|rail| (rail, None)).collect(),
             all_roads_bought: false,
+            winner: None,
         }
     }
 }

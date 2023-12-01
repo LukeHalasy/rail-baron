@@ -75,14 +75,14 @@ pub struct DiceRoll {
 }
 
 impl DiceRoll {
-    fn red_and_white() -> Self {
+    pub fn red_and_white() -> Self {
         Self {
             white_dice: (Dice::new(), Dice::new()),
             red_dice: Some(Dice::new()),
         }
     }
 
-    fn white() -> Self {
+    pub fn white() -> Self {
         Self {
             white_dice: (Dice::new(), Dice::new()),
             red_dice: None,
