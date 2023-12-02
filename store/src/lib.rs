@@ -641,14 +641,14 @@ impl State {
                 name,
                 piece,
             } => {
-                // check that the player exists
-                if !self.players.contains_key(player_id) {
-                    return Err("Player does not exist".to_string());
-                }
-
                 // check that we are in the pre-game stage
                 if self.stage != Stage::PreGame {
                     return Err("Game has already started".to_string());
+                }
+
+                // check that the player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
                 }
 
                 // check that the piece is not already taken
@@ -674,8 +674,12 @@ impl State {
                     return Err("Name cannot be blank".to_string());
                 }
             }
-
             Move { player_id, route } => {
+                // Verify the stage is movement
+                if self.stage != Stage::InGame(InGameStage::Movement) {
+                    return Err("It is not the movement stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -692,7 +696,7 @@ impl State {
                 }
 
                 // Verify that the user has more moves left
-                if player.spaces_left_to_move == Some(0) {
+                if player.spaces_left_to_move == None {
                     return Err("Player has no more moves left".to_string());
                 }
 
@@ -742,17 +746,22 @@ impl State {
                 city,
             } => return Err("HomeRoll should only be sent from server to client".to_string()),
             OrderRollRequest { player_id } => {
-                // Check player exists
-                if !self.players.contains_key(player_id) {
-                    return Err("Player does not exist".to_string());
-                }
-
                 // check that we are in the order roll stage
                 if self.stage != Stage::InGame(InGameStage::OrderRoll) {
                     return Err("It is not the order roll stage".to_string());
                 }
+
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
             }
             HomeRollRequest { player_id } => {
+                // verify that is the home roll stage
+                if self.stage != Stage::InGame(InGameStage::HomeRoll) {
+                    return Err("It is not the home roll stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -767,13 +776,12 @@ impl State {
                 if self.players.get(player_id).unwrap().home_city.is_some() {
                     return Err("Player already has a home city".to_string());
                 }
-
-                // verify that is the home roll stage
-                if self.stage != Stage::InGame(InGameStage::HomeRoll) {
-                    return Err("It is not the home roll stage".to_string());
-                }
             }
             DestinationRollRequest { player_id } => {
+                if self.stage != Stage::InGame(InGameStage::DestinationRoll) {
+                    return Err("It is not the destination roll stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -789,6 +797,10 @@ impl State {
                 }
             }
             MovementRollRequest { player_id } => {
+                if self.stage != Stage::InGame(InGameStage::MovementRoll) {
+                    return Err("It is not the movement roll stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -810,6 +822,11 @@ impl State {
                 }
             }
             PurchaseRail { player_id, rail } => {
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return Err("It is not the purchase stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -817,11 +834,6 @@ impl State {
                 // Check player is currently the one making their move
                 if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
-                }
-
-                // ensure that it's the purchase stage
-                if self.stage != Stage::InGame(InGameStage::Purchase) {
-                    return Err("It is not the purchase stage".to_string());
                 }
 
                 // ensure that the rail is not owned
@@ -835,6 +847,11 @@ impl State {
                 }
             }
             PurchaseEngine { player_id, engine } => {
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return Err("It is not the purchase stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -842,11 +859,6 @@ impl State {
                 // Check player is currently the one making their move
                 if self.active_player_id != Some(*player_id) {
                     return Err("It is not this player's turn".to_string());
-                }
-
-                // ensure that it's the purchase stage
-                if self.stage != Stage::InGame(InGameStage::Purchase) {
-                    return Err("It is not the purchase stage".to_string());
                 }
 
                 // ensure the player has enough money to purchase it
@@ -865,6 +877,11 @@ impl State {
                 }
             }
             EndPurchaseStage { player_id } => {
+                // ensure that it's the purchase stage
+                if self.stage != Stage::InGame(InGameStage::Purchase) {
+                    return Err("It is not the purchase stage".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
