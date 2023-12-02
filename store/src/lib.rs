@@ -1082,7 +1082,7 @@ mod tests {
                 ..state
             },
             State {
-                stage: Stage::InGame(InGameStage::Movement),
+                stage: Stage::InGame(InGameStage::OrderRoll),
                 active_player_id: None,
                 game_host: Some(player_ids[0]),
                 player_order: vec![player_ids[0], player_ids[1], player_ids[2]],
