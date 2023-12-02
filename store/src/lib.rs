@@ -520,7 +520,26 @@ impl State {
                     roll,
                 })
             }
+            PurchaseEngine { player_id, engine } => {
+                let player: &mut Player = self.players.get_mut(player_id).unwrap();
+
+                player.engine = *engine;
+                player.cash -= engine.cost() as i64;
+            }
+            PurchaseRail { player_id, rail } => {
+                let player: &mut Player = self.players.get_mut(player_id).unwrap();
+
+                player.rails.push(*rail);
+                player.cash -= rail.cost() as i64;
+
+                self.rail_ledger.insert(*rail, Some(*player_id));
+
+                if self.rail_ledger.iter().all(|(_, owner)| owner.is_some()) {
+                    self.all_roads_bought = true;
+                }
+            }
             EndPurchaseStage { .. } => {
+                self.stage = Stage::InGame(InGameStage::Movement);
                 self.advance_turn();
             }
             // TODO: Remove
