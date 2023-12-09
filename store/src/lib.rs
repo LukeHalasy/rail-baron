@@ -268,7 +268,7 @@ impl State {
 
                 self.player_order.push(*player_id);
             }
-            Start { player_id } => {
+            Start { player_id: _ } => {
                 self.stage = Stage::InGame(InGameStage::OrderRoll);
             }
             SetPlayerAttributes {
@@ -400,13 +400,13 @@ impl State {
                     if let Some(player) = self.players.get(player_id) {
                         if player.cash >= self.declare_amount as i64 && player.going_home {
                             self.stage = Stage::Ended;
-                            self.winner = Some(player_id.clone());
+                            self.winner = Some(*player_id);
                         }
                     }
                 }
 
                 if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
-                    self.stage = Stage::InGame(InGameStage::BankruptcyAuction);
+                    self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
 
                     self.advance_turn();
                 }
@@ -430,10 +430,7 @@ impl State {
                 if self
                     .history
                     .iter()
-                    .filter(|event| match event {
-                        Event::HomeRoll { .. } => true,
-                        _ => false,
-                    })
+                    .filter(|event| matches!(event, Event::HomeRoll { .. }))
                     .count()
                     == self.players.len()
                 {
@@ -457,16 +454,13 @@ impl State {
                 if self
                     .history
                     .iter()
-                    .filter(|event| match event {
-                        Event::OrderRoll { .. } => true,
-                        _ => false,
-                    })
+                    .filter(|event| matches!(event, Event::OrderRoll { .. }))
                     .count()
                     == self.players.len()
                 {
                     // sort the players by their roll
                     let mut players_sorted_by_roll: Vec<_> = self.players.iter().collect();
-                    players_sorted_by_roll.sort_by(|(a_id, a), (b_id, b)| {
+                    players_sorted_by_roll.sort_by(|(a_id, _a), (b_id, _b)| {
                         let a_roll = self
                             .history
                             .iter()
@@ -526,10 +520,7 @@ impl State {
                     if self
                         .history
                         .iter()
-                        .filter(|event| match event {
-                            Event::DestinationRoll { .. } => true,
-                            _ => false,
-                        })
+                        .filter(|event| matches!(event, Event::DestinationRoll { .. }))
                         .count()
                         == self.players.len()
                     {
@@ -572,12 +563,7 @@ impl State {
                 }
 
                 // mark any players that are currently on the rail as grand-fathered
-                for (player_id, player) in self.players.iter_mut() {
-                    // skip the current player
-                    if player_id == player_id {
-                        continue;
-                    }
-
+                for (_, player) in self.players.iter_mut().filter(|(id, _)| *id != player_id) {
                     // if the most recent rail is the one that was just bought then mark it as grand-fathered
                     let last_rail = player.route.last().map(|(_, rail)| rail).or_else(|| {
                         player
@@ -768,7 +754,7 @@ impl State {
                 }
 
                 // Verify that the user has more moves left
-                if player.spaces_left_to_move == None {
+                if player.spaces_left_to_move.is_none() {
                     return Err("Player has no more moves left".to_string());
                 }
 
@@ -810,13 +796,6 @@ impl State {
                 player_id: _,
                 roll: _,
             } => return Err("OrderRoll should only be sent from server to client".to_string()),
-            HomeRoll {
-                player_id: _,
-                region_roll: _,
-                city_roll,
-                region,
-                city,
-            } => return Err("HomeRoll should only be sent from server to client".to_string()),
             OrderRollRequest { player_id } => {
                 // check that we are in the order roll stage
                 if self.stage != Stage::InGame(InGameStage::OrderRoll) {
