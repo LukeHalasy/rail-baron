@@ -556,7 +556,7 @@ impl State {
             PurchaseEngine { player_id, engine } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
 
-                player.engine = *engine;
+                player.engine = engine.clone();
                 player.cash -= engine.cost() as i64;
             }
             PurchaseRail { player_id, rail } => {
