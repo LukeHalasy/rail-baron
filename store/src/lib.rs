@@ -132,7 +132,9 @@ pub struct Player {
     pub name: Option<String>, // Will be None before the user selects a name
     pub piece: Option<Piece>, // Will be None before the user selects a piece
     pub home_city: Option<City>,
-    pub route_history: Vec<(crate::rail::C, Rail)>,
+    pub route: Vec<(crate::rail::C, Rail)>,
+    pub route_history: Vec<Vec<(crate::rail::C, Rail)>>,
+    pub grand_fathered_rail: Option<Rail>,
     pub start: Option<City>, // Default is home-city
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
@@ -148,7 +150,9 @@ impl Default for Player {
             name: None,
             piece: None,
             home_city: None,
+            route: vec![],
             route_history: vec![],
+            grand_fathered_rail: None,
             start: None,
             destination: None,
             spaces_left_to_move: None,
@@ -278,11 +282,24 @@ impl State {
                 });
             }
             Move { player_id, route } => {
-                let (city, _) = route;
+                /*
+                TODO: Handle bouncing out of a city.
+                If the player makes it to their destination, and they haven't consumed ANY of their red dice roll,
+                then they are entitled to use their bonus roll to proceed towards their destination.
+                The player loses any extra movement from their white dice
+                */
+
+                let (city, rail) = route;
 
                 self.players.entry(*player_id).and_modify(|player| {
+                    if let Some(grand_fathered_rail) = player.grand_fathered_rail {
+                        if grand_fathered_rail != *rail {
+                            player.grand_fathered_rail = None;
+                        }
+                    }
+
                     // Add the route to the players route history
-                    player.route_history.push(*route);
+                    player.route.push(*route);
 
                     // decrease the number of spaces the user has left to move
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
@@ -302,18 +319,43 @@ impl State {
 
                     // determine which rail-roads the player used along their route
                     let mut unique_rail_roads_on_route: HashSet<Rail> = HashSet::new();
-                    for route in &self.players.get(player_id).unwrap().route_history {
+                    for route in &self.players.get(player_id).unwrap().route {
                         let (_, rail) = route;
                         unique_rail_roads_on_route.insert(*rail);
                     }
 
                     for rail_road in unique_rail_roads_on_route.into_iter() {
-                        // TODO: Need to handle grand-fathering
-                        // so that if a user was on a rail-road
-                        // before a player buys that road they should only pay $1000 to the bank
-                        // for that rail-road
-                        if let Some(rail_road_owner_id) = self.rail_ledger.get(&rail_road).unwrap()
+                        /*
+                        TODO: Need to handle grand-fathering
+                        so that if a user was on a rail-road
+                        before a player buys that road they should only pay $1000 to the bank
+                        for that rail-road
+                        */
+                        let rail_road_owner = self.rail_ledger.get(&rail_road).unwrap();
+                        let grand_fathered_rail =
+                            self.players.get(player_id).unwrap().grand_fathered_rail;
+
+                        if rail_road_owner.is_none()
+                            || rail_road_owner.unwrap() == *player_id
+                            || (grand_fathered_rail.is_some()
+                                && rail_road == grand_fathered_rail.unwrap())
                         {
+                            let mut payout = 1000;
+                            if self.all_roads_bought {
+                                /*
+                                TODO: Ensure that when all rails are bought, but someone sells a road back to the bank,
+                                that self.all_roads_bought is set to false
+
+                                */
+                                // TODO: Add test to ensure that this block only happens if all roads are bought and the player is using their own rail-road
+                                payout *= 2;
+                            }
+
+                            // Subtract from player
+                            self.players
+                                .entry(*player_id)
+                                .and_modify(|player| player.cash -= payout);
+                        } else {
                             let mut payout = 5000;
                             if self.all_roads_bought {
                                 payout *= 2;
@@ -321,18 +363,8 @@ impl State {
 
                             // Pay owner
                             self.players
-                                .entry(*rail_road_owner_id)
+                                .entry(rail_road_owner.unwrap())
                                 .and_modify(|player| player.cash += payout);
-
-                            // Subtract from player
-                            self.players
-                                .entry(*player_id)
-                                .and_modify(|player| player.cash -= payout);
-                        } else {
-                            let mut payout = 1000;
-                            if self.all_roads_bought {
-                                payout *= 2;
-                            }
 
                             // Subtract from player
                             self.players
@@ -350,7 +382,8 @@ impl State {
                             travel_payout(player.start.unwrap(), player.destination.unwrap())
                                 as i64;
 
-                        player.route_history = vec![];
+                        player.route_history.push(player.route.clone());
+                        player.route = vec![];
                         player.start = player.destination;
                         player.spaces_left_to_move = None;
                         player.destination = None;
@@ -537,12 +570,32 @@ impl State {
                 if self.rail_ledger.iter().all(|(_, owner)| owner.is_some()) {
                     self.all_roads_bought = true;
                 }
+
+                // mark any players that are currently on the rail as grand-fathered
+                for (player_id, player) in self.players.iter_mut() {
+                    // skip the current player
+                    if player_id == player_id {
+                        continue;
+                    }
+
+                    // if the most recent rail is the one that was just bought then mark it as grand-fathered
+                    let last_rail = player.route.last().map(|(_, rail)| rail).or_else(|| {
+                        player
+                            .route_history
+                            .last()
+                            .and_then(|last_route| last_route.last().map(|(_, rail)| rail))
+                    });
+
+                    if last_rail.is_some() && last_rail.unwrap() == rail {
+                        player.grand_fathered_rail = Some(*rail);
+                    }
+                }
             }
             EndPurchaseStage { .. } => {
                 self.stage = Stage::InGame(InGameStage::Movement);
                 self.advance_turn();
             }
-            // TODO: Remove
+            // TODO: Remove to ensure all events are handled
             _ => {}
         }
 
@@ -722,7 +775,7 @@ impl State {
                 let (city, _) = route;
 
                 // Verify that the city that is being traveled to can be reached in 1 move from the player's location
-                let (current_city, _) = player.route_history.last().unwrap();
+                let (current_city, _) = player.route.last().unwrap();
                 if !RAILROAD_GRAPH
                     .get(current_city)
                     .unwrap()

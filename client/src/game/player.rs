@@ -5,7 +5,7 @@ use store::{rail::C, travel_payout::City};
 #[component]
 pub fn Player(player: store::Player) -> impl IntoView {
     let current_city = {
-        if let Some((city, _)) = player.route_history.last() {
+        if let Some((city, _)) = player.route.last() {
             *city
         } else if let Some(city) = player.start {
             C::D(city)
