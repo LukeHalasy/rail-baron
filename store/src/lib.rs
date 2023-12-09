@@ -141,6 +141,7 @@ pub struct Player {
     pub spaces_left_to_move: Option<u8>, // Default is 0
     pub going_home: bool,
     pub engine: Engine,
+    pub bankrupt: bool,
 }
 
 impl Default for Player {
@@ -158,6 +159,7 @@ impl Default for Player {
             spaces_left_to_move: None,
             going_home: false,
             engine: Engine::Freight,
+            bankrupt: false,
         }
     }
 }
@@ -441,6 +443,11 @@ impl State {
                         .iter()
                         .all(|(_, owner)| *owner != Some(*player_id))
                     {
+                        self.players.get_mut(player_id).unwrap().bankrupt = true;
+
+                        // remove the player from the player order
+                        self.player_order.retain(|id| id != player_id);
+
                         self.stage = Stage::InGame(InGameStage::MovementRoll);
                         self.advance_turn()
                     } else {
@@ -679,6 +686,10 @@ impl State {
                             .iter()
                             .all(|(_, owner)| *owner != Some(*player_id))
                     {
+                        player.bankrupt = true;
+                        // remove the player from the player order
+                        self.player_order.retain(|id| id != player_id);
+
                         self.stage = Stage::InGame(InGameStage::MovementRoll);
                         self.advance_turn();
                     } else {
