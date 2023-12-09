@@ -132,7 +132,9 @@ pub struct Player {
     pub name: Option<String>, // Will be None before the user selects a name
     pub piece: Option<Piece>, // Will be None before the user selects a piece
     pub home_city: Option<City>,
-    pub route_history: Vec<(crate::rail::C, Rail)>,
+    pub route: Vec<(crate::rail::C, Rail)>,
+    pub route_history: Vec<Vec<(crate::rail::C, Rail)>>,
+    pub grand_fathered_rail: Option<Rail>,
     pub start: Option<City>, // Default is home-city
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
@@ -148,7 +150,9 @@ impl Default for Player {
             name: None,
             piece: None,
             home_city: None,
+            route: vec![],
             route_history: vec![],
+            grand_fathered_rail: None,
             start: None,
             destination: None,
             spaces_left_to_move: None,
@@ -264,7 +268,7 @@ impl State {
 
                 self.player_order.push(*player_id);
             }
-            Start { player_id } => {
+            Start { player_id: _ } => {
                 self.stage = Stage::InGame(InGameStage::OrderRoll);
             }
             SetPlayerAttributes {
@@ -278,11 +282,24 @@ impl State {
                 });
             }
             Move { player_id, route } => {
-                let (city, _) = route;
+                /*
+                TODO: Handle bouncing out of a city.
+                If the player makes it to their destination, and they haven't consumed ANY of their red dice roll,
+                then they are entitled to use their bonus roll to proceed towards their destination.
+                The player loses any extra movement from their white dice
+                */
+
+                let (city, rail) = route;
 
                 self.players.entry(*player_id).and_modify(|player| {
+                    if let Some(grand_fathered_rail) = player.grand_fathered_rail {
+                        if grand_fathered_rail != *rail {
+                            player.grand_fathered_rail = None;
+                        }
+                    }
+
                     // Add the route to the players route history
-                    player.route_history.push(*route);
+                    player.route.push(*route);
 
                     // decrease the number of spaces the user has left to move
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
@@ -302,18 +319,43 @@ impl State {
 
                     // determine which rail-roads the player used along their route
                     let mut unique_rail_roads_on_route: HashSet<Rail> = HashSet::new();
-                    for route in &self.players.get(player_id).unwrap().route_history {
+                    for route in &self.players.get(player_id).unwrap().route {
                         let (_, rail) = route;
                         unique_rail_roads_on_route.insert(*rail);
                     }
 
                     for rail_road in unique_rail_roads_on_route.into_iter() {
-                        // TODO: Need to handle grand-fathering
-                        // so that if a user was on a rail-road
-                        // before a player buys that road they should only pay $1000 to the bank
-                        // for that rail-road
-                        if let Some(rail_road_owner_id) = self.rail_ledger.get(&rail_road).unwrap()
+                        /*
+                        TODO: Need to handle grand-fathering
+                        so that if a user was on a rail-road
+                        before a player buys that road they should only pay $1000 to the bank
+                        for that rail-road
+                        */
+                        let rail_road_owner = self.rail_ledger.get(&rail_road).unwrap();
+                        let grand_fathered_rail =
+                            self.players.get(player_id).unwrap().grand_fathered_rail;
+
+                        if rail_road_owner.is_none()
+                            || rail_road_owner.unwrap() == *player_id
+                            || (grand_fathered_rail.is_some()
+                                && rail_road == grand_fathered_rail.unwrap())
                         {
+                            let mut payout = 1000;
+                            if self.all_roads_bought {
+                                /*
+                                TODO: Ensure that when all rails are bought, but someone sells a road back to the bank,
+                                that self.all_roads_bought is set to false
+
+                                */
+                                // TODO: Add test to ensure that this block only happens if all roads are bought and the player is using their own rail-road
+                                payout *= 2;
+                            }
+
+                            // Subtract from player
+                            self.players
+                                .entry(*player_id)
+                                .and_modify(|player| player.cash -= payout);
+                        } else {
                             let mut payout = 5000;
                             if self.all_roads_bought {
                                 payout *= 2;
@@ -321,18 +363,8 @@ impl State {
 
                             // Pay owner
                             self.players
-                                .entry(*rail_road_owner_id)
+                                .entry(rail_road_owner.unwrap())
                                 .and_modify(|player| player.cash += payout);
-
-                            // Subtract from player
-                            self.players
-                                .entry(*player_id)
-                                .and_modify(|player| player.cash -= payout);
-                        } else {
-                            let mut payout = 1000;
-                            if self.all_roads_bought {
-                                payout *= 2;
-                            }
 
                             // Subtract from player
                             self.players
@@ -350,7 +382,8 @@ impl State {
                             travel_payout(player.start.unwrap(), player.destination.unwrap())
                                 as i64;
 
-                        player.route_history = vec![];
+                        player.route_history.push(player.route.clone());
+                        player.route = vec![];
                         player.start = player.destination;
                         player.spaces_left_to_move = None;
                         player.destination = None;
@@ -367,13 +400,13 @@ impl State {
                     if let Some(player) = self.players.get(player_id) {
                         if player.cash >= self.declare_amount as i64 && player.going_home {
                             self.stage = Stage::Ended;
-                            self.winner = Some(player_id.clone());
+                            self.winner = Some(*player_id);
                         }
                     }
                 }
 
                 if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
-                    self.stage = Stage::InGame(InGameStage::BankruptcyAuction);
+                    self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
 
                     self.advance_turn();
                 }
@@ -397,10 +430,7 @@ impl State {
                 if self
                     .history
                     .iter()
-                    .filter(|event| match event {
-                        Event::HomeRoll { .. } => true,
-                        _ => false,
-                    })
+                    .filter(|event| matches!(event, Event::HomeRoll { .. }))
                     .count()
                     == self.players.len()
                 {
@@ -424,16 +454,13 @@ impl State {
                 if self
                     .history
                     .iter()
-                    .filter(|event| match event {
-                        Event::OrderRoll { .. } => true,
-                        _ => false,
-                    })
+                    .filter(|event| matches!(event, Event::OrderRoll { .. }))
                     .count()
                     == self.players.len()
                 {
                     // sort the players by their roll
                     let mut players_sorted_by_roll: Vec<_> = self.players.iter().collect();
-                    players_sorted_by_roll.sort_by(|(a_id, a), (b_id, b)| {
+                    players_sorted_by_roll.sort_by(|(a_id, _a), (b_id, _b)| {
                         let a_roll = self
                             .history
                             .iter()
@@ -493,10 +520,7 @@ impl State {
                     if self
                         .history
                         .iter()
-                        .filter(|event| match event {
-                            Event::DestinationRoll { .. } => true,
-                            _ => false,
-                        })
+                        .filter(|event| matches!(event, Event::DestinationRoll { .. }))
                         .count()
                         == self.players.len()
                     {
@@ -523,7 +547,7 @@ impl State {
             PurchaseEngine { player_id, engine } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
 
-                player.engine = *engine;
+                player.engine = engine.clone();
                 player.cash -= engine.cost() as i64;
             }
             PurchaseRail { player_id, rail } => {
@@ -537,12 +561,27 @@ impl State {
                 if self.rail_ledger.iter().all(|(_, owner)| owner.is_some()) {
                     self.all_roads_bought = true;
                 }
+
+                // mark any players that are currently on the rail as grand-fathered
+                for (_, player) in self.players.iter_mut().filter(|(id, _)| *id != player_id) {
+                    // if the most recent rail is the one that was just bought then mark it as grand-fathered
+                    let last_rail = player.route.last().map(|(_, rail)| rail).or_else(|| {
+                        player
+                            .route_history
+                            .last()
+                            .and_then(|last_route| last_route.last().map(|(_, rail)| rail))
+                    });
+
+                    if last_rail.is_some() && last_rail.unwrap() == rail {
+                        player.grand_fathered_rail = Some(*rail);
+                    }
+                }
             }
             EndPurchaseStage { .. } => {
                 self.stage = Stage::InGame(InGameStage::Movement);
                 self.advance_turn();
             }
-            // TODO: Remove
+            // TODO: Remove to ensure all events are handled
             _ => {}
         }
 
@@ -715,14 +754,14 @@ impl State {
                 }
 
                 // Verify that the user has more moves left
-                if player.spaces_left_to_move == None {
+                if player.spaces_left_to_move.is_none() {
                     return Err("Player has no more moves left".to_string());
                 }
 
                 let (city, _) = route;
 
                 // Verify that the city that is being traveled to can be reached in 1 move from the player's location
-                let (current_city, _) = player.route_history.last().unwrap();
+                let (current_city, _) = player.route.last().unwrap();
                 if !RAILROAD_GRAPH
                     .get(current_city)
                     .unwrap()
@@ -757,13 +796,6 @@ impl State {
                 player_id: _,
                 roll: _,
             } => return Err("OrderRoll should only be sent from server to client".to_string()),
-            HomeRoll {
-                player_id: _,
-                region_roll: _,
-                city_roll,
-                region,
-                city,
-            } => return Err("HomeRoll should only be sent from server to client".to_string()),
             OrderRollRequest { player_id } => {
                 // check that we are in the order roll stage
                 if self.stage != Stage::InGame(InGameStage::OrderRoll) {
