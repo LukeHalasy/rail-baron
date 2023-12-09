@@ -436,10 +436,16 @@ impl State {
                 }
 
                 if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
-                    // TODO: if the player has no rails then they are bankrupt
-                    self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
-
-                    self.advance_turn();
+                    if self
+                        .rail_ledger
+                        .iter()
+                        .all(|(_, owner)| *owner != Some(*player_id))
+                    {
+                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.advance_turn()
+                    } else {
+                        self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                    }
                 }
             }
             HomeRollRequest { player_id } => {
@@ -667,8 +673,13 @@ impl State {
                     // reset the auction state
                     self.auction_state = None;
 
-                    if player.cash >= 0 {
-                        self.stage = Stage::InGame(InGameStage::Movement);
+                    if player.cash >= 0
+                        || self
+                            .rail_ledger
+                            .iter()
+                            .all(|(_, owner)| *owner != Some(*player_id))
+                    {
+                        self.stage = Stage::InGame(InGameStage::MovementRoll);
                         self.advance_turn();
                     } else {
                         self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
