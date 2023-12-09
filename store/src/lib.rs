@@ -56,6 +56,7 @@ pub enum InGameStage {
     HomeRoll,
     DestinationRoll,
     MovementRoll,
+    BankruptcyHandling, // When the user is deciding what to sell, and whether to auction or sell to the bank
     BankruptcyAuction,
     DeclareOption,
     Movement,
@@ -139,8 +140,8 @@ pub struct Player {
     pub destination: Option<City>,
     pub spaces_left_to_move: Option<u8>, // Default is 0
     pub going_home: bool,
-    pub rails: Vec<Rail>,
     pub engine: Engine,
+    pub bankrupt: bool,
 }
 
 impl Default for Player {
@@ -157,8 +158,8 @@ impl Default for Player {
             destination: None,
             spaces_left_to_move: None,
             going_home: false,
-            rails: vec![],
             engine: Engine::Freight,
+            bankrupt: false,
         }
     }
 }
@@ -175,6 +176,20 @@ pub struct State {
     pub winner: Option<PlayerId>,
     pub all_roads_bought: bool,
     pub declare_amount: Cash,
+    pub auction_state: Option<AuctionState>,
+}
+
+// TODO: Need to ensure we won't get trapped in the auction state
+// If a user doesn't have any more rails to sell then we should move on to the next player.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AuctionState {
+    pub player_id: PlayerId, // The player that is currently auctioning
+    pub rail: Rail,
+    pub current_bid: Cash, // default bidder is the bank for the cost of the rail / 2
+    pub current_bidder: Option<PlayerId>,
+    // TODO: May be able to remove this field
+    pub auction_history: Vec<(PlayerId, Cash)>,
+    pub dropped_out_bidders: HashSet<PlayerId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -246,6 +261,23 @@ pub enum Event {
         player_id: PlayerId,
     },
     PlayerJoined {
+        player_id: PlayerId,
+    },
+    // Bankrupcty Events
+    SellRailToBank {
+        player_id: PlayerId,
+        rail: Rail,
+    },
+    AuctionRail {
+        player_id: PlayerId,
+        rail: Rail,
+    },
+    Bid {
+        player_id: PlayerId,
+        bid: Cash,
+    },
+    // TODO: have the server send out this message automatically when a bid stays the same for too long
+    StopBid {
         player_id: PlayerId,
     },
 }
@@ -406,9 +438,21 @@ impl State {
                 }
 
                 if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
-                    self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                    if self
+                        .rail_ledger
+                        .iter()
+                        .all(|(_, owner)| *owner != Some(*player_id))
+                    {
+                        self.players.get_mut(player_id).unwrap().bankrupt = true;
 
-                    self.advance_turn();
+                        // remove the player from the player order
+                        self.player_order.retain(|id| id != player_id);
+
+                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.advance_turn()
+                    } else {
+                        self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                    }
                 }
             }
             HomeRollRequest { player_id } => {
@@ -553,7 +597,6 @@ impl State {
             PurchaseRail { player_id, rail } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
 
-                player.rails.push(*rail);
                 player.cash -= rail.cost() as i64;
 
                 self.rail_ledger.insert(*rail, Some(*player_id));
@@ -580,6 +623,79 @@ impl State {
             EndPurchaseStage { .. } => {
                 self.stage = Stage::InGame(InGameStage::Movement);
                 self.advance_turn();
+            }
+            SellRailToBank { player_id, rail } => {
+                let player: &mut Player = self.players.get_mut(player_id).unwrap();
+
+                // TODO: Don't hardcode the bank sell price here.
+                player.cash += (rail.cost() / 2) as i64;
+
+                self.rail_ledger.insert(*rail, None);
+            }
+            AuctionRail { player_id, rail } => {
+                let player: &mut Player = self.players.get_mut(player_id).unwrap();
+
+                self.auction_state = Some(AuctionState {
+                    player_id: *player_id,
+                    rail: *rail,
+                    // TODO: Don't hardcode the bank sell price here.
+                    current_bid: rail.cost() / 2,
+                    current_bidder: None,
+                    auction_history: vec![],
+                    dropped_out_bidders: HashSet::new(),
+                });
+            }
+            Bid { player_id, bid } => {
+                let auction_state = self.auction_state.as_mut().unwrap();
+
+                auction_state.current_bid = *bid;
+                auction_state.current_bidder = Some(*player_id);
+                auction_state.auction_history.push((*player_id, *bid));
+            }
+            StopBid { player_id } => {
+                let auction_state = self.auction_state.as_mut().unwrap();
+
+                auction_state.dropped_out_bidders.insert(*player_id);
+
+                // if all players have dropped out
+                if auction_state.dropped_out_bidders.len() == self.players.len() - 1 {
+                    let player = self.players.get_mut(&auction_state.player_id).unwrap();
+
+                    // if the bank is the current bidder
+                    if auction_state.current_bidder.is_none() {
+                        // sell the rail to the bank
+                        self.rail_ledger.insert(auction_state.rail, None);
+                    } else {
+                        // sell the rail to the current bidder
+                        self.rail_ledger
+                            .insert(auction_state.rail, auction_state.current_bidder);
+
+                        // subtract the bid amount from the player
+                        player.cash -= auction_state.current_bid as i64;
+                    }
+
+                    // grant the player the sell amount
+                    player.cash += auction_state.current_bid as i64;
+
+                    // reset the auction state
+                    self.auction_state = None;
+
+                    if player.cash >= 0
+                        || self
+                            .rail_ledger
+                            .iter()
+                            .all(|(_, owner)| *owner != Some(*player_id))
+                    {
+                        player.bankrupt = true;
+                        // remove the player from the player order
+                        self.player_order.retain(|id| id != player_id);
+
+                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.advance_turn();
+                    } else {
+                        self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                    }
+                }
             }
             // TODO: Remove to ensure all events are handled
             _ => {}
@@ -942,6 +1058,7 @@ impl State {
                     return Err("It is not this player's turn".to_string());
                 }
             }
+
             Declare { player_id } => {
                 // ensure that it's the declare option stage
                 if self.stage != Stage::InGame(InGameStage::DeclareOption) {
@@ -964,6 +1081,99 @@ impl State {
                     return Err("Player already exists".to_string());
                 }
             }
+            SellRailToBank { player_id, rail } => {
+                // ensure that it's the BankruptcyHandling stage
+                if self.stage != Stage::InGame(InGameStage::BankruptcyHandling) {
+                    return Err("It is not the BankruptcyHandling stage".to_string());
+                }
+
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // Check player is currently the one making their move
+                if self.active_player_id != Some(*player_id) {
+                    return Err("It is not this player's turn".to_string());
+                }
+
+                // Check that the player owns the rail
+                if *self.rail_ledger.get(rail).unwrap() != Some(*player_id) {
+                    return Err("Player does not own the rail".to_string());
+                }
+            }
+            AuctionRail { player_id, rail } => {
+                // ensure that it's the BankruptcyHandling stage
+                if self.stage != Stage::InGame(InGameStage::BankruptcyHandling) {
+                    return Err("It is not the BankruptcyHandling stage".to_string());
+                }
+
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // Check player is currently the one making their move
+                if self.active_player_id != Some(*player_id) {
+                    return Err("It is not this player's turn".to_string());
+                }
+
+                // Check that the player owns the rail
+                if *self.rail_ledger.get(rail).unwrap() != Some(*player_id) {
+                    return Err("Player does not own the rail".to_string());
+                }
+            }
+            Bid { player_id, bid } => {
+                if self.stage != Stage::InGame(InGameStage::BankruptcyAuction) {
+                    return Err("It is not the BankruptcyAuction stage".to_string());
+                }
+
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // Check that the player is not the auctioneer
+                if self.auction_state.as_ref().unwrap().player_id == *player_id {
+                    return Err("Player can't bid in their own auction".to_string());
+                }
+
+                // Ensure the bidder isn't the current bidder
+                if self.auction_state.as_ref().unwrap().current_bidder == Some(*player_id) {
+                    return Err(
+                        "Player is already the current bidder. Can't bid against yourself"
+                            .to_string(),
+                    );
+                }
+
+                // Ensure that the bid is higher than the current bid
+                if self.auction_state.as_ref().unwrap().current_bid >= *bid {
+                    return Err("Bid is not higher than the current bid".to_string());
+                }
+
+                // Ensure that the player has enough money to make the bid
+                if self.players.get(player_id).unwrap().cash < *bid as i64 {
+                    return Err("Player does not have enough money to make the bid".to_string());
+                }
+            }
+            StopBid { player_id } => {
+                // ensure that it's the BankrupctyAuction stage
+                if self.stage != Stage::InGame(InGameStage::BankruptcyAuction) {
+                    return Err("It is not the BankruptcyAuction stage".to_string());
+                }
+
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // Check that the player is not the auctioneer
+                if self.auction_state.as_ref().unwrap().player_id == *player_id {
+                    return Err("Player stop bidding in their own auction. The auction is done once the bidders decide it's done".to_string());
+                }
+
+                //
+            }
         }
 
         Ok(())
@@ -983,6 +1193,7 @@ impl Default for State {
             all_roads_bought: false,
             winner: None,
             declare_amount: 200000,
+            auction_state: None,
         }
     }
 }
