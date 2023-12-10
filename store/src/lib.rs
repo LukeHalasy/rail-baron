@@ -176,6 +176,7 @@ pub struct State {
     pub winner: Option<PlayerId>,
     pub all_roads_bought: bool,
     pub declare_amount: Cash,
+    pub rover_reward: Cash,
     pub auction_state: Option<AuctionState>,
 }
 
@@ -337,6 +338,33 @@ impl State {
                     player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
                 });
 
+                // check if anyone else is getting rovered by this move
+                let rovered_players: Vec<PlayerId> = self
+                    .players
+                    .iter()
+                    .filter(|(id, player)| {
+                        **id != *player_id
+                            && player.route.last().map(|(c, _)| c).unwrap() == city
+                            && player.going_home
+                    })
+                    .map(|(player_id, _)| *player_id)
+                    .collect();
+
+                for rovered_player_id in rovered_players {
+                    // grant the roverer the rover reward for each player that is rovered
+                    self.players.entry(*player_id).and_modify(|player| {
+                        player.cash += self.rover_reward as i64;
+                    });
+
+                    self.players.entry(rovered_player_id).and_modify(|player| {
+                        // subtract the rover reward from the rovered player as a penalty
+                        player.cash -= self.rover_reward as i64;
+
+                        // the rovered player is no longer going home
+                        player.going_home = false;
+                    });
+                }
+
                 let is_last_move =
                     self.players.get(player_id).unwrap().spaces_left_to_move == Some(0);
 
@@ -426,6 +454,12 @@ impl State {
                             self.stage = Stage::InGame(InGameStage::DestinationRoll);
                         }
                     });
+                }
+
+                // if the player is declared and they drop below the declare amount then they are no longer declared
+                let player = self.players.get(player_id).unwrap();
+                if player.going_home && player.cash < self.declare_amount as i64 {
+                    self.players.get_mut(player_id).unwrap().going_home = false;
                 }
 
                 if at_home {
@@ -633,8 +667,6 @@ impl State {
                 self.rail_ledger.insert(*rail, None);
             }
             AuctionRail { player_id, rail } => {
-                let player: &mut Player = self.players.get_mut(player_id).unwrap();
-
                 self.auction_state = Some(AuctionState {
                     player_id: *player_id,
                     rail: *rail,
@@ -672,6 +704,10 @@ impl State {
 
                         // subtract the bid amount from the player
                         player.cash -= auction_state.current_bid as i64;
+
+                        if player.going_home && player.cash < self.declare_amount as i64 {
+                            player.going_home = false;
+                        }
                     }
 
                     // grant the player the sell amount
@@ -1193,6 +1229,7 @@ impl Default for State {
             all_roads_bought: false,
             winner: None,
             declare_amount: 200000,
+            rover_reward: 50000,
             auction_state: None,
         }
     }
