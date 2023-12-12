@@ -1,6 +1,7 @@
 #![feature(const_fn_floating_point_arithmetic)]
 
 use std::collections::{HashMap, HashSet};
+use std::vec;
 
 use dice::DiceRoll;
 use main_city::City;
@@ -17,6 +18,7 @@ pub type PlayerId = u64;
 
 pub type Cash = u64;
 
+pub mod computer;
 pub mod dice;
 pub mod main_city;
 pub mod rail;
@@ -110,7 +112,7 @@ impl FromStr for Piece {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, EnumIter)]
 pub enum Engine {
     Freight,
     Express,
@@ -142,6 +144,7 @@ pub struct Player {
     pub going_home: bool,
     pub engine: Engine,
     pub bankrupt: bool,
+    pub computer: bool,
 }
 
 impl Default for Player {
@@ -160,7 +163,73 @@ impl Default for Player {
             going_home: false,
             engine: Engine::Freight,
             bankrupt: false,
+            computer: false,
         }
+    }
+}
+
+impl Player {
+    pub fn current_city(&self) -> Option<C> {
+        let mut current_city = None;
+        if let Some(city) = self.route.last() {
+            current_city = Some(city.0);
+        } else if let Some(last_route) = self.route_history.last() {
+            current_city = Some(last_route.last().unwrap().0);
+        } else if let Some(home_city) = self.home_city {
+            current_city = Some(C::D(home_city));
+        }
+
+        current_city
+    }
+
+    pub fn move_will_repeat_dot_pattern(
+        &self,
+        start_city: C,
+        current_city: C,
+        proposed_city: C,
+        route: Vec<C>,
+    ) -> bool {
+        // invariant to test: if route not empty then current_city = last city in route else start city
+        assert_ne!(current_city, proposed_city);
+
+        if route.is_empty() {
+            return false;
+        }
+
+        if proposed_city
+            == C::D(
+                self.destination
+                    .expect("Expected the player to have a destination"),
+            )
+        {
+            return false;
+        }
+
+        if route.len() == 1 {
+            return start_city == proposed_city;
+        }
+
+        for (index, route) in route.iter().enumerate() {
+            let city = route;
+
+            if *city == proposed_city {
+                if index == 0 && start_city == current_city {
+                    return true;
+                }
+
+                // check previous city
+                if index != 0 && self.route[index - 1].0 == current_city {
+                    return true;
+                }
+
+                // check next city
+                if (index != self.route.len() - 1) && self.route[index + 1].0 == current_city {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 }
 
@@ -177,6 +246,7 @@ pub struct State {
     pub all_roads_bought: bool,
     pub declare_amount: Cash,
     pub rover_reward: Cash,
+    pub auction_bid_increment: Cash, // Todo: Validate that each bid is increasing by this amount exactly
     pub auction_state: Option<AuctionState>,
 }
 
@@ -188,7 +258,6 @@ pub struct AuctionState {
     pub rail: Rail,
     pub current_bid: Cash, // default bidder is the bank for the cost of the rail / 2
     pub current_bidder: Option<PlayerId>,
-    // TODO: May be able to remove this field
     pub auction_history: Vec<(PlayerId, Cash)>,
     pub dropped_out_bidders: HashSet<PlayerId>,
 }
@@ -247,8 +316,9 @@ pub enum Event {
         player_id: PlayerId,
         route: (C, Rail),
     },
-    Declare {
+    DeclareChoice {
         player_id: PlayerId,
+        declare: bool,
     },
     PurchaseRail {
         player_id: PlayerId,
@@ -279,6 +349,9 @@ pub enum Event {
     },
     // TODO: have the server send out this message automatically when a bid stays the same for too long
     StopBid {
+        player_id: PlayerId,
+    },
+    EndBankruptcyHandling {
         player_id: PlayerId,
     },
 }
@@ -335,7 +408,12 @@ impl State {
                     player.route.push(*route);
 
                     // decrease the number of spaces the user has left to move
-                    player.spaces_left_to_move = Some(player.spaces_left_to_move.unwrap() - 1);
+                    player.spaces_left_to_move = Some(
+                        player
+                            .spaces_left_to_move
+                            .expect("Expected the moving player to have spaces_left_to_move")
+                            - 1,
+                    );
                 });
 
                 // check if anyone else is getting rovered by this move
@@ -344,7 +422,7 @@ impl State {
                     .iter()
                     .filter(|(id, player)| {
                         **id != *player_id
-                            && player.route.last().map(|(c, _)| c).unwrap() == city
+                            && player.current_city() == Some(*city)
                             && player.going_home
                     })
                     .map(|(player_id, _)| *player_id)
@@ -448,11 +526,7 @@ impl State {
                         player.spaces_left_to_move = None;
                         player.destination = None;
 
-                        if player.cash >= self.declare_amount as i64 {
-                            self.stage = Stage::InGame(InGameStage::DeclareOption);
-                        } else {
-                            self.stage = Stage::InGame(InGameStage::DestinationRoll);
-                        }
+                        self.stage = Stage::InGame(InGameStage::DestinationRoll);
                     });
                 }
 
@@ -471,21 +545,26 @@ impl State {
                     }
                 }
 
-                if is_last_move && self.players.get(player_id).unwrap().cash <= 0 {
-                    if self
-                        .rail_ledger
-                        .iter()
-                        .all(|(_, owner)| *owner != Some(*player_id))
-                    {
-                        self.players.get_mut(player_id).unwrap().bankrupt = true;
+                if is_last_move {
+                    if self.players.get(player_id).unwrap().cash <= 0 {
+                        if self
+                            .rail_ledger
+                            .iter()
+                            .all(|(_, owner)| *owner != Some(*player_id))
+                        {
+                            self.players.get_mut(player_id).unwrap().bankrupt = true;
 
-                        // remove the player from the player order
-                        self.player_order.retain(|id| id != player_id);
+                            // remove the player from the player order
+                            self.advance_turn();
+                            self.player_order.retain(|id| id != player_id);
 
+                            self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        } else {
+                            self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                        }
+                    } else if self.stage != Stage::InGame(InGameStage::DestinationRoll) {
                         self.stage = Stage::InGame(InGameStage::MovementRoll);
                         self.advance_turn()
-                    } else {
-                        self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
                     }
                 }
             }
@@ -496,6 +575,8 @@ impl State {
                 let (city_roll, city) = DiceRoll::city_in_region(region);
 
                 self.players.get_mut(player_id).unwrap().home_city = Some(city);
+                self.players.get_mut(player_id).unwrap().start = Some(city);
+
                 self.history.push(Event::HomeRoll {
                     player_id: *player_id,
                     region_roll,
@@ -512,6 +593,7 @@ impl State {
                     .count()
                     == self.players.len()
                 {
+                    println!("Changing stage to destination roll");
                     self.stage = Stage::InGame(InGameStage::DestinationRoll);
                 }
 
@@ -529,6 +611,7 @@ impl State {
                 });
 
                 // TODO: Handle Ties
+                // if all rolls are in
                 if self
                     .history
                     .iter()
@@ -579,7 +662,14 @@ impl State {
                 self.history.push(valid_event.clone());
 
                 let (region_roll, region) = DiceRoll::region();
-                let (city_roll, city) = DiceRoll::city_in_region(region);
+                let mut city_roll;
+                let mut city;
+                while {
+                    let roll = DiceRoll::city_in_region(region);
+                    city_roll = roll.0;
+                    city = roll.1;
+                    city == self.players.get(player_id).unwrap().start.unwrap()
+                } {}
 
                 self.history.push(Event::DestinationRoll {
                     player_id: *player_id,
@@ -589,10 +679,11 @@ impl State {
                     city,
                 });
 
-                // if the player currently has a destination then set the next stage to purchasing
-                if self.players.get(player_id).unwrap().destination.is_some() {
+                // if the player just reached their destination (via a move)
+                if let Some(Move { player_id: _, .. }) = self.history.iter().rev().nth(2) {
                     self.stage = Stage::InGame(InGameStage::Purchase);
                 } else {
+                    // otherwise,
                     // must be rolling for first destinations
                     // check if all players have rolled for their destination
                     if self
@@ -602,9 +693,9 @@ impl State {
                         .count()
                         == self.players.len()
                     {
-                        self.stage = Stage::InGame(InGameStage::Movement);
-                        self.advance_turn();
+                        self.stage = Stage::InGame(InGameStage::MovementRoll);
                     }
+                    self.advance_turn();
                 }
 
                 self.players.get_mut(player_id).unwrap().destination = Some(city);
@@ -620,7 +711,9 @@ impl State {
                 self.history.push(Event::MovementRoll {
                     player_id: *player_id,
                     roll,
-                })
+                });
+
+                self.stage = Stage::InGame(InGameStage::Movement);
             }
             PurchaseEngine { player_id, engine } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
@@ -654,9 +747,14 @@ impl State {
                     }
                 }
             }
-            EndPurchaseStage { .. } => {
-                self.stage = Stage::InGame(InGameStage::Movement);
-                self.advance_turn();
+            EndPurchaseStage { player_id } => {
+                let player = self.players.get(player_id).unwrap();
+                if player.cash >= self.declare_amount as i64 {
+                    self.stage = Stage::InGame(InGameStage::DeclareOption);
+                } else {
+                    self.stage = Stage::InGame(InGameStage::MovementRoll);
+                    self.advance_turn();
+                }
             }
             SellRailToBank { player_id, rail } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
@@ -665,6 +763,29 @@ impl State {
                 player.cash += (rail.cost() / 2) as i64;
 
                 self.rail_ledger.insert(*rail, None);
+
+                // if the player has no more rails to sell and they are still bankrupt then they have lost the game
+                if self
+                    .rail_ledger
+                    .iter()
+                    .all(|(_, owner)| *owner != Some(*player_id))
+                {
+                    if player.cash <= 0 {
+                        player.bankrupt = true;
+                        self.advance_turn();
+                        self.player_order.retain(|id| id != player_id);
+                    } else {
+                        self.advance_turn();
+                    }
+
+                    self.stage = Stage::InGame(InGameStage::MovementRoll);
+                }
+
+                // if
+            }
+            EndBankruptcyHandling { player_id: _ } => {
+                self.stage = Stage::InGame(InGameStage::MovementRoll);
+                self.advance_turn();
             }
             AuctionRail { player_id, rail } => {
                 self.auction_state = Some(AuctionState {
@@ -724,14 +845,22 @@ impl State {
                     {
                         player.bankrupt = true;
                         // remove the player from the player order
+                        self.advance_turn();
                         self.player_order.retain(|id| id != player_id);
 
                         self.stage = Stage::InGame(InGameStage::MovementRoll);
-                        self.advance_turn();
                     } else {
                         self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
                     }
                 }
+            }
+            DeclareChoice { player_id, declare } => {
+                if *declare {
+                    self.players.get_mut(player_id).unwrap().going_home = true;
+                }
+
+                self.stage = Stage::InGame(InGameStage::MovementRoll);
+                self.advance_turn();
             }
             // TODO: Remove to ensure all events are handled
             _ => {}
@@ -913,10 +1042,21 @@ impl State {
                 let (city, _) = route;
 
                 // Verify that the city that is being traveled to can be reached in 1 move from the player's location
-                let (current_city, _) = player.route.last().unwrap();
-
-                if !RAILROAD_GRAPH.contains_edge(<C>::into(*current_city), <C>::into(*city)) {
+                let current_city = player.current_city();
+                if !RAILROAD_GRAPH.contains_edge(<C>::into(current_city.unwrap()), <C>::into(*city))
+                {
                     return Err("City cannot be reached in one move".to_string());
+                }
+
+                // Verify that they have not already traveled this dot pattern before
+                // Verify that player.current_city() and city do not appear next to each other in the player's route in any order
+                if player.move_will_repeat_dot_pattern(
+                    C::D(player.start.unwrap()),
+                    current_city.unwrap(),
+                    *city,
+                    player.route.iter().map(|(c, _)| *c).collect(),
+                ) {
+                    return Err("Player has already traveled between these two cities".to_string());
                 }
             }
             // These should only be sent from server to client
@@ -1091,7 +1231,10 @@ impl State {
                 }
             }
 
-            Declare { player_id } => {
+            DeclareChoice {
+                player_id,
+                declare: _,
+            } => {
                 // ensure that it's the declare option stage
                 if self.stage != Stage::InGame(InGameStage::DeclareOption) {
                     return Err("It is not the declare option stage".to_string());
@@ -1206,6 +1349,27 @@ impl State {
 
                 //
             }
+            EndBankruptcyHandling { player_id } => {
+                // ensure that it's the BankruptcyHandling stage
+                if self.stage != Stage::InGame(InGameStage::BankruptcyHandling) {
+                    return Err("It is not the BankruptcyHandling stage".to_string());
+                }
+
+                // check that the player exists
+                if !self.players.contains_key(player_id) {
+                    return Err("Player does not exist".to_string());
+                }
+
+                // ensure that the active player is the player that is ending the bankruptcy handling
+                if self.active_player_id != Some(*player_id) {
+                    return Err("It is not this player's turn".to_string());
+                }
+
+                // check that the player is no-longer bankrupt
+                if self.players.get(player_id).unwrap().bankrupt {
+                    return Err("Player is bankrupt still".to_string());
+                }
+            }
         }
 
         Ok(())
@@ -1226,6 +1390,7 @@ impl Default for State {
             winner: None,
             declare_amount: 200000,
             rover_reward: 50000,
+            auction_bid_increment: 500,
             auction_state: None,
         }
     }

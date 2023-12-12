@@ -1,5 +1,6 @@
 pub use crate::main_city::City;
 pub use crate::sub_city::SubCity;
+
 use serde::{Deserialize, Serialize};
 
 use petgraph::graph::{NodeIndex, UnGraph};
@@ -8,7 +9,7 @@ pub use crate::Cash;
 
 use strum::{EnumIter, IntoEnumIterator};
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 // // Should replace the railroad part in subcities with the below syntax.. that way I can have all railroads
 // // cleary documented and don't need to replicate paths twice (for start -> destination and destination -> start)
@@ -27,6 +28,33 @@ impl C {
             C::D(city) => city.coordinates(),
             C::P(city) => city.coordinates(),
         }
+    }
+}
+
+// impl convert from NodeIndex to C
+// TODO: Need to refactor this to not repeate logic between the two conversions
+impl std::convert::From<petgraph::prelude::NodeIndex> for C {
+    fn from(node_index: petgraph::prelude::NodeIndex) -> Self {
+        // iterate through C, find the index of the node
+        let mut i = 0;
+
+        for city in City::iter() {
+            if i == node_index.index() {
+                return C::D(city);
+            }
+
+            i += 1;
+        }
+
+        for sub_city in SubCity::iter() {
+            if i == node_index.index() {
+                return C::P(sub_city);
+            }
+
+            i += 1;
+        }
+
+        panic!("Could not find city for node index: {:?}", node_index)
     }
 }
 
@@ -173,6 +201,24 @@ macro_rules! graph_out_rails {
 
                     graph
                 }
+
+                pub fn rail_to_cities_map() -> HashMap<Rail, HashSet<C>> {
+                    let mut graph: HashMap<Rail, HashSet<C>> = HashMap::new();
+
+                    $(
+                        if let Some(city_list) = graph.get_mut(&Rail::$rr) {
+                            city_list.insert($c1);
+                            city_list.insert($c2);
+                        } else {
+                            let mut set = HashSet::new();
+                            set.insert($c1);
+                            set.insert($c2);
+                            graph.insert(Rail::$rr, set);
+                        }
+                    )*
+
+                    graph
+                }
             }
         }
     };
@@ -278,4 +324,6 @@ graph_out_rails! {
 
 lazy_static::lazy_static! {
     pub static ref RAILROAD_GRAPH: UnGraph<C, Rail> = Rail::get_railroad_graph();
+    #[allow(dead_code)]
+    pub static ref RAILS_TO_CITIES_MAP: HashMap<Rail, HashSet<C>> = Rail::rail_to_cities_map();
 }
