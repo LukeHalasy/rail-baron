@@ -160,7 +160,9 @@ impl DiceRoll {
             }
         };
 
-        (dice_roll, region_match)
+        // TODO: Remove / Don't commit. Just for testing while we only have northeast cities implemented
+        (dice_roll, Region::North_East)
+        // (dice_roll, region_match)
     }
 }
 
