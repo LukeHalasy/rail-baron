@@ -914,12 +914,8 @@ impl State {
 
                 // Verify that the city that is being traveled to can be reached in 1 move from the player's location
                 let (current_city, _) = player.route.last().unwrap();
-                if !RAILROAD_GRAPH
-                    .get(current_city)
-                    .unwrap()
-                    .iter()
-                    .any(|(r, _)| r == city)
-                {
+
+                if !RAILROAD_GRAPH.contains_edge(<C>::into(*current_city), <C>::into(*city)) {
                     return Err("City cannot be reached in one move".to_string());
                 }
             }

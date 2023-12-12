@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub use crate::rail::Rail;
-use strum::{EnumIter, IntoEnumIterator};
+use strum::EnumIter;
 
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;

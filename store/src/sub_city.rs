@@ -2,7 +2,7 @@ pub use crate::main_city::City;
 pub use crate::state::State;
 
 use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::EnumIter;
 
 // ($($c:tt: $s:tt => [$($nc:tt: [$($d:tt),*$(,)?]),*$(,)?] => [$($nsc:tt: [$($sd:tt),*$(,)?]),*$(,)?]),*$(,)?) => {
 macro_rules! sub_cities {
