@@ -128,7 +128,7 @@ impl DiceRoll {
         let red_dice = dice_roll.red_dice.unwrap();
         let white_dice = dice_roll.white_dice;
 
-        let region_match = if red_dice.is_odd() {
+        let _region_match = if red_dice.is_odd() {
             match white_dice.0 + white_dice.1 {
                 2 => Region::Plains,
                 3 => Region::South_East,
