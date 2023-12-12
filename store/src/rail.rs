@@ -2,11 +2,14 @@ pub use crate::main_city::City;
 pub use crate::sub_city::SubCity;
 use serde::{Deserialize, Serialize};
 
+use petgraph::graph::{NodeIndex, UnGraph};
+
 pub use crate::Cash;
 
-use strum::EnumIter;
+use strum::{EnumIter, IntoEnumIterator};
 
 use std::collections::HashMap;
+use std::fmt::Display;
 // // Should replace the railroad part in subcities with the below syntax.. that way I can have all railroads
 // // cleary documented and don't need to replicate paths twice (for start -> destination and destination -> start)
 // // also it's clear as I am making progress
@@ -23,6 +26,45 @@ impl C {
         match self {
             C::D(city) => city.coordinates(),
             C::P(city) => city.coordinates(),
+        }
+    }
+}
+
+impl std::convert::From<C> for petgraph::prelude::NodeIndex {
+    fn from(c: C) -> Self {
+        // iterate through C, find the index of the node
+        let mut i = 0;
+
+        // TODO: Iterate through all main cities
+        for city in City::iter() {
+            if let C::D(c) = c {
+                if c == city {
+                    return NodeIndex::new(i);
+                }
+            }
+
+            i += 1;
+        }
+
+        for sub_city in SubCity::iter() {
+            if let C::P(c) = c {
+                if c == sub_city {
+                    return NodeIndex::new(i);
+                }
+            }
+
+            i += 1;
+        }
+        // TODO: Iterate through all path cities
+        panic!("Could not find node index for {:?}", c);
+    }
+}
+
+impl Display for C {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            C::D(city) => write!(f, "{}", city),
+            C::P(city) => write!(f, "{}", city),
         }
     }
 }
@@ -99,21 +141,19 @@ macro_rules! graph_out_rails {
     ($($c1:expr, $c2:expr, $rr:tt);*$(;)?) => {
         paste::paste! {
             impl Rail {
-                pub fn get_railroad_graph() -> HashMap<C, Vec<(C, Rail)>> {
-                    let mut graph: HashMap<C, Vec<(C, Rail)>> = HashMap::new();
+                pub fn get_railroad_graph() -> UnGraph<C, Rail> {
+                    let mut graph = UnGraph::<C, Rail>::new_undirected();
+
+                    for city in City::iter() {
+                        graph.add_node(C::D(city));
+                    }
+
+                    for sub_city in SubCity::iter() {
+                        graph.add_node(C::P(sub_city));
+                    }
 
                     $(
-                    if let Some(rf) = graph.get_mut(&$c1) {
-                        rf.push(($c2, Rail::$rr))
-                    } else {
-                        graph.insert($c1, vec![($c2, Rail::$rr)]);
-                    }
-
-                    if let Some(rf) = graph.get_mut(&$c2) {
-                        rf.push(($c1, Rail::$rr))
-                    } else {
-                        graph.insert($c2, vec![($c1, Rail::$rr)]);
-                    }
+                        graph.add_edge($c1.into(), $c2.into(), Rail::$rr);
                     )*
 
                     graph
@@ -138,101 +178,104 @@ macro_rules! graph_out_rails {
     };
 }
 
+use City::*;
+use SubCity::*;
+use C::*;
+
 graph_out_rails! {
     // B_AND_M
-    C::P(SubCity::Springfield_MA), C::D(City::Albany_NY), B_AND_M ;
-    C::P(SubCity::Springfield_MA), C::D(City::Boston_MA), B_AND_M ;
-    C::P(SubCity::Springfield_MA), C::P(SubCity::Concord_NH), B_AND_M ;
-    C::P(SubCity::Concord_NH), C::D(City::Portland_ME), B_AND_M;
+    P(Springfield_MA), D(Albany_NY), B_AND_M ;
+    P(Springfield_MA), D(Boston_MA), B_AND_M ;
+    P(Springfield_MA), P(Concord_NH), B_AND_M ;
+    P(Concord_NH), D(Portland_ME), B_AND_M;
 
     // NYNH_AND_H
-    C::P(SubCity::Providence_RI), C::D(City::Boston_MA), NYNH_AND_H;
-    C::P(SubCity::Providence_RI), C::P(SubCity::New_Haven_CT), NYNH_AND_H;
-    C::P(SubCity::New_Haven_CT), C::D(City::New_York_NY), NYNH_AND_H;
+    P(Providence_RI), D(Boston_MA), NYNH_AND_H;
+    P(Providence_RI), P(New_Haven_CT), NYNH_AND_H;
+    P(New_Haven_CT), D(New_York_NY), NYNH_AND_H;
 
     // NYC
-    C::P(SubCity::Kingston_NY), C::D(City::New_York_NY), NYC;
-    C::P(SubCity::Kingston_NY), C::D(City::Albany_NY), NYC;
-    C::P(SubCity::Syracuse_NY), C::D(City::Albany_NY), NYC;
-    C::P(SubCity::Syracuse_NY), C::P(SubCity::Rochester_NY), NYC;
-    C::P(SubCity::Rochester_NY), C::D(City::Buffalo_NY), NYC;
-    C::P(SubCity::Erie_PA), C::D(City::Buffalo_NY), NYC;
-    C::P(SubCity::Erie_PA), C::D(City::Cleveland_OH), NYC;
-    C::P(SubCity::Perrysburg_OH), C::D(City::Cleveland_OH), NYC;
-    C::P(SubCity::Perrysburg_OH), C::D(City::Detroit_MI), NYC;
-    C::P(SubCity::Perrysburg_OH), C::P(SubCity::Shipshewana_IN), NYC;
-    C::P(SubCity::Shipshewana_IN), C::P(SubCity::South_Bend_IN), NYC;
-    C::P(SubCity::South_Bend_IN), C::D(City::Chicago_IL), NYC;
-    C::P(SubCity::Perrysburg_OH), C::P(SubCity::Fort_Wayne_IN), NYC;
-    C::P(SubCity::Fort_Wayne_IN), C::P(SubCity::Dayton_OH), NYC;
-    C::P(SubCity::Dayton_OH), C::D(City::Cincinnati_OH), NYC;
-    C::P(SubCity::Fort_Wayne_IN), C::P(SubCity::Muncie_IN), NYC;
-    C::P(SubCity::Muncie_IN), C::D(City::Indianapolis_IN), NYC;
-    C::P(SubCity::Terre_Haute_IN), C::D(City::Indianapolis_IN), NYC;
-    C::P(SubCity::Terre_Haute_IN), C::P(SubCity::Arcola_IL), NYC;
-    C::P(SubCity::Arcola_IL), C::D(City::St_Louis_MO), NYC;
+    P(Kingston_NY), D(New_York_NY), NYC;
+    P(Kingston_NY), D(Albany_NY), NYC;
+    P(Syracuse_NY), D(Albany_NY), NYC;
+    P(Syracuse_NY), P(Rochester_NY), NYC;
+    P(Rochester_NY), D(Buffalo_NY), NYC;
+    P(Erie_PA), D(Buffalo_NY), NYC;
+    P(Erie_PA), D(Cleveland_OH), NYC;
+    P(Perrysburg_OH), D(Cleveland_OH), NYC;
+    P(Perrysburg_OH), D(Detroit_MI), NYC;
+    P(Perrysburg_OH), P(Shipshewana_IN), NYC;
+    P(Shipshewana_IN), P(South_Bend_IN), NYC;
+    P(South_Bend_IN), D(Chicago_IL), NYC;
+    P(Perrysburg_OH), P(Fort_Wayne_IN), NYC;
+    P(Fort_Wayne_IN), P(Dayton_OH), NYC;
+    P(Dayton_OH), D(Cincinnati_OH), NYC;
+    P(Fort_Wayne_IN), P(Muncie_IN), NYC;
+    P(Muncie_IN), D(Indianapolis_IN), NYC;
+    P(Terre_Haute_IN), D(Indianapolis_IN), NYC;
+    P(Terre_Haute_IN), P(Arcola_IL), NYC;
+    P(Arcola_IL), D(St_Louis_MO), NYC;
 
     // PA
-    C::P(SubCity::Trenton_NJ), C::D(City::New_York_NY), PA;
-    C::P(SubCity::Trenton_NJ), C::D(City::Philadelphia_PA), PA;
-    C::P(SubCity::Pottstown_PA), C::D(City::Philadelphia_PA), PA;
-    C::P(SubCity::Pottstown_PA), C::D(City::Baltimore_MD), PA;
-    C::P(SubCity::Pottstown_PA), C::P(SubCity::Lancaster_PA), PA;
-    C::P(SubCity::Bedford_PA), C::P(SubCity::Lancaster_PA), PA;
-    C::P(SubCity::Bedford_PA), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::Youngstown_OH), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::New_Philadelphia_OH), C::D(City::Pittsburgh_PA), PA;
-    C::P(SubCity::New_Philadelphia_OH), C::D(City::Columbus_OH), PA;
-    C::P(SubCity::Youngstown_OH), C::P(SubCity::Akron_OH), PA;
-    C::P(SubCity::Youngstown_OH), C::P(SubCity::Erie_PA), PA;
-    C::P(SubCity::Erie_PA), C::D(City::Buffalo_NY), PA;
-    C::P(SubCity::Akron_OH), C::D(City::Cleveland_OH), PA;
-    C::P(SubCity::Akron_OH), C::D(City::Columbus_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Columbus_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Cincinnati_OH), PA;
-    C::P(SubCity::Dayton_OH), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::Columbus_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::Columbus_IN), C::D(City::Louisville_KY), PA;
-    C::P(SubCity::Terre_Haute_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::West_Lafayette_IN), C::D(City::Indianapolis_IN), PA;
-    C::P(SubCity::West_Lafayette_IN), C::D(City::Chicago_IL), PA;
-    C::P(SubCity::Terre_Haute_IN), C::P(SubCity::Effingham_IL), PA;
-    C::P(SubCity::Effingham_IL), C::D(City::St_Louis_MO), PA;
-    C::D(City::Baltimore_MD), C::D(City::Philadelphia_PA), PA;
+    P(Trenton_NJ), D(New_York_NY), PA;
+    P(Trenton_NJ), D(Philadelphia_PA), PA;
+    P(Pottstown_PA), D(Philadelphia_PA), PA;
+    P(Pottstown_PA), D(Baltimore_MD), PA;
+    P(Pottstown_PA), P(Lancaster_PA), PA;
+    P(Bedford_PA), P(Lancaster_PA), PA;
+    P(Bedford_PA), D(Pittsburgh_PA), PA;
+    P(Youngstown_OH), D(Pittsburgh_PA), PA;
+    P(New_Philadelphia_OH), D(Pittsburgh_PA), PA;
+    P(New_Philadelphia_OH), D(Columbus_OH), PA;
+    P(Youngstown_OH), P(Akron_OH), PA;
+    P(Youngstown_OH), P(Erie_PA), PA;
+    P(Erie_PA), D(Buffalo_NY), PA;
+    P(Akron_OH), D(Cleveland_OH), PA;
+    P(Akron_OH), D(Columbus_OH), PA;
+    P(Dayton_OH), D(Columbus_OH), PA;
+    P(Dayton_OH), D(Cincinnati_OH), PA;
+    P(Dayton_OH), D(Indianapolis_IN), PA;
+    P(Columbus_IN), D(Indianapolis_IN), PA;
+    P(Columbus_IN), D(Louisville_KY), PA;
+    P(Terre_Haute_IN), D(Indianapolis_IN), PA;
+    P(West_Lafayette_IN), D(Indianapolis_IN), PA;
+    P(West_Lafayette_IN), D(Chicago_IL), PA;
+    P(Terre_Haute_IN), P(Effingham_IL), PA;
+    P(Effingham_IL), D(St_Louis_MO), PA;
+    D(Baltimore_MD), D(Philadelphia_PA), PA;
 
     // RF_AND_P
-    C::D(City::Baltimore_MD), C::D(City::Richmond_VA), RF_AND_P;
+    D(Baltimore_MD), D(Richmond_VA), RF_AND_P;
 
     // B_AND_O
-    C::D(City::Baltimore_MD), C::D(City::Washington_DC), B_AND_O;
-    C::D(City::Baltimore_MD), C::P(SubCity::Frederick_MD), B_AND_O;
-    C::D(City::Washington_DC), C::P(SubCity::Frederick_MD), B_AND_O;
-    C::P(SubCity::Cumberland_MD), C::P(SubCity::Frederick_MD), B_AND_O;
-    C::P(SubCity::Cumberland_MD), C::P(SubCity::Uniontown_PA), B_AND_O;
-    C::D(City::Pittsburgh_PA), C::P(SubCity::Uniontown_PA), B_AND_O;
-    C::D(City::Pittsburgh_PA), C::P(SubCity::Youngstown_OH), B_AND_O;
-    C::P(SubCity::Akron_OH), C::P(SubCity::Youngstown_OH), B_AND_O;
-    C::P(SubCity::Akron_OH), C::P(SubCity::Fremont_OH), B_AND_O;
-    C::P(SubCity::Ligonier_IN), C::P(SubCity::Fremont_OH), B_AND_O;
-    C::P(SubCity::Ligonier_IN), C::P(SubCity::Argos_IN), B_AND_O;
-    C::D(City::Chicago_IL), C::P(SubCity::Argos_IN), B_AND_O;
-    // C::P(SubCity::Cumberland_MD), C::P(SubCity::Brideport_WV), B_AND_O;
-    C::P(SubCity::Clarksburg_WV), C::P(SubCity::Parkersburg_WV), B_AND_O;
-    C::P(SubCity::Chillicothe_OH), C::P(SubCity::Parkersburg_WV), B_AND_O;
-    C::P(SubCity::Chillicothe_OH), C::D(City::Cincinnati_OH), B_AND_O;
-    C::P(SubCity::Columbus_IN), C::D(City::Cincinnati_OH), B_AND_O;
-    C::P(SubCity::Columbus_IN), C::P(SubCity::Vincennes_IN), B_AND_O;
-    C::P(SubCity::Centralia_IL), C::P(SubCity::Vincennes_IN), B_AND_O;
-    C::P(SubCity::Centralia_IL), C::D(City::St_Louis_MO), B_AND_O;
+    D(Baltimore_MD), D(Washington_DC), B_AND_O;
+    D(Baltimore_MD), P(Frederick_MD), B_AND_O;
+    D(Washington_DC), P(Frederick_MD), B_AND_O;
+    P(Cumberland_MD), P(Frederick_MD), B_AND_O;
+    P(Cumberland_MD), P(Uniontown_PA), B_AND_O;
+    D(Pittsburgh_PA), P(Uniontown_PA), B_AND_O;
+    D(Pittsburgh_PA), P(Youngstown_OH), B_AND_O;
+    P(Akron_OH), P(Youngstown_OH), B_AND_O;
+    P(Akron_OH), P(Fremont_OH), B_AND_O;
+    P(Ligonier_IN), P(Fremont_OH), B_AND_O;
+    P(Ligonier_IN), P(Argos_IN), B_AND_O;
+    D(Chicago_IL), P(Argos_IN), B_AND_O;
+    // P(SubCity::Cumberland_MD), P(SubCity::Brideport_WV), B_AND_;
+    P(Clarksburg_WV), P(Parkersburg_WV), B_AND_O;
+    P(Chillicothe_OH), P(Parkersburg_WV), B_AND_O;
+    P(Chillicothe_OH), D(Cincinnati_OH), B_AND_O;
+    P(Columbus_IN), D(Cincinnati_OH), B_AND_O;
+    P(Columbus_IN), P(Vincennes_IN), B_AND_O;
+    P(Centralia_IL), P(Vincennes_IN), B_AND_O;
+    P(Centralia_IL), D(St_Louis_MO), B_AND_O;
 
     // C_AND_O
-    C::D(City::Buffalo_NY), C::P(SubCity::Brantford_ON), C_AND_O;
-    C::P(SubCity::London_ON), C::P(SubCity::Brantford_ON), C_AND_O;
-    C::D(City::Detroit_MI), C::P(SubCity::London_ON), C_AND_O;
-    C::D(City::Detroit_MI), C::P(SubCity::Perrysburg_OH), C_AND_O;
-
+    D(Buffalo_NY), P(Brantford_ON), C_AND_O;
+    P(London_ON), P(Brantford_ON), C_AND_O;
+    D(Detroit_MI), P(London_ON), C_AND_O;
+    D(Detroit_MI), P(Perrysburg_OH), C_AND_O;
 }
 
 lazy_static::lazy_static! {
-    pub static ref RAILROAD_GRAPH: HashMap<C, Vec<(C, Rail)>> = Rail::get_railroad_graph();
+    pub static ref RAILROAD_GRAPH: UnGraph<C, Rail> = Rail::get_railroad_graph();
 }
