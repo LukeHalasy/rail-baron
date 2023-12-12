@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub use crate::rail::Rail;
+use strum::{EnumIter, IntoEnumIterator};
 
 pub use crate::state::State;
 pub use crate::sub_city::SubCity;
@@ -8,7 +9,7 @@ pub use crate::sub_city::SubCity;
 macro_rules! cities {
     ($([$c:tt: $s:tt] => ($lat:literal, $long:literal)),*$(,)?) => {
         paste::paste! {
-            #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash)]
+            #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, EnumIter)]
             #[allow(non_camel_case_types)]
             pub enum City { $([<$c _ $s>]),* }
             impl City {
