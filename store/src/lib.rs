@@ -354,6 +354,9 @@ pub enum Event {
     EndBankruptcyHandling {
         player_id: PlayerId,
     },
+    ChangeStage {
+        stage: Stage,
+    },
 }
 
 impl State {
@@ -375,7 +378,9 @@ impl State {
                 self.player_order.push(*player_id);
             }
             Start { player_id: _ } => {
-                self.stage = Stage::InGame(InGameStage::OrderRoll);
+                self.consume(&Event::ChangeStage {
+                    stage: Stage::InGame(InGameStage::OrderRoll),
+                });
             }
             SetPlayerAttributes {
                 player_id,
@@ -525,9 +530,21 @@ impl State {
                         player.start = player.destination;
                         player.spaces_left_to_move = None;
                         player.destination = None;
-
-                        self.stage = Stage::InGame(InGameStage::DestinationRoll);
                     });
+
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::DestinationRoll),
+                    });
+
+                    if self.players.get(player_id).unwrap().cash >= self.declare_amount as i64 {
+                        self.consume(&Event::ChangeStage {
+                            stage: Stage::InGame(InGameStage::DeclareOption),
+                        });
+                    } else {
+                        self.consume(&Event::ChangeStage {
+                            stage: Stage::InGame(InGameStage::DestinationRoll),
+                        });
+                    }
                 }
 
                 // if the player is declared and they drop below the declare amount then they are no longer declared
@@ -539,7 +556,9 @@ impl State {
                 if at_home {
                     if let Some(player) = self.players.get(player_id) {
                         if player.cash >= self.declare_amount as i64 && player.going_home {
-                            self.stage = Stage::Ended;
+                            self.consume(&Event::ChangeStage {
+                                stage: Stage::Ended,
+                            });
                             self.winner = Some(*player_id);
                         }
                     }
@@ -558,12 +577,18 @@ impl State {
                             self.advance_turn();
                             self.player_order.retain(|id| id != player_id);
 
-                            self.stage = Stage::InGame(InGameStage::MovementRoll);
+                            self.consume(&Event::ChangeStage {
+                                stage: Stage::InGame(InGameStage::MovementRoll),
+                            });
                         } else {
-                            self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                            self.consume(&Event::ChangeStage {
+                                stage: Stage::InGame(InGameStage::BankruptcyHandling),
+                            });
                         }
                     } else if self.stage != Stage::InGame(InGameStage::DestinationRoll) {
-                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.consume(&Event::ChangeStage {
+                            stage: Stage::InGame(InGameStage::MovementRoll),
+                        });
                         self.advance_turn()
                     }
                 }
@@ -593,8 +618,9 @@ impl State {
                     .count()
                     == self.players.len()
                 {
-                    println!("Changing stage to destination roll");
-                    self.stage = Stage::InGame(InGameStage::DestinationRoll);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::DestinationRoll),
+                    });
                 }
 
                 // move to the next player
@@ -655,7 +681,9 @@ impl State {
                     self.active_player_id = Some(self.player_order[0]);
 
                     // set the stage to home roll
-                    self.stage = Stage::InGame(InGameStage::HomeRoll);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::HomeRoll),
+                    });
                 }
             }
             DestinationRollRequest { player_id } => {
@@ -681,7 +709,9 @@ impl State {
 
                 // if the player just reached their destination (via a move)
                 if let Some(Move { player_id: _, .. }) = self.history.iter().rev().nth(2) {
-                    self.stage = Stage::InGame(InGameStage::Purchase);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::Purchase),
+                    });
                 } else {
                     // otherwise,
                     // must be rolling for first destinations
@@ -693,7 +723,9 @@ impl State {
                         .count()
                         == self.players.len()
                     {
-                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.consume(&Event::ChangeStage {
+                            stage: Stage::InGame(InGameStage::MovementRoll),
+                        });
                     }
                     self.advance_turn();
                 }
@@ -713,7 +745,9 @@ impl State {
                     roll,
                 });
 
-                self.stage = Stage::InGame(InGameStage::Movement);
+                self.consume(&Event::ChangeStage {
+                    stage: Stage::InGame(InGameStage::Movement),
+                });
             }
             PurchaseEngine { player_id, engine } => {
                 let player: &mut Player = self.players.get_mut(player_id).unwrap();
@@ -750,9 +784,13 @@ impl State {
             EndPurchaseStage { player_id } => {
                 let player = self.players.get(player_id).unwrap();
                 if player.cash >= self.declare_amount as i64 {
-                    self.stage = Stage::InGame(InGameStage::DeclareOption);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::DeclareOption),
+                    });
                 } else {
-                    self.stage = Stage::InGame(InGameStage::MovementRoll);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::MovementRoll),
+                    });
                     self.advance_turn();
                 }
             }
@@ -778,13 +816,17 @@ impl State {
                         self.advance_turn();
                     }
 
-                    self.stage = Stage::InGame(InGameStage::MovementRoll);
+                    self.consume(&Event::ChangeStage {
+                        stage: Stage::InGame(InGameStage::MovementRoll),
+                    });
                 }
 
                 // if
             }
             EndBankruptcyHandling { player_id: _ } => {
-                self.stage = Stage::InGame(InGameStage::MovementRoll);
+                self.consume(&Event::ChangeStage {
+                    stage: Stage::InGame(InGameStage::MovementRoll),
+                });
                 self.advance_turn();
             }
             AuctionRail { player_id, rail } => {
@@ -848,9 +890,13 @@ impl State {
                         self.advance_turn();
                         self.player_order.retain(|id| id != player_id);
 
-                        self.stage = Stage::InGame(InGameStage::MovementRoll);
+                        self.consume(&Event::ChangeStage {
+                            stage: Stage::InGame(InGameStage::MovementRoll),
+                        });
                     } else {
-                        self.stage = Stage::InGame(InGameStage::BankruptcyHandling);
+                        self.consume(&ChangeStage {
+                            stage: Stage::InGame(InGameStage::BankruptcyHandling),
+                        })
                     }
                 }
             }
@@ -859,10 +905,13 @@ impl State {
                     self.players.get_mut(player_id).unwrap().going_home = true;
                 }
 
-                self.stage = Stage::InGame(InGameStage::MovementRoll);
+                self.consume(&Event::ChangeStage {
+                    stage: Stage::InGame(InGameStage::MovementRoll),
+                });
                 self.advance_turn();
             }
             // TODO: Remove to ensure all events are handled
+            ChangeStage { stage } => self.stage = *stage,
             _ => {}
         }
 
@@ -1369,6 +1418,9 @@ impl State {
                 if self.players.get(player_id).unwrap().bankrupt {
                     return Err("Player is bankrupt still".to_string());
                 }
+            }
+            ChangeStage { stage: _ } => {
+                return Err("ChangeStage should only be sent from server to client".to_string())
             }
         }
 
