@@ -356,12 +356,14 @@ pub enum Event {
     },
     ChangeStage {
         stage: Stage,
-    },
+        line: u32,
+    }
 }
 
 impl State {
     pub fn consume(&mut self, valid_event: &Event) {
         use Event::*;
+
         match valid_event {
             Create { player_id } | PlayerJoined { player_id } => {
                 if let Create { player_id } = valid_event {
@@ -380,6 +382,7 @@ impl State {
             Start { player_id: _ } => {
                 self.consume(&Event::ChangeStage {
                     stage: Stage::InGame(InGameStage::OrderRoll),
+                    line: line!(),
                 });
             }
             SetPlayerAttributes {
@@ -533,15 +536,18 @@ impl State {
                     });
 
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DestinationRoll),
                     });
 
                     if self.players.get(player_id).unwrap().cash >= self.declare_amount as i64 {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::DeclareOption),
                         });
                     } else {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::DestinationRoll),
                         });
                     }
@@ -557,6 +563,7 @@ impl State {
                     if let Some(player) = self.players.get(player_id) {
                         if player.cash >= self.declare_amount as i64 && player.going_home {
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::Ended,
                             });
                             self.winner = Some(*player_id);
@@ -578,18 +585,27 @@ impl State {
                             self.player_order.retain(|id| id != player_id);
 
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::InGame(InGameStage::MovementRoll),
                             });
                         } else {
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::InGame(InGameStage::BankruptcyHandling),
                             });
                         }
                     } else if self.stage != Stage::InGame(InGameStage::DestinationRoll) {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
                         self.advance_turn()
+                    }
+
+                    // check if the game is over
+                    if self.player_order.len() == 1 {
+                        self.stage = Stage::Ended;
+                        self.winner = Some(self.active_player_id.unwrap());
                     }
                 }
             }
@@ -619,6 +635,7 @@ impl State {
                     == self.players.len()
                 {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DestinationRoll),
                     });
                 }
@@ -682,6 +699,7 @@ impl State {
 
                     // set the stage to home roll
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::HomeRoll),
                     });
                 }
@@ -707,9 +725,9 @@ impl State {
                     city,
                 });
 
-                // if the player just reached their destination (via a move)
-                if let Some(Move { player_id: _, .. }) = self.history.iter().rev().nth(2) {
+                if !self.players.get(player_id).unwrap().route_history.is_empty() {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::Purchase),
                     });
                 } else {
@@ -724,6 +742,7 @@ impl State {
                         == self.players.len()
                     {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
                     }
@@ -746,6 +765,7 @@ impl State {
                 });
 
                 self.consume(&Event::ChangeStage {
+                    line: line!(),
                     stage: Stage::InGame(InGameStage::Movement),
                 });
             }
@@ -785,10 +805,12 @@ impl State {
                 let player = self.players.get(player_id).unwrap();
                 if player.cash >= self.declare_amount as i64 {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DeclareOption),
                     });
                 } else {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::MovementRoll),
                     });
                     self.advance_turn();
@@ -808,26 +830,55 @@ impl State {
                     .iter()
                     .all(|(_, owner)| *owner != Some(*player_id))
                 {
+                    // TODO: Determine if we really should autoend the turn or require the user to manually end the turn
                     if player.cash <= 0 {
                         player.bankrupt = true;
                         self.advance_turn();
                         self.player_order.retain(|id| id != player_id);
+                    } else if player.destination.is_none() {
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::InGame(InGameStage::DestinationRoll),
+                        });
                     } else {
                         self.advance_turn();
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::InGame(InGameStage::MovementRoll),
+                        });
                     }
 
-                    self.consume(&Event::ChangeStage {
-                        stage: Stage::InGame(InGameStage::MovementRoll),
-                    });
+                    // check if the game is over
+                    if self.player_order.len() == 1 {
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::Ended,
+                        });
+                        self.winner = Some(self.active_player_id.unwrap());
+                    }
                 }
 
                 // if
             }
-            EndBankruptcyHandling { player_id: _ } => {
-                self.consume(&Event::ChangeStage {
-                    stage: Stage::InGame(InGameStage::MovementRoll),
-                });
-                self.advance_turn();
+            EndBankruptcyHandling { player_id } => {
+                let player = self.players.get_mut(player_id).unwrap();
+
+                if player.cash <= 0 {
+                    player.bankrupt = true;
+                    self.advance_turn();
+                    self.player_order.retain(|id| id != player_id);
+                } else if player.destination.is_none() {
+                    self.consume(&Event::ChangeStage {
+                        line: line!(),
+                        stage: Stage::InGame(InGameStage::DestinationRoll),
+                    });
+                } else {
+                    self.advance_turn();
+                    self.consume(&Event::ChangeStage {
+                        line: line!(),
+                        stage: Stage::InGame(InGameStage::MovementRoll),
+                    });
+                }
             }
             AuctionRail { player_id, rail } => {
                 self.auction_state = Some(AuctionState {
@@ -891,10 +942,18 @@ impl State {
                         self.player_order.retain(|id| id != player_id);
 
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
+
+                        // check if the game is over
+                        if self.player_order.len() == 1 {
+                            self.stage = Stage::Ended;
+                            self.winner = Some(self.active_player_id.unwrap());
+                        }
                     } else {
                         self.consume(&ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::BankruptcyHandling),
                         })
                     }
@@ -906,12 +965,15 @@ impl State {
                 }
 
                 self.consume(&Event::ChangeStage {
+                    line: line!(),
                     stage: Stage::InGame(InGameStage::MovementRoll),
                 });
                 self.advance_turn();
             }
             // TODO: Remove to ensure all events are handled
-            ChangeStage { stage } => self.stage = *stage,
+            ChangeStage { line: _, stage } => {
+                self.stage = *stage;
+            }
             _ => {}
         }
 
@@ -1419,7 +1481,7 @@ impl State {
                     return Err("Player is bankrupt still".to_string());
                 }
             }
-            ChangeStage { stage: _ } => {
+            ChangeStage { stage: _, line: _ } => {
                 return Err("ChangeStage should only be sent from server to client".to_string())
             }
         }
