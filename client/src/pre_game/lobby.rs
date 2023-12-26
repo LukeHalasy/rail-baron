@@ -53,15 +53,25 @@ pub fn Lobby() -> impl IntoView {
                     }
                 />
             </ul>
-            <input type="submit" value="Start Game" on:click={
-                let mut tx = tx.clone();
-                move |_| {
-                    let _ = tx
-                        .try_send(ClientMessage::Event(Event::Start {
-                            player_id: player_id.0.get().unwrap(),
-                        }));
+            {
+                if game_state.get().unwrap().game_host == Some(player_id.0.get().unwrap()) {
+                    view! {
+                        <input type="submit" value="start game" on:click={
+                            let mut tx = tx.clone();
+                            move |_| {
+                                let _ = tx
+                                    .try_send(ClientMessage::Event(Event::Start {
+                                        player_id: player_id.0.get().unwrap(),
+                                    }));
+                            }
+                        }/>
+                    }.into_view()
+                } else {
+                    view! {
+                        <p>Waiting for host to start game</p>
+                    }.into_view()
                 }
-            }/>
+            }
         </Layout>
     }
 }

@@ -38,68 +38,7 @@ pub fn App() -> impl IntoView {
     provide_context(in_tx);
 
     // TODO: Uncomment
-    // let (state, set_state) = create_signal(None::<State>);
-
-    let (state, set_state) = create_signal(Some({
-        State {
-            active_player_id: Some(1),
-            game_host: Some(2),
-            players: HashMap::from([
-                (
-                    1,
-                    store::Player {
-                        cash: 20000,
-                        name: Some("Luke".to_string()),
-                        piece: Some(store::Piece::Blue),
-                        home_city: Some(City::Baltimore_MD),
-                        start: Some(City::Albany_NY),
-                        destination: Some(City::Buffalo_NY),
-                        ..store::Player::default()
-                    },
-                ),
-                (
-                    2,
-                    store::Player {
-                        cash: 2000,
-                        name: Some("Kyle".to_string()),
-                        piece: Some(store::Piece::Red),
-                        home_city: Some(City::Butte_MT),
-                        start: Some(City::Atlanta_GA),
-                        destination: Some(City::Las_Vegas_NV),
-                        ..store::Player::default()
-                    },
-                ),
-                (
-                    3,
-                    store::Player {
-                        cash: 10000,
-                        name: Some("Simon".to_string()),
-                        piece: Some(store::Piece::Yellow),
-                        home_city: Some(City::Los_Angeles_CA),
-                        start: Some(City::Tampa_FL),
-                        destination: Some(City::Casper_WY),
-                        ..store::Player::default()
-                    },
-                ),
-            ]),
-            history: vec![
-                Event::Create { player_id: 1 },
-                Event::PlayerJoined { player_id: 2 },
-                Event::PlayerJoined { player_id: 3 },
-                Event::Start { player_id: 1 },
-            ],
-            rail_ledger: Rail::iter()
-                .map(|rail| match rail {
-                    Rail::C_AND_O => (rail, Some(1)),
-                    Rail::ACL => (rail, Some(2)),
-                    Rail::SAL => (rail, Some(2)),
-                    _ => (rail, None),
-                })
-                .collect(),
-            ..State::default()
-        }
-    }));
-
+    let (state, set_state) = create_signal(None::<State>);
     provide_context(state);
     provide_context(set_state);
 
