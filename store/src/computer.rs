@@ -11,24 +11,29 @@ use petgraph::algo::astar;
 use strum::IntoEnumIterator;
 
 impl State {
-    fn evaluate(&self, player_id: PlayerId) -> f64 {
+    fn evaluate(&self, player_to_max_id: PlayerId) -> f64 {
         // evaluate the current game state and consider how good it is for the player_to_max_id
         // return a f64 between -1 and 1 where -1 means the player lost and 1 means the player won
 
         // check for wins and losses
         if self.stage == Stage::Ended {
-            if self.winner == Some(player_id) {
+            if self.winner == Some(player_to_max_id) {
                 return 1.0;
             } else {
                 return -1.0;
             }
         };
 
+        // check if the player has been eliminated
+        if !self.player_order.contains(&player_to_max_id) {
+           return -1.0;
+        }
+
         // TODO: Evaluate railroad network connectivity.
         // let network_connectivity = self.evaluate_network_connectivity(player_id);
 
         // TODO: Evaluate how much money the player had at the end of the game.
-        let money = self.evaluate_money(player_id);
+        let money = self.evaluate_money(player_to_max_id);
 
         // TODO: Evaluate how many cities the player made it to.
         // TODO: Evaluate the directness of each player's routes.
@@ -168,6 +173,7 @@ impl State {
                 valid_moves
             }
             InGame(OrderRoll) => {
+                println!("Order roll request going to be suggested");
                 vec![Event::OrderRollRequest { player_id }]
             }
             InGame(HomeRoll) => {
@@ -299,7 +305,7 @@ impl State {
         minning_for_other: bool,
         last_event: Event,
     ) -> (f64, Event) {
-        if self.stage == Stage::Ended || depth == 0 {
+        if self.stage == Stage::Ended || depth == 0 || !self.player_order.contains(&player_to_max_id) {
             return (self.evaluate(player_to_max_id), last_event);
         };
 
