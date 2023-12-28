@@ -1,13 +1,17 @@
+use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_leaflet::{MapContainer, Position, TileLayer};
 use leptos_meta::Title;
 use leptos_router::use_params;
+use store::{ClientMessage, Event};
 
 use crate::{
     app::PlayerId,
     game::{
         cities::Cities,
-        debug::{events::EventHistoryDebug, player::PlayerDebug, rail::RailDebug},
+        debug::{
+            events::EventHistoryDebug, player::PlayerDebug, rail::RailDebug, state::StateDebug,
+        },
         player::Player,
         rails::Rails,
     },
@@ -21,28 +25,62 @@ pub fn Game() -> impl IntoView {
             .with(|params| params.as_ref().map(|params| params.id).unwrap_or_default())
     };
 
-    let _player_id = use_context::<PlayerId>().expect("Expected a player id signal");
+    let player_id = use_context::<PlayerId>().expect("Expected a player id signal");
     let game_state =
         use_context::<ReadSignal<Option<store::State>>>().expect("Expected a game state signal");
+    let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
 
-    // let players = move || {
-    //     if game_state.is_some() {
-    //         view! {
-    //             <For
-    //                 each=move || game_state.unwrap().get().unwrap_or_default().players
-    //                 key=|player_map| player_map.0
-    //                 children=move |(_id, player)| {
-    //                     view! {
-    //                         <Player player={player.clone()}></Player>
-    //                     }
-    //                 }
-    //             />
-    //         }
-    //         .into_view()
-    //     } else {
-    //         view! {}.into_view()
-    //     }
-    // };
+    let players = move || {
+        if game_state.get().is_some() {
+            view! {
+                <For
+                    each=move || game_state.get().unwrap().players
+                    key=|player_map| player_map.0
+                    children=move |(_id, player)| {
+                        view! {
+                            <Player player={player.clone()}></Player>
+                        }
+                    }
+                />
+            }
+            .into_view()
+        } else {
+            view! {}.into_view()
+        }
+    };
+
+    let player_info = move || {
+        if game_state.get().is_some() {
+            view! {
+                <For
+                    each=move || game_state.get().unwrap().players
+                    key=|player_map| player_map.0
+                    children=move |(id, player)| {
+                        let home_city = player.home_city.map(|h| h.to_string()).unwrap_or_else(|| "None".to_string());
+                        let start = player.start.map(|s| s.to_string()).unwrap_or_else(|| "None".to_string());
+                        let destination = player.destination.map(|d| d.to_string()).unwrap_or_else(|| "None".to_string());
+                        let piece = player.piece.unwrap().to_string();
+
+                        view! {
+                            <div>
+                                <h1>{id}</h1>
+                                <h1>{player.name.clone()}</h1>
+                                <h1>{player.cash}</h1>
+                                <h1>{piece}</h1>
+                                <h1>Home: {home_city}</h1>
+                                <h1>Route: {start} -> {destination}</h1>
+                                // <h1>{move || player.piece.unwrap().clone()}</h1>
+                                // <h1>{player.piece.unwrap().clone()}</h1>
+                            </div>
+                        }
+                    }
+                />
+            }
+            .into_view()
+        } else {
+            view! {}.into_view()
+        }
+    };
 
     view! {
         <Title text={move || format!("Game {}", id())} />
@@ -54,21 +92,110 @@ pub fn Game() -> impl IntoView {
                 <Rails></Rails>
                 <Cities></Cities>
 
-                <For
-                    each=move || game_state.get().unwrap().players
-                    key=|player_map| player_map.0
-                    children=move |(_player_id, player)| {
-                        view! {
-                            <Player player={player.clone()}></Player>
-                        }
-                    }
-                />
+                { players }
             </MapContainer>
+            // create a div that displays the active_player_id + the current stage
+            <div style="position:absolute; left:0; top: 0; width:100vw; background-color:rgba(0,0,0,0.5); color:white; z-index:9999; overflow:auto;">
+                <h1>{move || format!("Stage: {:?}", game_state.get().unwrap().stage)}</h1>
+                <h1>{move || format!("Active Player: {:?}", game_state.get().unwrap().active_player_id)}</h1>
+
+                {
+                    move || {
+                    if game_state.get().unwrap().active_player_id == Some(player_id.0.get().unwrap()) {
+                        if let store::Stage::InGame(stage) = game_state.get().unwrap().stage {
+                            match stage {
+                                store::InGameStage::OrderRoll => {
+                                    view! {
+                                        <input type="submit" value="Roll for order" on:click={
+                                            let mut tx = tx.clone();
+                                            move |_| {
+                                                let _ = tx
+                                                    .try_send(ClientMessage::Event(Event::OrderRollRequest {
+                                                        player_id: player_id.0.get().unwrap(),
+                                                    }));
+                                            }
+                                        }/>
+                                    }.into_view()
+                                },
+                                store::InGameStage::HomeRoll => {
+                                    view! {
+                                        <input type="submit" value="Roll for home" on:click={
+                                            let mut tx = tx.clone();
+                                            move |_| {
+                                                let _ = tx
+                                                    .try_send(ClientMessage::Event(Event::HomeRollRequest {
+                                                        player_id: player_id.0.get().unwrap(),
+                                                    }));
+                                            }
+                                        }/>
+                                    }.into_view()
+                                },
+                                store::InGameStage::DestinationRoll => {
+                                    view! {
+                                        <input type="submit" value="Roll for destination" on:click={
+                                            let mut tx = tx.clone();
+                                            move |_| {
+                                                let _ = tx
+                                                    .try_send(ClientMessage::Event(Event::DestinationRollRequest {
+                                                        player_id: player_id.0.get().unwrap(),
+                                                    }));
+                                            }
+                                        }/>
+                                    }.into_view()
+                                },
+                                store::InGameStage::MovementRoll => {
+                                    view! {
+                                        <input type="submit" value="Roll for movement" on:click={
+                                            let mut tx = tx.clone();
+                                            move |_| {
+                                                let _ = tx
+                                                    .try_send(ClientMessage::Event(Event::MovementRollRequest {
+                                                        player_id: player_id.0.get().unwrap(),
+                                                    }));
+                                            }
+                                        }/>
+                                    }.into_view()
+                                },
+                                store::InGameStage::BankruptcyHandling => todo!(),
+                                store::InGameStage::BankruptcyAuction => todo!(),
+                                store::InGameStage::DeclareOption => todo!(),
+                                store::InGameStage::Movement => todo!(),
+                                store::InGameStage::Purchase => todo!(),
+                            }
+                        } else {
+                            view! {
+                                <p>Unexpected Stage..</p>
+                            }.into_view()
+                        }
+
+
+                        // view! {
+                        //     <input type="submit" value="Roll Dice" on:click={
+                        //         let mut tx = tx.clone();
+                        //         move |_| {
+                        //             let _ = tx
+                        //                 .try_send(ClientMessage::RollDice(id().try_into().unwrap()));
+                        //         }
+                        //     }/>
+                        // }.into_view()
+                    } else {
+                        view! {
+                            <p>Waiting for other players moves..</p>
+                        }.into_view()
+                    }
+
+                    }
+                }
+
+            </div>
+
             // create a div that displays each player's name and cash at the bottom of the screen
             <div style="position:absolute; left:0; bottom: 0; width:100vw; background-color:rgba(0,0,0,0.5); color:white; z-index:9999; overflow:auto;">
-                <RailDebug></RailDebug>
-                <PlayerDebug></PlayerDebug>
-                <EventHistoryDebug></EventHistoryDebug>
+                // <RailDebug></RailDebug>
+                // <PlayerDebug></PlayerDebug>
+                // <EventHistoryDebug></EventHistoryDebug>
+                // <StateDebug></StateDebug>
+                { player_info }
             </div>
         </main>
     }
