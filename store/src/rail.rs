@@ -1,5 +1,5 @@
 pub use crate::main_city::City;
-pub use crate::sub_city::SubCity;
+pub use crate::main_city::SubCity;
 
 use serde::{Deserialize, Serialize};
 
@@ -298,8 +298,8 @@ graph_out_rails! {
     D(Baltimore_MD), P(Frederick_MD), B_AND_O;
     D(Washington_DC), P(Frederick_MD), B_AND_O;
     P(Cumberland_MD), P(Frederick_MD), B_AND_O;
-    P(Cumberland_MD), P(Uniontown_PA), B_AND_O;
-    D(Pittsburgh_PA), P(Uniontown_PA), B_AND_O;
+    P(Cumberland_MD), P(Union_Town_PA), B_AND_O;
+    D(Pittsburgh_PA), P(Union_Town_PA), B_AND_O;
     D(Pittsburgh_PA), P(Youngstown_OH), B_AND_O;
     P(Akron_OH), P(Youngstown_OH), B_AND_O;
     P(Akron_OH), P(Fremont_OH), B_AND_O;
@@ -320,6 +320,106 @@ graph_out_rails! {
     P(London_ON), P(Brantford_ON), C_AND_O;
     D(Detroit_MI), P(London_ON), C_AND_O;
     D(Detroit_MI), P(Perrysburg_OH), C_AND_O;
+
+    // WP 
+    P(Klamath_Falls_OR), P(Chester_CA), WP;
+    P(Chester_CA), P(Herlong_CA), WP;
+    P(Chester_CA), P(Paradise_CA), WP;
+    P(Paradise_CA), D(Sacramento_CA), WP;
+    P(Modesto_CA), D(Sacramento_CA), WP;
+    P(Modesto_CA), D(San_Francisco_CA), WP;
+    D(Reno_NV), P(Herlong_CA), WP;
+    P(Sulphur_NV), P(Herlong_CA), WP;
+    P(Sulphur_NV), P(Beowawe_NV), WP;
+    P(Wells_NV), P(Beowawe_NV), WP;
+    P(Wells_NV), P(Baker_NV), WP;
+    D(Salt_Lake_City_UT), P(Baker_NV), WP;
+
+    // SP 
+    D(New_Orleans_LA), P(Houma_LA), SP;
+    P(Lafayette_LA), P(Houma_LA), SP;
+    P(Lafayette_LA), P(Beaumont_TX), SP;
+    D(Houston_TX), P(Beaumont_TX), SP;
+    D(Houston_TX), P(Livingston_TX), SP;
+    P(Nacogdoches_TX), P(Livingston_TX), SP;
+    P(Nacogdoches_TX), D(Shreveport_LA), SP;
+    P(Flatonia_TX), P(Sealy_TX), SP;
+    D(Houston_TX), P(Sealy_TX), SP;
+    P(Flatonia_TX), D(San_Antonio_TX), SP;
+    P(Hondo_TX), D(San_Antonio_TX), SP;
+    P(Hondo_TX), P(Comstock_TX), SP;
+    P(Sanderson_TX), P(Comstock_TX), SP;
+    P(Sanderson_TX), P(Marfa_TX), SP;
+    P(Sierra_Blanca_TX), P(Marfa_TX), SP;
+    P(Sierra_Blanca_TX), D(El_Paso_TX), SP;
+    P(Alamogordo_NM), D(El_Paso_TX), SP;
+    P(Alamogordo_NM), P(Ancho_NM), SP;
+    P(Santa_Rosa_NM), P(Ancho_NM), SP;
+    P(Santa_Rosa_NM), D(Tucumcari_NM), SP;
+    P(Deming_NM), D(El_Paso_TX), SP;
+    P(Deming_NM), P(Lordsburg_NM), SP;
+    P(Pomerene_AZ), P(Lordsburg_NM), SP;
+    P(Pomerene_AZ), P(Mariana_AZ), SP;
+    D(Phoenix_AZ), P(Mariana_AZ), SP;
+    D(Phoenix_AZ), P(Aztec_NM), SP;
+    P(Yuma_AZ), P(Aztec_NM), SP;
+    P(Yuma_AZ), P(Brawley_CA), SP;
+    P(Brawley_CA), P(San_Bernardino_CA), SP;
+    D(Los_Angeles_CA), P(San_Bernardino_CA), SP;
+    D(Los_Angeles_CA), P(Santa_Barbara_CA), SP;
+    P(Santa_Maria_CA), P(Santa_Barbara_CA), SP;
+    P(Santa_Maria_CA), P(San_Simeon_CA), SP;
+    P(Big_Sur_CA), P(San_Simeon_CA), SP;
+    P(Big_Sur_CA), P(San_Jose_CA), SP;
+    D(San_Francisco_CA), P(San_Jose_CA), SP;
+    D(San_Francisco_CA), P(Santa_Rosa_CA), SP;
+    P(Fortuna_CA), P(Santa_Rosa_CA), SP;
+    D(Sacramento_CA), P(Santa_Rosa_CA), SP;
+    D(Sacramento_CA), P(Gold_Run_CA), SP;
+    D(Reno_NV), P(Gold_Run_CA), SP;
+    D(Reno_NV), P(Love_Lock_NV), SP;
+    P(Beowawe_NV), P(Love_Lock_NV), SP;
+    P(Beowawe_NV), P(Wells_NV), SP;
+    P(West_Wendover_NV), P(Wells_NV), SP;
+    P(West_Wendover_NV), P(Ogden_UT), SP;
+    P(Fortuna_CA), P(Crescent_City_CA), SP;
+    P(Grants_Pass_OR), P(Crescent_City_CA), SP;
+    P(Grants_Pass_OR), P(Roseburg_OR), SP;
+    P(Eugene_OR), P(Roseburg_OR), SP;
+    P(Eugene_OR), P(Salem_OR), SP;
+    D(Portland_OR), P(Salem_OR), SP;
+
+    // ACL
+    D(Richmond_VA), P(Emporia_VA), ACL;
+    P(Enfield_NC), P(Emporia_VA), ACL;
+    P(Enfield_NC), P(Greenville_NC), ACL;
+    P(Dunn_NC), P(Greenville_NC), ACL;
+    P(Dunn_NC), P(Fayetteville_NC), ACL;
+    P(Manning_SC), P(Fayetteville_NC), ACL;
+    P(Manning_SC), D(Charleston_SC), ACL;
+    P(Savannah_GA), D(Charleston_SC), ACL;
+    P(Savannah_GA), P(Willacoochee_GA), ACL;
+    D(Jacksonville_FL), P(Willacoochee_GA), ACL;
+    P(Arabi_GA), P(Willacoochee_GA), ACL;
+    P(Arabi_GA), P(Perry_GA), ACL;
+    D(Atlanta_GA), P(Perry_GA), ACL;
+    P(Roanoke_AL), P(Perry_GA), ACL;
+    P(Roanoke_AL), D(Birmingham_AL), ACL;
+    P(Willacoochee_GA), P(Moultrie_GA), ACL;
+    P(Radium_Springs_GA), P(Moultrie_GA), ACL;
+    P(Radium_Springs_GA), P(Arabi_GA), ACL;
+    P(Radium_Springs_GA), P(Dothan_AL), ACL;
+    P(Radium_Springs_GA), P(Tallahassee_FL), ACL;
+    P(Moultrie_GA), P(Dothan_AL), ACL;
+    P(Luverne_AL), P(Dothan_AL), ACL;
+    P(Luverne_AL), P(Montgomery_AL), ACL;
+    P(Cedar_Key_FL), P(Tallahassee_FL), ACL;
+    P(Cedar_Key_FL), D(Jacksonville_FL), ACL;
+    P(Cedar_Key_FL), P(Spring_Hill_FL), ACL;
+    D(Tampa_FL), P(Spring_Hill_FL), ACL;
+    
+    
+    
 }
 
 lazy_static::lazy_static! {
