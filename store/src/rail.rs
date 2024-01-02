@@ -291,7 +291,7 @@ graph_out_rails! {
     D(Baltimore_MD), D(Philadelphia_PA), PA;
 
     // RF_AND_P
-    D(Baltimore_MD), D(Richmond_VA), RF_AND_P;
+    D(Washington_DC), D(Richmond_VA), RF_AND_P;
 
     // B_AND_O
     D(Baltimore_MD), D(Washington_DC), B_AND_O;
@@ -418,7 +418,137 @@ graph_out_rails! {
     P(Cedar_Key_FL), P(Spring_Hill_FL), ACL;
     D(Tampa_FL), P(Spring_Hill_FL), ACL;
     
+    // N_AND_W
+    D(Norfolk_VA), P(Emporia_VA), N_AND_W;
+    P(Brookneal_VA), P(Emporia_VA), N_AND_W;
+    P(Brookneal_VA), P(Roanoke_VA), N_AND_W;
+    P(Wytheville_VA), P(Roanoke_VA), N_AND_W;
+    P(Wytheville_VA), P(Marion_VA), N_AND_W;
+    P(Wytheville_VA), P(Grundy_VA), N_AND_W;
+    P(Paintsville_KY), P(Grundy_VA), N_AND_W;
+    P(Paintsville_KY), P(Huntington_WV), N_AND_W;
+    P(Winchester_OH), P(Huntington_WV), N_AND_W;
+    P(Chillicothe_OH), P(Huntington_WV), N_AND_W;
+    P(Chillicothe_OH), D(Columbus_OH), N_AND_W;
+    P(Winchester_OH), D(Cincinnati_OH), N_AND_W;
+    P(Bristol_VA), P(Marion_VA), N_AND_W;
     
+    // SAL
+    // TODO: Bremen appears between cedar bluff and atlanta and looks like it's on the route despite not being. Need to fix this to not confuse players.
+    D(Miami_FL), P(West_Palm_Beach_FL), SAL;
+    P(Sebring_FL), P(West_Palm_Beach_FL), SAL;
+    P(Sebring_FL), P(Winter_Haven_FL), SAL;
+    P(Spring_Hill_FL), P(Winter_Haven_FL), SAL;
+    P(Spring_Hill_FL), D(Tampa_FL), SAL;
+    P(Spring_Hill_FL), P(Ocala_FL), SAL;
+    D(Jacksonville_FL), P(Ocala_FL), SAL;
+    D(Jacksonville_FL), P(Lee_FL), SAL;
+    D(Jacksonville_FL), P(Brunswick_GA), SAL;
+    P(Savannah_GA), P(Brunswick_GA), SAL;
+    P(Savannah_GA), D(Charleston_SC), SAL;
+    P(Conway_SC), D(Charleston_SC), SAL;
+    P(Conway_SC), P(Fayetteville_NC), SAL;
+    P(Biscoe_NC), P(Fayetteville_NC), SAL;
+    P(Biscoe_NC), P(Sanford_NC), SAL;
+    P(Raleigh_NC), P(Sanford_NC), SAL;
+    P(Raleigh_NC), P(Warrenton_NC), SAL;
+    P(Emporia_VA), P(Warrenton_NC), SAL;
+    P(Emporia_VA), D(Richmond_VA), SAL;
+    P(Biscoe_NC), P(Chesterfield_SC), SAL;
+    D(Charlotte_TN), P(Chesterfield_SC), SAL;
+    P(Columbia_SC), P(Chesterfield_SC), SAL;
+    P(Columbia_SC), P(Augusta_GA), SAL;
+    P(Siloam_GA), P(Augusta_GA), SAL;
+    P(Siloam_GA), D(Atlanta_GA), SAL;
+    P(Cedar_Bluff_MS), D(Atlanta_GA), SAL;
+    P(Cedar_Bluff_MS), D(Birmingham_AL), SAL;
+    P(Tallahassee_FL), P(Lee_FL), SAL;
+    P(Tallahassee_FL), P(Blountstown_FL), SAL;
+    P(Tallahassee_FL), P(Dothan_AL), SAL;
+    P(Blountstown_FL), P(Dothan_AL), SAL;
+    P(Midway_AL), P(Dothan_AL), SAL;
+    P(Midway_AL), P(Montgomery_AL), SAL;
+
+    // SOU
+    D(New_Orleans_LA), P(Franklinton_LA), SOU;
+    P(Hattiesburg_MS), P(Franklinton_LA), SOU;
+    P(Hattiesburg_MS), P(Meridian_MS), SOU;
+    // P(Tuscaloosa_AL), P(Meridian_MS), SOU;
+    // P(Tuscaloosa_AL), D(Birmingham_AL), SOU;
+    P(Double_Springs_AL), D(Birmingham_AL), SOU;
+    P(Double_Springs_AL), P(Corinth_MS), SOU;
+    D(Memphis_TN), P(Corinth_MS), SOU;
+    P(Moulton_AL), P(Corinth_MS), SOU;
+    P(Moulton_AL), P(Pleasant_Hill_TN), SOU;
+    D(Chattanooga_TN), P(Pleasant_Hill_TN), SOU;
+    D(Chattanooga_TN), P(Athens_TN), SOU;
+    D(Chattanooga_TN), P(Rome_GA), SOU;
+    P(Athens_TN), P(Rome_GA), SOU;
+    P(Athens_TN), D(Knoxville_TN), SOU;
+    P(Mosheim_TN), D(Knoxville_TN), SOU;
+    P(Mosheim_TN), P(Bristol_VA), SOU;
+    D(Atlanta_GA), P(Rome_GA), SOU;
+    D(Atlanta_GA), P(Bremen_GA), SOU;
+    D(Birmingham_AL), P(Bremen_GA), SOU;
+    D(Atlanta_GA), P(Commerce_GA), SOU;
+    P(Clemson_SC), P(Commerce_GA), SOU;
+    P(Clemson_SC), P(Spartanburg_SC), SOU;
+    D(Charlotte_TN), P(Spartanburg_SC), SOU;
+    D(Charlotte_TN), P(Greensboro_NC), SOU;
+    P(Bassett_VA), P(Greensboro_NC), SOU;
+    P(Bassett_VA), P(Roanoke_VA), SOU;
+    P(Charlottesville_VA), P(Roanoke_VA), SOU;
+    P(Charlottesville_VA), P(Culpeper_VA), SOU;
+    // TODO: Look into tank fight tactics
+
+    // T_AND_P
+    D(El_Paso_TX), P(Sierra_Blanca_TX), T_AND_P;
+    P(Toyah_TX), P(Sierra_Blanca_TX), T_AND_P;
+    P(Toyah_TX), P(Odessa_TX), T_AND_P;
+    P(Big_Spring_TX), P(Odessa_TX), T_AND_P;
+    P(Big_Spring_TX), P(Abilene_TX), T_AND_P;
+    P(Ranger_TX), P(Abilene_TX), T_AND_P;
+    P(Ranger_TX), D(Fort_Worth_TX), T_AND_P;
+    D(Dallas_TX), D(Fort_Worth_TX), T_AND_P;
+    D(Dallas_TX), P(Lindale_TX), T_AND_P;
+    P(Longview_TX), P(Lindale_TX), T_AND_P;
+    P(Longview_TX), D(Shreveport_LA), T_AND_P;
+    P(Ashdown_AR), D(Shreveport_LA), T_AND_P;
+    P(Natchitoches_LA), D(Shreveport_LA), T_AND_P;
+    P(Natchitoches_LA), P(Alexandria_LA), T_AND_P;
+    P(Baton_Rouge_LA), P(Alexandria_LA), T_AND_P;
+    P(Baton_Rouge_LA), D(New_Orleans_LA), T_AND_P;
+
+    // L_AND_N
+    D(Louisville_KY), P(Elizabethtown_KY), L_AND_N;
+    P(Bowling_Green_KY), P(Elizabethtown_KY), L_AND_N;
+    P(Bowling_Green_KY), D(Nashville_TN), L_AND_N;
+    P(Lewisburg_TN), D(Nashville_TN), L_AND_N;
+    P(Lewisburg_TN), P(Cullman_AL), L_AND_N;
+    D(Birmingham_AL), P(Cullman_AL), L_AND_N;
+    D(Birmingham_AL), P(Montgomery_AL), L_AND_N;
+    P(Greenville_AL), P(Montgomery_AL), L_AND_N;
+    P(Greenville_AL), P(Evergreen_AL), L_AND_N;
+    P(Niceville_FL), P(Evergreen_AL), L_AND_N;
+    D(Mobile_AL), P(Evergreen_AL), L_AND_N;
+    D(Mobile_AL), P(Gulfport_MS), L_AND_N;
+    D(New_Orleans_LA), P(Gulfport_MS), L_AND_N;
+    P(Niceville_FL), P(Bonifay_FL), L_AND_N;
+    P(Blountstown_FL), P(Bonifay_FL), L_AND_N;
+    P(Hopkinsville_KY), D(Nashville_TN), L_AND_N;
+    P(Camden_TN), D(Nashville_TN), L_AND_N;
+    P(Camden_TN), P(Brownsville_TN), L_AND_N;
+    D(Memphis_TN), P(Brownsville_TN), L_AND_N;
+    P(Tullahoma_TN), D(Nashville_TN), L_AND_N;
+    P(Tullahoma_TN), D(Chattanooga_TN), L_AND_N;
+    P(Ellijay_GA), D(Chattanooga_TN), L_AND_N;
+    P(Ellijay_GA), D(Atlanta_GA), L_AND_N;
+    P(Ellijay_GA), P(Tellico_Plains_TN), L_AND_N;
+    D(Knoxville_TN), P(Tellico_Plains_TN), L_AND_N;
+    D(Knoxville_TN), P(Williamsburg_KY), L_AND_N;
+    P(Mt_Vernon_KY), P(Williamsburg_KY), L_AND_N;
+    P(Mt_Vernon_KY), P(Lexington_KY), L_AND_N;
+    D(Cincinnati_OH), P(Lexington_KY), L_AND_N;
     
 }
 
