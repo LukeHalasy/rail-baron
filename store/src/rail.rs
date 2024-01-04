@@ -610,6 +610,33 @@ graph_out_rails! {
     P(Nathrop_CO), P(Aspen_CO), D_AND_RGW;
     P(Nathrop_CO), D(Pueblo_CO), D_AND_RGW;
 
+    // CMSTP_AND_P
+    D(Chicago_IL), P(Kenosha_WI), CMSTP_AND_P;
+    D(Milwaukee_WI), P(Kenosha_WI), CMSTP_AND_P;
+    D(Milwaukee_WI), P(Madison_WI), CMSTP_AND_P;
+    P(Wisconsin_Dells_WI), P(Madison_WI), CMSTP_AND_P;
+    P(Wisconsin_Dells_WI), P(La_Crosse_WI), CMSTP_AND_P;
+    P(Wisconsin_Dells_WI), D(Minneapolis_MN), CMSTP_AND_P;
+    P(Hutchinson_KS), D(Minneapolis_MN), CMSTP_AND_P;
+    P(Hutchinson_KS), P(Appleton_WI), CMSTP_AND_P;
+    P(Webster_SD), P(Appleton_WI), CMSTP_AND_P;
+    P(Webster_SD), P(Bowdle_SD), CMSTP_AND_P;
+    P(McIntosh_SD), P(Bowdle_SD), CMSTP_AND_P;
+    P(McIntosh_SD), P(Reeder_ND), CMSTP_AND_P;
+    P(Baker_MT), P(Reeder_ND), CMSTP_AND_P;
+    P(Baker_MT), P(Terry_MT), CMSTP_AND_P;
+    P(Forsyth_MT), P(Terry_MT), CMSTP_AND_P;
+    P(Forsyth_MT), P(Roundup_MT), CMSTP_AND_P;
+    P(Harlowton_MT), P(Roundup_MT), CMSTP_AND_P;
+    P(Harlowton_MT), P(Townsend_MT), CMSTP_AND_P;
+    D(Butte_MT), P(Townsend_MT), CMSTP_AND_P;
+    D(Butte_MT), P(Missoula_MT), CMSTP_AND_P;
+    P(St_Regis_MT), P(Missoula_MT), CMSTP_AND_P;
+    P(St_Regis_MT), P(Cataldo_ID), CMSTP_AND_P;
+    D(Spokane_WA), P(Cataldo_ID), CMSTP_AND_P;
+    D(Spokane_WA), P(Ritzville_WA), CMSTP_AND_P;
+    P(Bristol_WA), P(Ritzville_WA), CMSTP_AND_P;
+    P(Bristol_WA), D(Seattle_WA), CMSTP_AND_P;
     
     // GN
     D(Seattle_WA), P(Marblemount_WA), GN;
