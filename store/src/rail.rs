@@ -568,6 +568,34 @@ graph_out_rails! {
     P(Mt_Vernon_KY), P(Williamsburg_KY), L_AND_N;
     P(Mt_Vernon_KY), P(Lexington_KY), L_AND_N;
     D(Cincinnati_OH), P(Lexington_KY), L_AND_N;
+
+    // IC
+    D(Chicago_IL), P(Champaign_IL), IC;
+    P(Champaign_IL), P(Arcola_IL), IC;
+    P(Effingham_IL), P(Arcola_IL), IC;
+    P(Effingham_IL), P(Centralia_IL), IC;
+    P(Cape_Girardeau_MO), P(Centralia_IL), IC;
+    P(Cape_Girardeau_MO), D(St_Louis_MO), IC;
+    P(Cape_Girardeau_MO), P(Benton_KY), IC;
+    P(Hopkinsville_KY), P(Benton_KY), IC;
+    P(Owensboro_KY), P(Benton_KY), IC;
+    P(Owensboro_KY), P(Hopkinsville_KY), IC;
+    P(Owensboro_KY), D(Louisville_KY), IC;
+    P(Cape_Girardeau_MO), P(Hayti_MO), IC;
+    P(Cape_Girardeau_MO), P(Hayti_MO), IC;
+    D(Memphis_TN), P(Hayti_MO), IC;
+    D(Memphis_TN), P(Clarksdale_MS), IC;
+    P(Winona_MS), P(Clarksdale_MS), IC;
+    P(Winona_MS), P(Jackson_MS), IC;
+    P(Brookhaven_MS), P(Jackson_MS), IC;
+    P(Brookhaven_MS), P(Amite_City_LA), IC;
+    D(New_Orleans_LA), P(Amite_City_LA), IC;
+    P(Tallulah_LA), P(Jackson_MS), IC;
+    P(Tallulah_LA), P(Rayville_LA), IC;
+    P(Ruston_LA), P(Rayville_LA), IC;
+    P(Ruston_LA), D(Shreveport_LA), IC;
+    P(Meridian_MS), P(Jackson_MS), IC;
+
     
     // GN
     D(Seattle_WA), P(Marblemount_WA), GN;
