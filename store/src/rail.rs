@@ -550,6 +550,39 @@ graph_out_rails! {
     P(Mt_Vernon_KY), P(Lexington_KY), L_AND_N;
     D(Cincinnati_OH), P(Lexington_KY), L_AND_N;
     
+    // GN
+    D(Seattle_WA), P(Marblemount_WA), GN;
+    P(Wilbur_WA), P(Marblemount_WA), GN;
+    P(Wilbur_WA), D(Spokane_WA), GN;
+    P(Colfax_WA), D(Spokane_WA), GN;
+    P(Sandpoint_ID), D(Spokane_WA), GN;
+    P(Sandpoint_ID), P(Whitefish_MT), GN;
+    P(Shelby_MT), P(Whitefish_MT), GN;
+    P(Shelby_MT), P(Chester_MT), GN;
+    P(Havre_MT), P(Chester_MT), GN;
+    P(Havre_MT), P(Geraldine_MT), GN;
+    P(Havre_MT), P(Harlem_MT), GN;
+    P(Malta_MT), P(Harlem_MT), GN;
+    P(Malta_MT), P(Glasgow_MT), GN;
+    P(Wolf_Point_MT), P(Glasgow_MT), GN;
+    P(Wolf_Point_MT), P(Culbertson_MT), GN;
+    P(Williston_ND), P(Culbertson_MT), GN;
+    P(Williston_ND), P(Stanley_ND), GN;
+    P(Minot_ND), P(Stanley_ND), GN;
+    P(Minot_ND), P(Devils_Lake_ND), GN;
+    D(Fargo_ND), P(Devils_Lake_ND), GN;
+    D(Fargo_ND), P(Fergus_Falls_MN), GN;
+    P(St_Cloud_MN), P(Fergus_Falls_MN), GN;
+    D(Minneapolis_MN), P(St_Cloud_MN), GN;
+    P(Neihart_MT), P(Geraldine_MT), GN;
+    P(Neihart_MT), D(Butte_MT), GN;
+    P(Colfax_WA), P(Pendleton_OR), GN;
+    P(Biggs_Junction_OR), P(Pendleton_OR), GN;
+    P(Biggs_Junction_OR), D(Portland_OR), GN;
+    P(Biggs_Junction_OR), P(Shaniko_OR), GN;
+    P(Seven_Mile_OR), P(Shaniko_OR), GN;
+    P(Seven_Mile_OR), P(Chemult_OR), GN;
+    P(Klamath_Falls_OR), P(Chemult_OR), GN;
 }
 
 lazy_static::lazy_static! {
