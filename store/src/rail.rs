@@ -340,7 +340,8 @@ graph_out_rails! {
     P(Culpeper_VA), D(Washington_DC), C_AND_O;
     D(Richmond_VA), P(Charlottesville_VA), C_AND_O;
 
-    // WP 
+
+    // WP
     P(Klamath_Falls_OR), P(Chester_CA), WP;
     P(Chester_CA), P(Herlong_CA), WP;
     P(Chester_CA), P(Paradise_CA), WP;
@@ -354,7 +355,7 @@ graph_out_rails! {
     P(Wells_NV), P(Baker_NV), WP;
     D(Salt_Lake_City_UT), P(Baker_NV), WP;
 
-    // SP 
+    // SP
     D(New_Orleans_LA), P(Houma_LA), SP;
     P(Lafayette_LA), P(Houma_LA), SP;
     P(Lafayette_LA), P(Beaumont_TX), SP;
@@ -436,7 +437,7 @@ graph_out_rails! {
     P(Cedar_Key_FL), D(Jacksonville_FL), ACL;
     P(Cedar_Key_FL), P(Spring_Hill_FL), ACL;
     D(Tampa_FL), P(Spring_Hill_FL), ACL;
-    
+
     // N_AND_W
     D(Norfolk_VA), P(Emporia_VA), N_AND_W;
     P(Brookneal_VA), P(Emporia_VA), N_AND_W;
@@ -451,7 +452,7 @@ graph_out_rails! {
     P(Chillicothe_OH), D(Columbus_OH), N_AND_W;
     P(Winchester_OH), D(Cincinnati_OH), N_AND_W;
     P(Bristol_VA), P(Marion_VA), N_AND_W;
-    
+
     // SAL
     // TODO: Bremen appears between cedar bluff and atlanta and looks like it's on the route despite not being. Need to fix this to not confuse players.
     D(Miami_FL), P(West_Palm_Beach_FL), SAL;
@@ -596,6 +597,52 @@ graph_out_rails! {
     P(Ruston_LA), D(Shreveport_LA), IC;
     P(Meridian_MS), P(Jackson_MS), IC;
 
+    // AT_AND_SF
+    D(San_Francisco_CA), P(Modesto_CA), AT_AND_SF;
+    P(Fresno_CA), P(Modesto_CA), AT_AND_SF;
+    P(Fresno_CA), P(Tulare_CA), AT_AND_SF;
+    P(Bakersfield_CA), P(Tulare_CA), AT_AND_SF;
+    P(Bakersfield_CA), P(Lancaster_CA), AT_AND_SF;
+    P(Indio_CA), P(Lancaster_CA), AT_AND_SF;
+    P(Indio_CA), P(Blythe_CA), AT_AND_SF;
+    P(Kingman_AZ), P(Blythe_CA), AT_AND_SF;
+    P(Kingman_AZ), P(Prescott_AZ), AT_AND_SF;
+    P(Sedona_AZ), P(Prescott_AZ), AT_AND_SF;
+    P(Sedona_AZ), P(Taylor_AZ), AT_AND_SF;
+    P(Church_Rock_NM), P(Taylor_AZ), AT_AND_SF;
+    // TODO: Need to add city between church rock and albuquerque
+    P(Albuquerque_NM), P(Santa_Rosa_NM), AT_AND_SF;
+    P(Clovis_NM), P(Santa_Rosa_NM), AT_AND_SF;
+    P(Clovis_NM), P(Amarillo_TX), AT_AND_SF;
+    P(Clovis_NM), P(Lubbock_TX), AT_AND_SF;
+    P(Lamesa_TX), P(Lubbock_TX), AT_AND_SF;
+    P(Lamesa_TX), P(Big_Spring_TX), AT_AND_SF;
+    P(Sweetwater_TX), P(Big_Spring_TX), AT_AND_SF;
+    // TODO: Need to figure out what the proper city between sweetwater and comanche is
+    P(Albuquerque_NM), P(Socorro_NM), AT_AND_SF;
+    P(Albuquerque_NM), P(Watrous_NM), AT_AND_SF;
+    P(Springer_NM), P(Watrous_NM), AT_AND_SF;
+    P(Springer_NM), P(Trinidad_CO), AT_AND_SF;
+    P(Pritchett_CO), P(Trinidad_CO), AT_AND_SF;
+    P(Pritchett_CO), P(Johnson_City_KS), AT_AND_SF;
+    P(Copeland_KS), P(Johnson_City_KS), AT_AND_SF;
+    P(Copeland_KS), P(Bucklin_KS), AT_AND_SF;
+    P(Pratt_KS), P(Bucklin_KS), AT_AND_SF;
+    P(Pratt_KS), P(Wichita_KS), AT_AND_SF;
+    P(Emporia_KS), P(Wichita_KS), AT_AND_SF;
+    P(Emporia_KS), D(Kansas_City_MO), AT_AND_SF;
+    P(Chillicothe_MO), D(Kansas_City_MO), AT_AND_SF;
+    P(Chillicothe_MO), P(Exline_IA), AT_AND_SF;
+    P(Davenport_IA), P(Exline_IA), AT_AND_SF;
+    P(Davenport_IA), P(Peoria_IL), AT_AND_SF;
+    D(Chicago_IL), P(Peoria_IL), AT_AND_SF;
+    P(Pritchett_CO), D(Pueblo_CO), AT_AND_SF;
+    P(Arrey_NM), P(Socorro_NM), AT_AND_SF;
+    P(Arrey_NM), D(El_Paso_TX), AT_AND_SF;
+    P(Wickenburg_AZ), P(Prescott_AZ), AT_AND_SF;
+    P(Wickenburg_AZ), D(Phoenix_AZ), AT_AND_SF;
+    P(San_Bernardino_CA), P(Lancaster_CA), AT_AND_SF;
+    P(San_Bernardino_CA), D(San_Diego_CA), AT_AND_SF;
     
     // D_AND_RGW
     P(Ogden_UT), D(Salt_Lake_City_UT), D_AND_RGW;
@@ -637,7 +684,7 @@ graph_out_rails! {
     D(Spokane_WA), P(Ritzville_WA), CMSTP_AND_P;
     P(Bristol_WA), P(Ritzville_WA), CMSTP_AND_P;
     P(Bristol_WA), D(Seattle_WA), CMSTP_AND_P;
-    
+
     // GN
     D(Seattle_WA), P(Marblemount_WA), GN;
     P(Wilbur_WA), P(Marblemount_WA), GN;
@@ -671,6 +718,80 @@ graph_out_rails! {
     P(Seven_Mile_OR), P(Shaniko_OR), GN;
     P(Seven_Mile_OR), P(Chemult_OR), GN;
     P(Klamath_Falls_OR), P(Chemult_OR), GN;
+    
+    // NP
+    D(Portland_OR), P(Olympia_WA), NP;
+    D(Seattle_WA), P(Olympia_WA), NP;
+    D(Seattle_WA), P(Bristol_WA), NP;
+    P(Wapato_WA), P(Bristol_WA), NP;
+    P(Wapato_WA), P(Ritzville_WA), NP;
+    D(Spokane_WA), P(Ritzville_WA), NP;
+    P(Ritzville_WA), P(Sandpoint_ID), NP;
+    P(Noxon_MT), P(Sandpoint_ID), NP;
+    P(Noxon_MT), P(Thompson_Falls_MT), NP;
+    P(Missoula_MT), P(Thompson_Falls_MT), NP;
+    P(Missoula_MT), D(Butte_MT), NP;
+    P(Bozeman_MT), D(Butte_MT), NP;
+    P(Bozeman_MT), P(Big_Timber_MT), NP;
+    D(Billings_MT), P(Big_Timber_MT), NP;
+    D(Billings_MT), P(Forsyth_MT), NP;
+    P(Terry_MT), P(Forsyth_MT), NP;
+    P(Terry_MT), P(Bloomfield_MT), NP;
+    P(Terry_MT), P(Willbaux_MT), NP;
+    P(Medora_OK), P(Willbaux_MT), NP;
+    P(Medora_OK), P(Antelope_MT), NP;
+    P(Bismarck_ND), P(Antelope_MT), NP;
+    P(Bismarck_ND), P(Jamestown_ND), NP;
+    D(Fargo_ND), P(Jamestown_ND), NP;
+    D(Fargo_ND), P(Perham_MN), NP;
+    P(St_Cloud_MN), P(Perham_MN), NP;
+    P(St_Cloud_MN), D(Minneapolis_MN), NP;
+
+    // UP
+    D(Portland_OR), P(Biggs_Junction_OR), UP;
+    P(Pendleton_OR), P(Biggs_Junction_OR), UP;
+    P(Pendleton_OR), P(Baker_City_OR), UP;
+    P(Huntington_OR), P(Baker_City_OR), UP;
+    P(Huntington_OR), P(Boise_ID), UP;
+    P(Mountain_Home_ID), P(Boise_ID), UP;
+    P(Mountain_Home_ID), P(Twin_Falls_ID), UP;
+    P(Declo_ID), P(Twin_Falls_ID), UP;
+    P(Declo_ID), D(Pocatello_ID), UP;
+    P(Idaho_Falls_ID), D(Pocatello_ID), UP;
+    P(Malad_City_ID), D(Pocatello_ID), UP;
+    P(Montpelier_ID), D(Pocatello_ID), UP;
+    P(Montpelier_ID), P(Little_America_WY), UP;
+    P(Malad_City_ID), P(Ogden_UT), UP;
+    P(Evanston_WY), P(Ogden_UT), UP;
+    P(Evanston_WY), P(Little_America_WY), UP;
+    P(Point_Of_Rocks_WY), P(Little_America_WY), UP;
+    P(Point_Of_Rocks_WY), P(Creston_MT), UP;
+    P(Elk_Mountain_WY), P(Creston_MT), UP;
+    P(Elk_Mountain_WY), P(Laramie_WY), UP;
+    D(Denver_CO), P(Laramie_WY), UP;
+    P(Cheyenne_WY), P(Laramie_WY), UP;
+    P(Cheyenne_WY), P(Julesburg_CO), UP;
+    P(Cozad_NE), P(Julesburg_CO), UP;
+    P(Cozad_NE), P(Hastings_NE), UP;
+    P(Central_City_NE), P(Hastings_NE), UP;
+    P(Daykin_NE), P(Hastings_NE), UP;
+    // TODO: Need city between daykin and topeka
+    P(Topeka_KS), D(Kansas_City_MO), UP;
+    P(Central_City_NE), D(Omaha_NE), UP;
+    P(Idaho_Falls_ID), P(Monida_MT), UP;
+    P(Dillon_MT), P(Monida_MT), UP;
+    P(Dillon_MT), D(Butte_MT), UP;
+    P(Ogden_UT), D(Salt_Lake_City_UT), UP;
+    P(Nephi_UT), D(Salt_Lake_City_UT), UP;
+    P(Nephi_UT), P(Fillmore_UT), UP;
+    P(Enoch_UT), P(Fillmore_UT), UP;
+    P(Enoch_UT), P(Mesquite_NV), UP;
+    D(Las_Vegas_NV), P(Mesquite_NV), UP;
+    D(Las_Vegas_NV), P(Amboy_CA), UP;
+    P(Lancaster_CA), P(Amboy_CA), UP;
+    P(Lancaster_CA), P(San_Bernardino_CA), UP;
+    D(Los_Angeles_CA), P(San_Bernardino_CA), UP;
+
 }
 
 lazy_static::lazy_static! {
