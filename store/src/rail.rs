@@ -597,6 +597,20 @@ graph_out_rails! {
     P(Meridian_MS), P(Jackson_MS), IC;
 
     
+    // D_AND_RGW
+    P(Ogden_UT), D(Salt_Lake_City_UT), D_AND_RGW;
+    P(Provo_UT), D(Salt_Lake_City_UT), D_AND_RGW;
+    P(Provo_UT), P(Helper_UT), D_AND_RGW;
+    P(Green_River_UT), P(Helper_UT), D_AND_RGW;
+    P(Green_River_UT), P(Fruita_CO), D_AND_RGW;
+    P(Glenwood_Springs_CO), P(Fruita_CO), D_AND_RGW;
+    P(Glenwood_Springs_CO), P(Aspen_CO), D_AND_RGW;
+    P(Glenwood_Springs_CO), P(Breckenridge_CO), D_AND_RGW;
+    D(Denver_CO), P(Breckenridge_CO), D_AND_RGW;
+    P(Nathrop_CO), P(Aspen_CO), D_AND_RGW;
+    P(Nathrop_CO), D(Pueblo_CO), D_AND_RGW;
+
+    
     // GN
     D(Seattle_WA), P(Marblemount_WA), GN;
     P(Wilbur_WA), P(Marblemount_WA), GN;
