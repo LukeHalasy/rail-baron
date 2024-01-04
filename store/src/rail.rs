@@ -320,6 +320,25 @@ graph_out_rails! {
     P(London_ON), P(Brantford_ON), C_AND_O;
     D(Detroit_MI), P(London_ON), C_AND_O;
     D(Detroit_MI), P(Perrysburg_OH), C_AND_O;
+    P(Findlay_OH), P(Perrysburg_OH), C_AND_O;
+    P(Findlay_OH), D(Columbus_OH), C_AND_O;
+    P(Chillicothe_OH), D(Columbus_OH), C_AND_O;
+    P(Chillicothe_OH), P(Huntington_WV), C_AND_O;
+    P(Maysville_KY), P(Huntington_WV), C_AND_O;
+    P(Morehead_KY), P(Huntington_WV), C_AND_O;
+    P(Morehead_KY), P(Lexington_KY), C_AND_O;
+    D(Louisville_KY), P(Lexington_KY), C_AND_O;
+    P(Maysville_KY), D(Cincinnati_OH), C_AND_O;
+    P(Muncie_IN), D(Cincinnati_OH), C_AND_O;
+    P(Muncie_IN), P(Logansport_IN), C_AND_O;
+    D(Chicago_IL), P(Logansport_IN), C_AND_O;
+    P(Huntington_WV), P(Nitro_WV), C_AND_O;
+    P(Beaver_WV), P(Nitro_WV), C_AND_O;
+    P(Lexington_VA), P(Nitro_WV), C_AND_O;
+    P(Lexington_VA), P(Charlottesville_VA), C_AND_O;
+    P(Culpeper_VA), P(Charlottesville_VA), C_AND_O;
+    P(Culpeper_VA), D(Washington_DC), C_AND_O;
+    D(Richmond_VA), P(Charlottesville_VA), C_AND_O;
 
     // WP 
     P(Klamath_Falls_OR), P(Chester_CA), WP;
