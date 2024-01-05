@@ -459,7 +459,6 @@ graph_out_rails! {
     P(Bristol_VA), P(Marion_VA), N_AND_W;
 
     // SAL
-    // TODO: Bremen appears between cedar bluff and atlanta and looks like it's on the route despite not being. Need to fix this to not confuse players.
     D(Miami_FL), P(West_Palm_Beach_FL), SAL;
     P(Sebring_FL), P(West_Palm_Beach_FL), SAL;
     P(Sebring_FL), P(Winter_Haven_FL), SAL;
@@ -485,8 +484,8 @@ graph_out_rails! {
     P(Columbia_SC), P(Augusta_GA), SAL;
     P(Siloam_GA), P(Augusta_GA), SAL;
     P(Siloam_GA), D(Atlanta_GA), SAL;
-    P(Cedar_Bluff_MS), D(Atlanta_GA), SAL;
-    P(Cedar_Bluff_MS), D(Birmingham_AL), SAL;
+    P(Cedar_Bluff_AL), D(Atlanta_GA), SAL;
+    P(Cedar_Bluff_AL), D(Birmingham_AL), SAL;
     P(Tallahassee_FL), P(Lee_FL), SAL;
     P(Tallahassee_FL), P(Blountstown_FL), SAL;
     P(Tallahassee_FL), P(Dothan_AL), SAL;

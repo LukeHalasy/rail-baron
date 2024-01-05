@@ -394,7 +394,7 @@ sub_cities! {
     [Amite_City: LA] => (30.7272, -90.5040),
     [Clarksdale: MS] => (34.2003, -90.5724),
     [Winona: MS] => (33.4957, -89.7310),
-    [Cedar_Bluff: MS] => (33.7765, -88.1678),
+    [Cedar_Bluff: AL] => (34.220606, -85.595999),
     [Hopkinsville: KY] => (36.8656, -87.4886),
     [Owensboro: KY] => (37.7749, -87.1134),
     [Benton: KY] => (36.8588, -88.3621),
