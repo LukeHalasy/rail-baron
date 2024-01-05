@@ -384,8 +384,8 @@ graph_out_rails! {
     P(Pomerene_AZ), P(Lordsburg_NM), SP;
     P(Pomerene_AZ), P(Mariana_AZ), SP;
     D(Phoenix_AZ), P(Mariana_AZ), SP;
-    D(Phoenix_AZ), P(Aztec_NM), SP;
-    P(Yuma_AZ), P(Aztec_NM), SP;
+    D(Phoenix_AZ), P(Aztec_AZ), SP;
+    P(Yuma_AZ), P(Aztec_AZ), SP;
     P(Yuma_AZ), P(Brawley_CA), SP;
     P(Brawley_CA), P(San_Bernardino_CA), SP;
     D(Los_Angeles_CA), P(San_Bernardino_CA), SP;
