@@ -194,6 +194,8 @@ macro_rules! graph_out_rails {
                     $(
                     if let Some(edge) = graph.get_mut(&($c1, $c2)) {
                         edge.push(Rail::$rr);
+                    } else if let Some(edge) = graph.get_mut(&($c2, $c1)) {
+                        edge.push(Rail::$rr);
                     } else {
                         graph.insert(($c1, $c2), vec![Rail::$rr]);
                     }
