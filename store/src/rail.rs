@@ -301,19 +301,20 @@ graph_out_rails! {
     P(Cumberland_MD), P(Union_Town_PA), B_AND_O;
     D(Pittsburgh_PA), P(Union_Town_PA), B_AND_O;
     D(Pittsburgh_PA), P(Youngstown_OH), B_AND_O;
-    P(Akron_OH), P(Youngstown_OH), B_AND_O;
     P(Akron_OH), P(Fremont_OH), B_AND_O;
     P(Ligonier_IN), P(Fremont_OH), B_AND_O;
     P(Ligonier_IN), P(Argos_IN), B_AND_O;
     D(Chicago_IL), P(Argos_IN), B_AND_O;
-    // P(SubCity::Cumberland_MD), P(SubCity::Brideport_WV), B_AND_;
+    P(Cumberland_MD), P(Terre_Alta_WV), B_AND_O;
     P(Clarksburg_WV), P(Parkersburg_WV), B_AND_O;
+    P(Clarksburg_WV), P(Terre_Alta_WV), B_AND_O;
     P(Chillicothe_OH), P(Parkersburg_WV), B_AND_O;
     P(Chillicothe_OH), D(Cincinnati_OH), B_AND_O;
     P(Columbus_IN), D(Cincinnati_OH), B_AND_O;
     P(Columbus_IN), P(Vincennes_IN), B_AND_O;
     P(Centralia_IL), P(Vincennes_IN), B_AND_O;
     P(Centralia_IL), D(St_Louis_MO), B_AND_O;
+    P(Akron_OH), P(Youngstown_OH), B_AND_O;
 
     // C_AND_O
     D(Buffalo_NY), P(Brantford_ON), C_AND_O;

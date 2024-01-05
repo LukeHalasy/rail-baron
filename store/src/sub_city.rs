@@ -128,7 +128,7 @@ sub_cities! {
     [Athens: TN] => (35.4429, -84.5930),
     [Tellico_Plains: TN] => (35.3598, -84.2810),
     [Huntington: WV] => (38.4192, -82.4452),
-    [Bridgeport: WV] => (39.2865, -80.2567),
+    [Terre_Alta: WV] => (39.4436, -79.5401),
     [Clarksburg: WV] => (39.2807, -80.3445),
     [Parkersburg: WV] => (39.2667, -81.5615),
     [Rome: GA] => (34.2564, -85.1647),
@@ -408,6 +408,7 @@ sub_cities! {
     [Madisonville: KY] => (37.3280, -87.4989),
 
     // Plains
+    [Dubuque: IA] => (42.5006, -90.6646),
     [Sioux_Falls: SD] => (43.5446, -96.7311),
     [Chamberlain: SD] => (43.7878, -99.3207),
     [Kadoka: SD] => (43.8361, -101.5144),
