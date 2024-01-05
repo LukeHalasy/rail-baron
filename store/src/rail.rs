@@ -497,14 +497,14 @@ graph_out_rails! {
     D(New_Orleans_LA), P(Franklinton_LA), SOU;
     P(Hattiesburg_MS), P(Franklinton_LA), SOU;
     P(Hattiesburg_MS), P(Meridian_MS), SOU;
-    // P(Tuscaloosa_AL), P(Meridian_MS), SOU;
-    // P(Tuscaloosa_AL), D(Birmingham_AL), SOU;
+    P(Tuscaloosa_AL), P(Meridian_MS), SOU;
+    P(Tuscaloosa_AL), D(Birmingham_AL), SOU;
     P(Double_Springs_AL), D(Birmingham_AL), SOU;
     P(Double_Springs_AL), P(Corinth_MS), SOU;
     D(Memphis_TN), P(Corinth_MS), SOU;
     P(Moulton_AL), P(Corinth_MS), SOU;
-    P(Moulton_AL), P(Pleasant_Hill_TN), SOU;
-    D(Chattanooga_TN), P(Pleasant_Hill_TN), SOU;
+    P(Moulton_AL), P(Fyffe_AL), SOU;
+    D(Chattanooga_TN), P(Fyffe_AL), SOU;
     D(Chattanooga_TN), P(Athens_TN), SOU;
     D(Chattanooga_TN), P(Rome_GA), SOU;
     P(Athens_TN), P(Rome_GA), SOU;
@@ -523,6 +523,7 @@ graph_out_rails! {
     P(Bassett_VA), P(Roanoke_VA), SOU;
     P(Charlottesville_VA), P(Roanoke_VA), SOU;
     P(Charlottesville_VA), P(Culpeper_VA), SOU;
+    D(Washington_DC), P(Culpeper_VA), SOU;
     // TODO: Look into tank fight tactics
 
     // T_AND_P
