@@ -792,6 +792,40 @@ graph_out_rails! {
     P(Lancaster_CA), P(San_Bernardino_CA), UP;
     D(Los_Angeles_CA), P(San_Bernardino_CA), UP;
 
+    // C_AND_NW
+    D(Casper_WY), P(Orin_WY), C_AND_NW;
+    P(Orin_WY), P(Edgemont_SD), C_AND_NW;
+    P(Custer_SD), P(Edgemont_SD), C_AND_NW;
+    P(Pine_Ridge_SD), P(Edgemont_SD), C_AND_NW;
+    P(Pine_Ridge_SD), P(Mission_SD), C_AND_NW;
+    P(Atkinson_NE), P(Mission_SD), C_AND_NW;
+    P(Atkinson_NE), P(Norfolk_NE), C_AND_NW;
+    D(Omaha_NE), P(Norfolk_NE), C_AND_NW;
+    D(Omaha_NE), P(Sioux_City_IA), C_AND_NW;
+    D(Omaha_NE), P(Bayard_NE), C_AND_NW;
+    P(Ellsworth_KS), P(Bayard_NE), C_AND_NW;
+    P(Ellsworth_KS), P(Evansdale_IA), C_AND_NW;
+    P(Dubuque_IA), P(Evansdale_IA), C_AND_NW;
+    P(Dubuque_IA), P(Rockford_IL), C_AND_NW;
+    D(Chicago_IL), P(Rockford_IL), C_AND_NW;
+    D(Chicago_IL), P(Kenosha_WI), C_AND_NW;
+    D(Milwaukee_WI), P(Kenosha_WI), C_AND_NW;
+    D(Milwaukee_WI), P(Green_Bay_WI), C_AND_NW;
+    P(Wisconsin_Dells_WI), P(Green_Bay_WI), C_AND_NW;
+    P(Wisconsin_Dells_WI), P(Eau_Claire_WI), C_AND_NW;
+    D(Minneapolis_MN), P(Eau_Claire_WI), C_AND_NW;
+    D(Minneapolis_MN), P(Blue_Earth_MN), C_AND_NW;
+    P(Sheldon_IA), P(Sioux_City_IA), C_AND_NW;
+    P(Sheldon_IA), P(Blue_Earth_MN), C_AND_NW;
+    P(Pine_Ridge_SD), P(Custer_SD), C_AND_NW;
+    D(Rapid_City_SD), P(Custer_SD), C_AND_NW;
+    D(Rapid_City_SD), P(Kadoka_SD), C_AND_NW;
+    P(Chamberlain_SD), P(Kadoka_SD), C_AND_NW;
+    P(Chamberlain_SD), P(Sioux_Falls_SD), C_AND_NW;
+    // TODO: Need to add city between sioux falls and Jackson
+    P(Jackson_MN), P(Blue_Earth_MN), C_AND_NW;
+
+
 }
 
 lazy_static::lazy_static! {
