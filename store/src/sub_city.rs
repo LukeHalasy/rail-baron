@@ -88,7 +88,7 @@ sub_cities! {
     [Columbus: IN] => (39.2014, -85.9214),
     [Vincennes: IN] => (38.6773, -87.5286),
     [Chillicothe: OH] => (39.3331, -82.9824),
-    [Winchester: OH] => (38.1947, -83.6508),
+    [Winchester: OH] => (38.9408, -83.6531),
     [Maysville: KY] => (38.6412, -83.7449),
     [Logansport: IN] => (40.7544, -86.3564),
     [Argos: IN] => (41.2347, -86.2500),

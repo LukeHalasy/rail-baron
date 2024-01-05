@@ -337,7 +337,7 @@ graph_out_rails! {
     D(Chicago_IL), P(Logansport_IN), C_AND_O;
     P(Huntington_WV), P(Nitro_WV), C_AND_O;
     P(Beaver_WV), P(Nitro_WV), C_AND_O;
-    P(Lexington_VA), P(Nitro_WV), C_AND_O;
+    P(Lexington_VA), P(Beaver_WV), C_AND_O;
     P(Lexington_VA), P(Charlottesville_VA), C_AND_O;
     P(Culpeper_VA), P(Charlottesville_VA), C_AND_O;
     P(Culpeper_VA), D(Washington_DC), C_AND_O;
