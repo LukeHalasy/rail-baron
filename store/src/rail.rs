@@ -658,6 +658,8 @@ graph_out_rails! {
     P(Glenwood_Springs_CO), P(Aspen_CO), D_AND_RGW;
     P(Glenwood_Springs_CO), P(Breckenridge_CO), D_AND_RGW;
     D(Denver_CO), P(Breckenridge_CO), D_AND_RGW;
+    D(Denver_CO), P(Colorado_Springs_CO), D_AND_RGW;
+    D(Pueblo_CO), P(Colorado_Springs_CO), D_AND_RGW;
     P(Nathrop_CO), P(Aspen_CO), D_AND_RGW;
     P(Nathrop_CO), D(Pueblo_CO), D_AND_RGW;
 
