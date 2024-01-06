@@ -588,7 +588,6 @@ graph_out_rails! {
     P(Owensboro_KY), P(Hopkinsville_KY), IC;
     P(Owensboro_KY), D(Louisville_KY), IC;
     P(Cape_Girardeau_MO), P(Hayti_MO), IC;
-    P(Cape_Girardeau_MO), P(Hayti_MO), IC;
     D(Memphis_TN), P(Hayti_MO), IC;
     D(Memphis_TN), P(Clarksdale_MS), IC;
     P(Winona_MS), P(Clarksdale_MS), IC;
