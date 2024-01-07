@@ -669,10 +669,10 @@ graph_out_rails! {
     D(Milwaukee_WI), P(Madison_WI), CMSTP_AND_P;
     P(Wisconsin_Dells_WI), P(Madison_WI), CMSTP_AND_P;
     P(Wisconsin_Dells_WI), P(La_Crosse_WI), CMSTP_AND_P;
-    P(Wisconsin_Dells_WI), D(Minneapolis_MN), CMSTP_AND_P;
-    P(Hutchinson_KS), D(Minneapolis_MN), CMSTP_AND_P;
-    P(Hutchinson_KS), P(Appleton_WI), CMSTP_AND_P;
-    P(Webster_SD), P(Appleton_WI), CMSTP_AND_P;
+    P(La_Crosse_WI), D(Minneapolis_MN), CMSTP_AND_P;
+    P(Hutchinson_MN), D(Minneapolis_MN), CMSTP_AND_P;
+    P(Hutchinson_MN), P(Appleton_MN), CMSTP_AND_P;
+    P(Webster_SD), P(Appleton_MN), CMSTP_AND_P;
     P(Webster_SD), P(Bowdle_SD), CMSTP_AND_P;
     P(McIntosh_SD), P(Bowdle_SD), CMSTP_AND_P;
     P(McIntosh_SD), P(Reeder_ND), CMSTP_AND_P;
@@ -688,8 +688,8 @@ graph_out_rails! {
     P(St_Regis_MT), P(Cataldo_ID), CMSTP_AND_P;
     D(Spokane_WA), P(Cataldo_ID), CMSTP_AND_P;
     D(Spokane_WA), P(Ritzville_WA), CMSTP_AND_P;
-    P(Bristol_WA), P(Ritzville_WA), CMSTP_AND_P;
-    P(Bristol_WA), D(Seattle_WA), CMSTP_AND_P;
+    P(Ellensburg_WA), P(Ritzville_WA), CMSTP_AND_P;
+    P(Ellensburg_WA), D(Seattle_WA), CMSTP_AND_P;
 
     // GN
     D(Seattle_WA), P(Marblemount_WA), GN;
@@ -728,8 +728,8 @@ graph_out_rails! {
     // NP
     D(Portland_OR), P(Olympia_WA), NP;
     D(Seattle_WA), P(Olympia_WA), NP;
-    D(Seattle_WA), P(Bristol_WA), NP;
-    P(Wapato_WA), P(Bristol_WA), NP;
+    D(Seattle_WA), P(Ellensburg_WA), NP;
+    P(Wapato_WA), P(Ellensburg_WA), NP;
     P(Wapato_WA), P(Ritzville_WA), NP;
     D(Spokane_WA), P(Ritzville_WA), NP;
     P(Ritzville_WA), P(Sandpoint_ID), NP;
