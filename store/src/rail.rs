@@ -721,8 +721,8 @@ graph_out_rails! {
     P(Biggs_Junction_OR), P(Pendleton_OR), GN;
     P(Biggs_Junction_OR), D(Portland_OR), GN;
     P(Biggs_Junction_OR), P(Shaniko_OR), GN;
-    P(Seven_Mile_OR), P(Shaniko_OR), GN;
-    P(Seven_Mile_OR), P(Chemult_OR), GN;
+    P(Bend_OR), P(Shaniko_OR), GN;
+    P(Bend_OR), P(Chemult_OR), GN;
     P(Klamath_Falls_OR), P(Chemult_OR), GN;
     
     // NP
