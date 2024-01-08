@@ -732,7 +732,7 @@ graph_out_rails! {
     P(Wapato_WA), P(Ellensburg_WA), NP;
     P(Wapato_WA), P(Ritzville_WA), NP;
     D(Spokane_WA), P(Ritzville_WA), NP;
-    P(Ritzville_WA), P(Sandpoint_ID), NP;
+    D(Spokane_WA), P(Sandpoint_ID), NP;
     P(Noxon_MT), P(Sandpoint_ID), NP;
     P(Noxon_MT), P(Thompson_Falls_MT), NP;
     P(Missoula_MT), P(Thompson_Falls_MT), NP;
@@ -742,11 +742,10 @@ graph_out_rails! {
     D(Billings_MT), P(Big_Timber_MT), NP;
     D(Billings_MT), P(Forsyth_MT), NP;
     P(Terry_MT), P(Forsyth_MT), NP;
-    P(Terry_MT), P(Bloomfield_MT), NP;
     P(Terry_MT), P(Willbaux_MT), NP;
-    P(Medora_OK), P(Willbaux_MT), NP;
-    P(Medora_OK), P(Antelope_MT), NP;
-    P(Bismarck_ND), P(Antelope_MT), NP;
+    P(Medora_ND), P(Willbaux_MT), NP;
+    P(Medora_ND), P(Eagle_Nest_ND), NP;
+    P(Bismarck_ND), P(Eagle_Nest_ND), NP;
     P(Bismarck_ND), P(Jamestown_ND), NP;
     D(Fargo_ND), P(Jamestown_ND), NP;
     D(Fargo_ND), P(Perham_MN), NP;
