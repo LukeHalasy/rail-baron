@@ -770,8 +770,8 @@ graph_out_rails! {
     P(Evanston_WY), P(Ogden_UT), UP;
     P(Evanston_WY), P(Little_America_WY), UP;
     P(Point_Of_Rocks_WY), P(Little_America_WY), UP;
-    P(Point_Of_Rocks_WY), P(Creston_MT), UP;
-    P(Elk_Mountain_WY), P(Creston_MT), UP;
+    P(Point_Of_Rocks_WY), P(Creston_WY), UP;
+    P(Elk_Mountain_WY), P(Creston_WY), UP;
     P(Elk_Mountain_WY), P(Laramie_WY), UP;
     D(Denver_CO), P(Laramie_WY), UP;
     P(Cheyenne_WY), P(Laramie_WY), UP;
@@ -780,7 +780,8 @@ graph_out_rails! {
     P(Cozad_NE), P(Hastings_NE), UP;
     P(Central_City_NE), P(Hastings_NE), UP;
     P(Daykin_NE), P(Hastings_NE), UP;
-    // TODO: Need city between daykin and topeka
+    P(Daykin_NE), P(Blue_Rapids_KS), UP;
+    P(Topeka_KS), P(Blue_Rapids_KS), UP;
     P(Topeka_KS), D(Kansas_City_MO), UP;
     P(Central_City_NE), D(Omaha_NE), UP;
     P(Idaho_Falls_ID), P(Monida_MT), UP;
