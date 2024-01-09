@@ -64,6 +64,7 @@ sub_cities! {
     [Union_Town: PA] => (39.8979, -79.7216),
 
     // Mid_West
+    [Galesburg: IL] => (40.9478, -90.3712),
     [Terre_Haute: IN] => (39.4688, -87.3895),
     [West_Lafayette: IN] => (40.4259, -86.9081),
     [Perrysburg: OH] => (41.5567, -83.6272),
@@ -435,6 +436,7 @@ sub_cities! {
     [Minot: ND] => (48.2325, -101.2963),
     [Devils_Lake: ND] => (48.1128, -98.8651),
     [Massena: IA] => (41.4740, -94.8390),
+    [Cedar_Rapids: IA] => (41.977879, -91.665627),
     [St_Joseph: MO] => (39.7675, -94.8467),
     [Nebraska_City: NE] => (40.6764, -95.8588),
     [Osceola: IA] => (41.0328, -93.7733),

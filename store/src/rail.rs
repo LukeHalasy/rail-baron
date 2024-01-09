@@ -960,6 +960,57 @@ graph_out_rails! {
     D(Mobile_AL), P(Meridian_MS), GM_AND_O;
     P(Montgomery_AL), P(Tuscaloosa_AL), GM_AND_O;
     D(Chicago_IL), P(Bloomington_IL), GM_AND_O;
+
+    // CRI_AND_P
+    D(Tucumcari_NM), P(Amarillo_TX), CRI_AND_P;
+    P(McLean_TX), P(Amarillo_TX), CRI_AND_P;
+    P(McLean_TX), P(Sayre_OK), CRI_AND_P;
+    P(Weatherford_OK), P(Sayre_OK), CRI_AND_P;
+    P(Weatherford_OK), D(Oklahoma_City_OK), CRI_AND_P;
+    P(Ada_OK), D(Oklahoma_City_OK), CRI_AND_P;
+    P(Ada_OK), P(Talahina_OK), CRI_AND_P;
+    P(Mt_Ida_AR), P(Talahina_OK), CRI_AND_P;
+    P(Mt_Ida_AR), D(Little_Rock_AK), CRI_AND_P;
+    P(Brinkley_AR), D(Little_Rock_AK), CRI_AND_P;
+    P(Brinkley_AR), D(Memphis_TN), CRI_AND_P;
+    P(Rush_Springs_OK), P(Sayre_OK), CRI_AND_P;
+    P(Rush_Springs_OK), P(Sunset_TX), CRI_AND_P;
+    D(Fort_Worth_TX), P(Sunset_TX), CRI_AND_P;
+    P(Colorado_Springs_CO), P(Limon_CO), CRI_AND_P;
+    P(Bethune_CO), P(Limon_CO), CRI_AND_P;
+    P(Bethune_CO), P(Grinell_KS), CRI_AND_P;
+    P(Osborne_KS), P(Grinell_KS), CRI_AND_P;
+    P(Osborne_KS), P(Concordia_KS), CRI_AND_P;
+    P(Manhattan_KS), P(Concordia_KS), CRI_AND_P;
+    P(Manhattan_KS), P(Topeka_KS), CRI_AND_P;
+    P(Herington_KS), P(Topeka_KS), CRI_AND_P;
+    P(Herington_KS), P(Wichita_KS), CRI_AND_P;
+    P(Herington_KS), P(Pratt_KS), CRI_AND_P;
+    P(Minneola_KS), P(Pratt_KS), CRI_AND_P;
+    P(Minneola_KS), P(Tyrone_OK), CRI_AND_P;
+    P(Texhoma_OK), P(Tyrone_OK), CRI_AND_P;
+    P(Texhoma_OK), P(Dalhart_TX), CRI_AND_P;
+    D(Tucumcari_NM), P(Dalhart_TX), CRI_AND_P;
+    P(Argonia_KS), P(Wichita_KS), CRI_AND_P;
+    P(Argonia_KS), P(Waynoka_OK), CRI_AND_P;
+    P(Weatherford_OK), P(Waynoka_OK), CRI_AND_P;
+    D(Kansas_City_MO), P(Topeka_KS), CRI_AND_P;
+    D(Kansas_City_MO), P(Gallatin_MO), CRI_AND_P;
+    P(Osceola_IA), P(Gallatin_MO), CRI_AND_P;
+    P(Osceola_IA), D(Des_Moines_IA), CRI_AND_P;
+    P(Massena_IA), D(Des_Moines_IA), CRI_AND_P;
+    P(Massena_IA), D(Omaha_NE), CRI_AND_P;
+    P(Lincoln_NE), D(Omaha_NE), CRI_AND_P;
+    P(Lincoln_NE), P(Daykin_NE), CRI_AND_P;
+    P(Concordia_KS), P(Daykin_NE), CRI_AND_P;
+    P(Ellsworth_IA), D(Des_Moines_IA), CRI_AND_P;
+    P(Montezuma_IA), D(Des_Moines_IA), CRI_AND_P;
+    P(Montezuma_IA), P(Cedar_Rapids_IA), CRI_AND_P;
+    P(Galesburg_IL), P(Cedar_Rapids_IA), CRI_AND_P;
+    P(Galesburg_IL), D(Chicago_IL), CRI_AND_P;
+    P(Ellsworth_IA), P(Clear_Lake_IA), CRI_AND_P;
+    P(Albert_Lea_MN), P(Clear_Lake_IA), CRI_AND_P;
+    P(Albert_Lea_MN), D(Minneapolis_MN), CRI_AND_P;
 }
 
 lazy_static::lazy_static! {
