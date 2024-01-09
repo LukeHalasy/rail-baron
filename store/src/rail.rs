@@ -834,6 +834,54 @@ graph_out_rails! {
     P(Jackson_MN), P(Blue_Earth_MN), C_AND_NW;
 
 
+    // CB_AND_Q
+    D(Billings_MT), P(Hardin_MT), CB_AND_Q;
+    P(Sheridan_WY), P(Hardin_MT), CB_AND_Q;
+    P(Sheridan_WY), P(Kaycee_WY), CB_AND_Q;
+    D(Casper_WY), P(Kaycee_WY), CB_AND_Q;
+    D(Casper_WY), P(Orin_WY), CB_AND_Q;
+    P(Wheatland_WY), P(Orin_WY), CB_AND_Q;
+    P(Wheatland_WY), P(Laramie_WY), CB_AND_Q;
+    D(Denver_CO), P(Laramie_WY), CB_AND_Q;
+    D(Denver_CO), P(Colorado_Springs_CO), CB_AND_Q;
+    D(Pueblo_CO), P(Colorado_Springs_CO), CB_AND_Q;
+    D(Pueblo_CO), P(Trinidad_CO), CB_AND_Q;
+    P(Clayton_NM), P(Trinidad_CO), CB_AND_Q;
+    P(Clayton_NM), P(Dalhart_TX), CB_AND_Q;
+    P(Amarillo_TX), P(Dalhart_TX), CB_AND_Q;
+    P(Amarillo_TX), P(Hedley_TX), CB_AND_Q;
+    P(Quanah_TX), P(Hedley_TX), CB_AND_Q;
+    P(Quanah_TX), P(Wichita_Falls_TX), CB_AND_Q;
+    P(Sunset_TX), P(Wichita_Falls_TX), CB_AND_Q;
+    P(Sunset_TX), D(Fort_Worth_TX), CB_AND_Q;
+    P(Brush_CO), D(Denver_CO), CB_AND_Q;
+    P(Brush_CO), P(Wray_CO), CB_AND_Q;
+    P(Trenton_NE), P(Wray_CO), CB_AND_Q;
+    P(Trenton_NE), P(Araphoe_NE), CB_AND_Q;
+    P(Blue_Hill_NE), P(Araphoe_NE), CB_AND_Q;
+    P(Blue_Hill_NE), P(Daykin_NE), CB_AND_Q;
+    P(Lincoln_NE), P(Daykin_NE), CB_AND_Q;
+    P(Lincoln_NE), D(Omaha_NE), CB_AND_Q;
+    P(Nebraska_City_NE), D(Omaha_NE), CB_AND_Q;
+    P(Nebraska_City_NE), P(St_Joseph_MO), CB_AND_Q;
+    D(Kansas_City_MO), P(St_Joseph_MO), CB_AND_Q;
+    P(Lincoln_NE), P(Raveena_NE), CB_AND_Q;
+    P(Arthur_NE), P(Raveena_NE), CB_AND_Q;
+    P(Arthur_NE), P(Scottsbluff_NE), CB_AND_Q;
+    P(Edgemont_SD), P(Scottsbluff_NE), CB_AND_Q;
+    P(Edgemont_SD), P(Torrington_WY), CB_AND_Q;
+    P(Scottsbluff_NE), P(Torrington_WY), CB_AND_Q;
+    P(Orin_WY), P(Torrington_WY), CB_AND_Q;
+    D(Chicago_IL), P(Rochelle_IL), CB_AND_Q;
+    P(Davenport_IA), P(Rochelle_IL), CB_AND_Q;
+    P(Davenport_IA), P(Mornmouth_IL), CB_AND_Q;
+    P(Davenport_IA), P(Iowa_City_IA), CB_AND_Q;
+    P(Osceola_IA), P(Iowa_City_IA), CB_AND_Q;
+    P(Osceola_IA), P(Red_Oak_IA), CB_AND_Q;
+    D(Omaha_NE), P(Red_Oak_IA), CB_AND_Q;
+    P(Beardstown_IL), P(Mornmouth_IL), CB_AND_Q;
+    P(Beardstown_IL), D(St_Louis_MO), CB_AND_Q;
+    
 }
 
 lazy_static::lazy_static! {
