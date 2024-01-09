@@ -808,9 +808,9 @@ graph_out_rails! {
     P(Atkinson_NE), P(Norfolk_NE), C_AND_NW;
     D(Omaha_NE), P(Norfolk_NE), C_AND_NW;
     D(Omaha_NE), P(Sioux_City_IA), C_AND_NW;
-    D(Omaha_NE), P(Bayard_NE), C_AND_NW;
-    P(Ellsworth_KS), P(Bayard_NE), C_AND_NW;
-    P(Ellsworth_KS), P(Evansdale_IA), C_AND_NW;
+    D(Omaha_NE), P(Bayard_IA), C_AND_NW;
+    P(Ellsworth_IA), P(Bayard_IA), C_AND_NW;
+    P(Ellsworth_IA), P(Evansdale_IA), C_AND_NW;
     P(Dubuque_IA), P(Evansdale_IA), C_AND_NW;
     P(Dubuque_IA), P(Rockford_IL), C_AND_NW;
     D(Chicago_IL), P(Rockford_IL), C_AND_NW;
@@ -829,6 +829,8 @@ graph_out_rails! {
     P(Chamberlain_SD), P(Kadoka_SD), C_AND_NW;
     P(Chamberlain_SD), P(Sioux_Falls_SD), C_AND_NW;
     // TODO: Need to add city between sioux falls and Jackson
+    P(Sioux_Falls_SD), P(Rushmore_MN), C_AND_NW;
+    P(Jackson_MN), P(Rushmore_MN), C_AND_NW;
     P(Jackson_MN), P(Blue_Earth_MN), C_AND_NW;
 
 
