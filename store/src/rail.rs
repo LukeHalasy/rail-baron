@@ -833,7 +833,6 @@ graph_out_rails! {
     P(Jackson_MN), P(Rushmore_MN), C_AND_NW;
     P(Jackson_MN), P(Blue_Earth_MN), C_AND_NW;
 
-
     // CB_AND_Q
     D(Billings_MT), P(Hardin_MT), CB_AND_Q;
     P(Sheridan_WY), P(Hardin_MT), CB_AND_Q;
@@ -882,6 +881,42 @@ graph_out_rails! {
     P(Beardstown_IL), P(Mornmouth_IL), CB_AND_Q;
     P(Beardstown_IL), D(St_Louis_MO), CB_AND_Q;
     
+    // MP
+    D(Pueblo_CO), P(Las_Animas_CO), MP;
+    P(Syracuse_KS), P(Las_Animas_CO), MP;
+    P(Syracuse_KS), P(Ingalls_KS), MP;
+    P(Jetmore_KS), P(Ingalls_KS), MP;
+    P(Jetmore_KS), P(Lyons_KS), MP;
+    P(Herington_KS), P(Lyons_KS), MP;
+    P(Herington_KS), P(Emporia_KS), MP;
+    D(Kansas_City_MO), P(Emporia_KS), MP;
+    D(Kansas_City_MO), P(Sedalia_MO), MP;
+    P(Linn_MO), P(Sedalia_MO), MP;
+    P(Linn_MO), P(Union_MO), MP;
+    D(St_Louis_MO), P(Union_MO), MP;
+    D(St_Louis_MO), P(Boss_MO), MP;
+    P(Thayer_MO), P(Boss_MO), MP;
+    P(Thayer_MO), P(Cave_City_AR), MP;
+    P(Yellville_AR), P(Cave_City_AR), MP;
+    P(Yellville_AR), P(Heber_Springs_AR), MP;
+    P(Yellville_AR), P(Rocky_Comfort_MO), MP;
+    P(Rocky_Comfort_MO), P(Joplin_MO), MP;
+    P(Butler_MO), P(Joplin_MO), MP;
+    P(Butler_MO), P(Harrisonville_MO), MP;
+    D(Kansas_City_MO), P(Harrisonville_MO), MP;
+    P(Cave_City_AR), P(Heber_Springs_AR), MP;
+    D(Memphis_TN), P(Heber_Springs_AR), MP;
+    D(Little_Rock_AK), P(Heber_Springs_AR), MP;
+    D(Little_Rock_AK), P(Arkadelphia_AR), MP;
+    P(Ashdown_AR), P(Arkadelphia_AR), MP;
+    P(Ashdown_AR), P(Longview_TX), MP;
+    P(Kerens_TX), P(Longview_TX), MP;
+    P(Kerens_TX), P(Madisonville_TX), MP;
+    D(Houston_TX), P(Madisonville_TX), MP;
+    P(Kerens_TX), P(Waco_TX), MP;
+    P(Salado_TX), P(Waco_TX), MP;
+    P(Salado_TX), P(Austin_TX), MP;
+    D(San_Antonio_TX), P(Austin_TX), MP;
 }
 
 lazy_static::lazy_static! {
