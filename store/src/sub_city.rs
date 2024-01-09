@@ -349,7 +349,7 @@ sub_cities! {
     [Corinth: MS] => (34.9346, -88.5224),
     [Double_Springs: AL] => (34.1460, -87.4064),
     [Amory: MS] => (33.9844, -88.4889),
-    // [Windham_Springs: AL] => (33.5536, -87.5816),
+    [Windham_Springs: AL] => (33.5536, -87.5816),
     [Tuscaloosa: AL] => (33.2098, -87.5692),
     [Comstock: TX] => (29.5526, -101.1952),
     [Hondo: TX] => (29.3482, -99.1447),

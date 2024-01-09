@@ -917,6 +917,31 @@ graph_out_rails! {
     P(Salado_TX), P(Waco_TX), MP;
     P(Salado_TX), P(Austin_TX), MP;
     D(San_Antonio_TX), P(Austin_TX), MP;
+    
+    // SLSF
+    D(Birmingham_AL), P(Windham_Springs_AL), SLSF;
+    P(Amory_MS), P(Windham_Springs_AL), SLSF;
+    P(Amory_MS), D(Memphis_TN), SLSF;
+    P(Cave_City_AR), D(Memphis_TN), SLSF;
+    P(Cave_City_AR), P(Bakersfield_MO), SLSF;
+    P(Mansfield_MO), P(Bakersfield_MO), SLSF;
+    P(Mansfield_MO), P(Springfield_MO), SLSF;
+    P(Joplin_MO), P(Springfield_MO), SLSF;
+    P(Joplin_MO), P(Vinita_OK), SLSF;
+    P(Joplin_MO), P(Fayetteville_AR), SLSF;
+    P(Talahina_OK), P(Fayetteville_AR), SLSF;
+    P(Talahina_OK), P(Rattan_OK), SLSF;
+    P(Paris_TX), P(Rattan_OK), SLSF;
+    P(Paris_TX), D(Dallas_TX), SLSF;
+    D(Fort_Worth_TX), D(Dallas_TX), SLSF;
+    P(Tulsa_OK), P(Vinita_OK), SLSF;
+    P(Tulsa_OK), D(Oklahoma_City_OK), SLSF;
+    P(Butler_MO), P(Springfield_MO), SLSF;
+    P(Butler_MO), P(Louisburg_KS), SLSF;
+    D(Kansas_City_MO), P(Louisburg_KS), SLSF;
+    P(St_Robert_MO), P(Springfield_MO), SLSF;
+    P(St_Robert_MO), P(Sullivan_MO), SLSF;
+    D(St_Louis_MO), P(Sullivan_MO), SLSF;
 }
 
 lazy_static::lazy_static! {
