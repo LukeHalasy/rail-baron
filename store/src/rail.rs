@@ -942,6 +942,24 @@ graph_out_rails! {
     P(St_Robert_MO), P(Springfield_MO), SLSF;
     P(St_Robert_MO), P(Sullivan_MO), SLSF;
     D(St_Louis_MO), P(Sullivan_MO), SLSF;
+
+    // GM_AND_O
+    D(Kansas_City_MO), P(Sweet_Springs_MO), GM_AND_O;
+    P(Mexico_MO), P(Sweet_Springs_MO), GM_AND_O;
+    P(Mexico_MO), P(Beardstown_IL), GM_AND_O;
+    P(Springfield_IL), P(Beardstown_IL), GM_AND_O;
+    P(Springfield_IL), P(Bloomington_IL), GM_AND_O;
+    P(Springfield_IL), D(St_Louis_MO), GM_AND_O;
+    P(Piedmont_MO), D(St_Louis_MO), GM_AND_O;
+    P(Piedmont_MO), P(Fulton_KY), GM_AND_O;
+    P(Corinth_MS), P(Fulton_KY), GM_AND_O;
+    P(Corinth_MS), P(Amory_MS), GM_AND_O;
+    P(Starkville_MS), P(Amory_MS), GM_AND_O;
+    P(Starkville_MS), P(Tuscaloosa_AL), GM_AND_O;
+    P(Starkville_MS), P(Meridian_MS), GM_AND_O;
+    D(Mobile_AL), P(Meridian_MS), GM_AND_O;
+    P(Montgomery_AL), P(Tuscaloosa_AL), GM_AND_O;
+    D(Chicago_IL), P(Bloomington_IL), GM_AND_O;
 }
 
 lazy_static::lazy_static! {
