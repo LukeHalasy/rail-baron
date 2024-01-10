@@ -614,6 +614,8 @@ graph_out_rails! {
     P(Sedona_AZ), P(Prescott_AZ), AT_AND_SF;
     P(Sedona_AZ), P(Taylor_AZ), AT_AND_SF;
     P(Church_Rock_NM), P(Taylor_AZ), AT_AND_SF;
+    P(Church_Rock_NM), P(Grants_NM), AT_AND_SF;
+    P(Albuquerque_NM), P(Grants_NM), AT_AND_SF;
     // TODO: Need to add city between church rock and albuquerque
     P(Albuquerque_NM), P(Santa_Rosa_NM), AT_AND_SF;
     P(Clovis_NM), P(Santa_Rosa_NM), AT_AND_SF;
@@ -622,6 +624,20 @@ graph_out_rails! {
     P(Lamesa_TX), P(Lubbock_TX), AT_AND_SF;
     P(Lamesa_TX), P(Big_Spring_TX), AT_AND_SF;
     P(Sweetwater_TX), P(Big_Spring_TX), AT_AND_SF;
+    P(Sweetwater_TX), P(Abilene_TX), AT_AND_SF;
+    P(Comanche_TX), P(Abilene_TX), AT_AND_SF;
+    P(Comanche_TX), P(Salado_TX), AT_AND_SF;
+    P(Hillsboro_TX), P(Salado_TX), AT_AND_SF;
+    P(Hillsboro_TX), D(Fort_Worth_TX), AT_AND_SF;
+    P(Thackerville_OK), D(Fort_Worth_TX), AT_AND_SF;
+    P(Thackerville_OK), P(Elmore_City_OK), AT_AND_SF;
+    D(Oklahoma_City_OK), P(Elmore_City_OK), AT_AND_SF;
+    D(Oklahoma_City_OK), P(Perry_OK), AT_AND_SF;
+    P(South_Haven_KS), P(Perry_OK), AT_AND_SF;
+    P(South_Haven_KS), P(Wichita_KS), AT_AND_SF;
+    P(College_Station_TX), P(Salado_TX), AT_AND_SF;
+    P(College_Station_TX), P(Sealy_TX), AT_AND_SF;
+    D(Houston_TX), P(Sealy_TX), AT_AND_SF;
     // TODO: Need to figure out what the proper city between sweetwater and comanche is
     P(Albuquerque_NM), P(Socorro_NM), AT_AND_SF;
     P(Albuquerque_NM), P(Watrous_NM), AT_AND_SF;
