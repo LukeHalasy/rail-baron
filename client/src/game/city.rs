@@ -20,7 +20,10 @@ pub fn City(city: C) -> impl IntoView {
     };
 
     // let _tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
-    let move_player = move |_event: MouseEvent| {
+    let move_player = move |event: MouseEvent| {
+        web_sys::console::log_1(
+            &format!("clicked city! {:?}", city.to_string()).into(),
+        );
         // let _ tx.clone().try_send
         // .update(|location| {
         //     *location = Position::new(event.latlng().lat(), event.latlng().lng());
