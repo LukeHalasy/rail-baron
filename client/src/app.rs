@@ -38,68 +38,7 @@ pub fn App() -> impl IntoView {
     provide_context(in_tx);
 
     // TODO: Uncomment
-    // let (state, set_state) = create_signal(None::<State>);
-
-    let (state, set_state) = create_signal(Some({
-        State {
-            active_player_id: Some(1),
-            game_host: Some(2),
-            players: HashMap::from([
-                (
-                    1,
-                    store::Player {
-                        cash: 20000,
-                        name: Some("Luke".to_string()),
-                        piece: Some(store::Piece::Blue),
-                        home_city: Some(City::Baltimore_MD),
-                        start: Some(City::Albany_NY),
-                        destination: Some(City::Buffalo_NY),
-                        ..store::Player::default()
-                    },
-                ),
-                (
-                    2,
-                    store::Player {
-                        cash: 2000,
-                        name: Some("Kyle".to_string()),
-                        piece: Some(store::Piece::Red),
-                        home_city: Some(City::Butte_MT),
-                        start: Some(City::Atlanta_GA),
-                        destination: Some(City::Las_Vegas_NV),
-                        ..store::Player::default()
-                    },
-                ),
-                (
-                    3,
-                    store::Player {
-                        cash: 10000,
-                        name: Some("Simon".to_string()),
-                        piece: Some(store::Piece::Yellow),
-                        home_city: Some(City::Los_Angeles_CA),
-                        start: Some(City::Tampa_FL),
-                        destination: Some(City::Casper_WY),
-                        ..store::Player::default()
-                    },
-                ),
-            ]),
-            history: vec![
-                Event::Create { player_id: 1 },
-                Event::PlayerJoined { player_id: 2 },
-                Event::PlayerJoined { player_id: 3 },
-                Event::Start { player_id: 1 },
-            ],
-            rail_ledger: Rail::iter()
-                .map(|rail| match rail {
-                    Rail::C_AND_O => (rail, Some(1)),
-                    Rail::ACL => (rail, Some(2)),
-                    Rail::SAL => (rail, Some(2)),
-                    _ => (rail, None),
-                })
-                .collect(),
-            ..State::default()
-        }
-    }));
-
+    let (state, set_state) = create_signal(None::<State>);
     provide_context(state);
     provide_context(set_state);
 
@@ -131,69 +70,22 @@ pub fn App() -> impl IntoView {
                             web_sys::console::log_1(
                                 &format!("got event from server! {:?}", event).into(),
                             );
-                            match event {
-                                Event::PlayerJoined {
-                                    player_id: joined_player_id,
-                                } => {
-                                    // add the joined player to the game state
-                                    console::log_1(
-                                        &format!("got player joined from server! {:?}", event)
-                                            .into(),
-                                    );
+                            set_state.update(|state| {
+                                let state = state.as_mut().unwrap();
 
-                                    set_state.update(|state| {
-                                        let state = state.as_mut().unwrap();
-                                        state.players.insert(
-                                            joined_player_id,
-                                            Player {
-                                                ..Player::default()
-                                            },
-                                        );
+                                state.consume(&event);
+                            });
 
-                                        state.player_order.push(joined_player_id);
+                            if let Event::Start { player_id: _ } = event {
+                                // get the lobby id from the url
+                                let lobby_id =
+                                    leptos_router::use_params::<LobbyParams>().with(|params| {
+                                        params.as_ref().map(|params| params.id).unwrap_or_default()
                                     });
-                                }
-                                Event::Create { player_id } => {
-                                    // navigate to the lobby
-                                    // let navigate = leptos_router::use_navigate();
-                                    // navigate(
-                                    //     &format!("/lobby/{}", player_id.get().unwrap()),
-                                    //     Default::default(),
-                                    // )
-                                    console::log_1(
-                                        &format!("got player creation from server! {:?}", event)
-                                            .into(),
-                                    );
 
-                                    set_state.update(|state| {
-                                        let state = state.as_mut().unwrap();
-
-                                        state.players.insert(
-                                            player_id,
-                                            Player {
-                                                ..Player::default()
-                                            },
-                                        );
-                                        state.player_order.push(player_id);
-                                        state.active_player_id = Some(player_id);
-                                        state.game_host = Some(player_id);
-                                    });
-                                }
-                                Event::Start { player_id: _ } => {
-                                    // get the lobby id from the url
-                                    let lobby_id =
-                                        leptos_router::use_params::<LobbyParams>().with(|params| {
-                                            params
-                                                .as_ref()
-                                                .map(|params| params.id)
-                                                .unwrap_or_default()
-                                        });
-
-                                    // navigate to the game
-                                    let navigate = leptos_router::use_navigate();
-                                    navigate(&format!("/game/{}", lobby_id), Default::default())
-                                }
-                                _ => {}
+                                // navigate to the game
+                                let navigate = leptos_router::use_navigate();
+                                navigate(&format!("/game/{}", lobby_id), Default::default())
                             }
                         }
                         ServerMessage::Error(error) => {

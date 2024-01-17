@@ -42,6 +42,7 @@ pub enum ServerMessage {
 pub enum ClientMessage {
     Event(Event),
     JoinGame(GameId),
+    AddComputer(GameId),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -334,6 +335,9 @@ pub enum Event {
     PlayerJoined {
         player_id: PlayerId,
     },
+    ComputerJoined {
+        player_id: PlayerId,
+    },
     // Bankrupcty Events
     SellRailToBank {
         player_id: PlayerId,
@@ -356,21 +360,46 @@ pub enum Event {
     },
     ChangeStage {
         stage: Stage,
+        line: u32,
     },
 }
 
 impl State {
     pub fn consume(&mut self, valid_event: &Event) {
         use Event::*;
+
         match valid_event {
-            Create { player_id } | PlayerJoined { player_id } => {
+            Create { player_id } | PlayerJoined { player_id } | ComputerJoined { player_id } => {
                 if let Create { player_id } = valid_event {
+                    println!("SETTING ACTIVE PLAYER ID");
                     self.game_host = Some(*player_id);
+                    self.active_player_id = Some(*player_id);
                 }
+
+                // TODO: Remove so that names + piece colors are not rng
+                let is_computer = matches!(valid_event, ComputerJoined { .. });
+                let name = if is_computer {
+                    format!("Computer {}", player_id)
+                } else {
+                    format!("Player {}", player_id)
+                };
+
+                // select a piece that hasn't been used yet
+                let piece = Piece::iter()
+                    .find(|piece| {
+                        !self
+                            .players
+                            .iter()
+                            .any(|(_, player)| player.piece == Some(*piece))
+                    })
+                    .expect("Expected there to be a piece available");
 
                 self.players.insert(
                     *player_id,
                     Player {
+                        computer: is_computer,
+                        piece: Some(piece),
+                        name: Some(name),
                         ..Player::default()
                     },
                 );
@@ -380,6 +409,7 @@ impl State {
             Start { player_id: _ } => {
                 self.consume(&Event::ChangeStage {
                     stage: Stage::InGame(InGameStage::OrderRoll),
+                    line: line!(),
                 });
             }
             SetPlayerAttributes {
@@ -533,15 +563,18 @@ impl State {
                     });
 
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DestinationRoll),
                     });
 
                     if self.players.get(player_id).unwrap().cash >= self.declare_amount as i64 {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::DeclareOption),
                         });
                     } else {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::DestinationRoll),
                         });
                     }
@@ -557,6 +590,7 @@ impl State {
                     if let Some(player) = self.players.get(player_id) {
                         if player.cash >= self.declare_amount as i64 && player.going_home {
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::Ended,
                             });
                             self.winner = Some(*player_id);
@@ -578,37 +612,59 @@ impl State {
                             self.player_order.retain(|id| id != player_id);
 
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::InGame(InGameStage::MovementRoll),
                             });
                         } else {
                             self.consume(&Event::ChangeStage {
+                                line: line!(),
                                 stage: Stage::InGame(InGameStage::BankruptcyHandling),
                             });
                         }
                     } else if self.stage != Stage::InGame(InGameStage::DestinationRoll) {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
                         self.advance_turn()
                     }
+
+                    // check if the game is over
+                    if self.player_order.len() == 1 {
+                        self.stage = Stage::Ended;
+                        self.winner = Some(self.active_player_id.unwrap());
+                    }
                 }
             }
             HomeRollRequest { player_id } => {
-                self.history.push(valid_event.clone());
-
                 let (region_roll, region) = DiceRoll::region();
                 let (city_roll, city) = DiceRoll::city_in_region(region);
 
-                self.players.get_mut(player_id).unwrap().home_city = Some(city);
-                self.players.get_mut(player_id).unwrap().start = Some(city);
-
-                self.history.push(Event::HomeRoll {
+                self.consume(&Event::HomeRoll {
                     player_id: *player_id,
                     region_roll,
                     city_roll,
                     region,
                     city,
                 });
+            }
+            HomeRoll {
+                player_id,
+                region_roll,
+                city_roll,
+                region,
+                city,
+            } => {
+                self.history.push(Event::HomeRoll {
+                    player_id: *player_id,
+                    region_roll: *region_roll,
+                    city_roll: *city_roll,
+                    region: *region,
+                    city: *city,
+                });
+
+                self.players.get_mut(player_id).unwrap().home_city = Some(*city);
+                self.players.get_mut(player_id).unwrap().start = Some(*city);
 
                 // if all player's have rolled for their home city then change the stage
                 if self
@@ -619,6 +675,7 @@ impl State {
                     == self.players.len()
                 {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DestinationRoll),
                     });
                 }
@@ -627,13 +684,17 @@ impl State {
                 self.advance_turn();
             }
             OrderRollRequest { player_id } => {
-                self.history.push(valid_event.clone());
-
                 let roll = DiceRoll::red_and_white();
 
-                self.history.push(Event::OrderRoll {
+                self.consume(&Event::OrderRoll {
                     player_id: *player_id,
                     roll,
+                });
+            }
+            OrderRoll { player_id, roll } => {
+                self.history.push(Event::OrderRoll {
+                    player_id: *player_id,
+                    roll: *roll,
                 });
 
                 // TODO: Handle Ties
@@ -682,13 +743,15 @@ impl State {
 
                     // set the stage to home roll
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::HomeRoll),
                     });
+                } else {
+                    // move to the next player
+                    self.advance_turn();
                 }
             }
             DestinationRollRequest { player_id } => {
-                self.history.push(valid_event.clone());
-
                 let (region_roll, region) = DiceRoll::region();
                 let mut city_roll;
                 let mut city;
@@ -699,17 +762,38 @@ impl State {
                     city == self.players.get(player_id).unwrap().start.unwrap()
                 } {}
 
-                self.history.push(Event::DestinationRoll {
+                self.consume(&Event::DestinationRoll {
                     player_id: *player_id,
                     region_roll,
                     city_roll,
                     region,
                     city,
                 });
+            }
+            DestinationRoll {
+                player_id,
+                region_roll,
+                city_roll,
+                region,
+                city,
+            } => {
+                self.history.push(Event::DestinationRoll {
+                    player_id: *player_id,
+                    region_roll: *region_roll,
+                    city_roll: *city_roll,
+                    region: *region,
+                    city: *city,
+                });
 
-                // if the player just reached their destination (via a move)
-                if let Some(Move { player_id: _, .. }) = self.history.iter().rev().nth(2) {
+                if !self
+                    .players
+                    .get(player_id)
+                    .unwrap()
+                    .route_history
+                    .is_empty()
+                {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::Purchase),
                     });
                 } else {
@@ -724,28 +808,35 @@ impl State {
                         == self.players.len()
                     {
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
                     }
                     self.advance_turn();
                 }
 
-                self.players.get_mut(player_id).unwrap().destination = Some(city);
+                self.players.get_mut(player_id).unwrap().destination = Some(*city);
             }
             MovementRollRequest { player_id } => {
-                self.history.push(valid_event.clone());
-
-                let player: &mut Player = self.players.get_mut(player_id).unwrap();
+                let player = self.players.get(player_id).unwrap();
                 let roll = DiceRoll::movement_roll(&player.engine);
 
-                player.spaces_left_to_move = Some(roll.sum());
-
-                self.history.push(Event::MovementRoll {
+                self.consume(&Event::MovementRoll {
                     player_id: *player_id,
                     roll,
                 });
+            }
+            MovementRoll { player_id, roll } => {
+                self.history.push(Event::MovementRoll {
+                    player_id: *player_id,
+                    roll: *roll,
+                });
+
+                let player = self.players.get_mut(player_id).unwrap();
+                player.spaces_left_to_move = Some(roll.sum());
 
                 self.consume(&Event::ChangeStage {
+                    line: line!(),
                     stage: Stage::InGame(InGameStage::Movement),
                 });
             }
@@ -785,10 +876,12 @@ impl State {
                 let player = self.players.get(player_id).unwrap();
                 if player.cash >= self.declare_amount as i64 {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::DeclareOption),
                     });
                 } else {
                     self.consume(&Event::ChangeStage {
+                        line: line!(),
                         stage: Stage::InGame(InGameStage::MovementRoll),
                     });
                     self.advance_turn();
@@ -808,26 +901,55 @@ impl State {
                     .iter()
                     .all(|(_, owner)| *owner != Some(*player_id))
                 {
+                    // TODO: Determine if we really should autoend the turn or require the user to manually end the turn
                     if player.cash <= 0 {
                         player.bankrupt = true;
                         self.advance_turn();
                         self.player_order.retain(|id| id != player_id);
+                    } else if player.destination.is_none() {
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::InGame(InGameStage::DestinationRoll),
+                        });
                     } else {
                         self.advance_turn();
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::InGame(InGameStage::MovementRoll),
+                        });
                     }
 
-                    self.consume(&Event::ChangeStage {
-                        stage: Stage::InGame(InGameStage::MovementRoll),
-                    });
+                    // check if the game is over
+                    if self.player_order.len() == 1 {
+                        self.consume(&Event::ChangeStage {
+                            line: line!(),
+                            stage: Stage::Ended,
+                        });
+                        self.winner = Some(self.active_player_id.unwrap());
+                    }
                 }
 
                 // if
             }
-            EndBankruptcyHandling { player_id: _ } => {
-                self.consume(&Event::ChangeStage {
-                    stage: Stage::InGame(InGameStage::MovementRoll),
-                });
-                self.advance_turn();
+            EndBankruptcyHandling { player_id } => {
+                let player = self.players.get_mut(player_id).unwrap();
+
+                if player.cash <= 0 {
+                    player.bankrupt = true;
+                    self.advance_turn();
+                    self.player_order.retain(|id| id != player_id);
+                } else if player.destination.is_none() {
+                    self.consume(&Event::ChangeStage {
+                        line: line!(),
+                        stage: Stage::InGame(InGameStage::DestinationRoll),
+                    });
+                } else {
+                    self.advance_turn();
+                    self.consume(&Event::ChangeStage {
+                        line: line!(),
+                        stage: Stage::InGame(InGameStage::MovementRoll),
+                    });
+                }
             }
             AuctionRail { player_id, rail } => {
                 self.auction_state = Some(AuctionState {
@@ -891,10 +1013,18 @@ impl State {
                         self.player_order.retain(|id| id != player_id);
 
                         self.consume(&Event::ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::MovementRoll),
                         });
+
+                        // check if the game is over
+                        if self.player_order.len() == 1 {
+                            self.stage = Stage::Ended;
+                            self.winner = Some(self.active_player_id.unwrap());
+                        }
                     } else {
                         self.consume(&ChangeStage {
+                            line: line!(),
                             stage: Stage::InGame(InGameStage::BankruptcyHandling),
                         })
                     }
@@ -906,13 +1036,15 @@ impl State {
                 }
 
                 self.consume(&Event::ChangeStage {
+                    line: line!(),
                     stage: Stage::InGame(InGameStage::MovementRoll),
                 });
                 self.advance_turn();
             }
             // TODO: Remove to ensure all events are handled
-            ChangeStage { stage } => self.stage = *stage,
-            _ => {}
+            ChangeStage { line: _, stage } => {
+                self.stage = *stage;
+            }
         }
 
         match valid_event {
@@ -920,6 +1052,28 @@ impl State {
             HomeRollRequest { player_id: _ } => {}
             DestinationRollRequest { player_id: _ } => {}
             MovementRollRequest { player_id: _ } => {}
+            OrderRoll {
+                player_id: _,
+                roll: _,
+            } => {}
+            HomeRoll {
+                player_id: _,
+                region_roll: _,
+                city_roll: _,
+                region: _,
+                city: _,
+            } => {}
+            DestinationRoll {
+                player_id: _,
+                region_roll: _,
+                city_roll: _,
+                region: _,
+                city: _,
+            } => {}
+            MovementRoll {
+                player_id: _,
+                roll: _,
+            } => {}
             _ => self.history.push(valid_event.clone()),
         }
     }
@@ -936,6 +1090,8 @@ impl State {
                 break;
             }
         }
+
+        println!("Active player changed to {:?}", self.active_player_id);
     }
 
     pub fn validate(&self, event: &Event) -> Result<(), String> {
@@ -1139,6 +1295,11 @@ impl State {
                     return Err("It is not the order roll stage".to_string());
                 }
 
+                // check player is currently the one making their move
+                if self.active_player_id != Some(*player_id) {
+                    return Err("It is not this player's turn".to_string());
+                }
+
                 // Check player exists
                 if !self.players.contains_key(player_id) {
                     return Err("Player does not exist".to_string());
@@ -1299,7 +1460,7 @@ impl State {
                     return Err("It is not this player's turn".to_string());
                 }
             }
-            PlayerJoined { player_id } => {
+            PlayerJoined { player_id } | ComputerJoined { player_id } => {
                 // Check player doesn't already exist
                 if self.players.contains_key(player_id) {
                     return Err("Player already exists".to_string());
@@ -1419,7 +1580,7 @@ impl State {
                     return Err("Player is bankrupt still".to_string());
                 }
             }
-            ChangeStage { stage: _ } => {
+            ChangeStage { stage: _, line: _ } => {
                 return Err("ChangeStage should only be sent from server to client".to_string())
             }
         }

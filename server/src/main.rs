@@ -28,7 +28,8 @@ use std::{
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
-use store::{GameId, ServerMessage, State};
+use rand::Rng;
+use store::{Event, GameId, ServerMessage, State};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::tungstenite::protocol::Message;
 
@@ -153,6 +154,20 @@ async fn handle_connection(
                     player_id: addr.port().into(),
                 },
             ),
+            store::ClientMessage::AddComputer(game_id) => {
+                let player_id = game_states
+                    .lock()
+                    .unwrap()
+                    .get(&game_id)
+                    .unwrap()
+                    .players
+                    .keys()
+                    .max()
+                    .expect("Expected at least one player in the game")
+                    + 1;
+
+                (game_id, store::Event::ComputerJoined { player_id })
+            }
         };
 
         // ensure that the game with game_id exists
@@ -252,13 +267,209 @@ async fn handle_connection(
         let peers = peer_maps.lock().unwrap();
         let broadcast_recipients = peers.get(&game_id).unwrap();
 
+        let event = {
+            let event_history = game_states
+                .lock()
+                .unwrap()
+                .get(&game_id)
+                .unwrap()
+                .history
+                .clone();
+
+            match event.clone() {
+                Event::OrderRollRequest { player_id: _ } => {
+                    // retrieve the last Event::OrderRoll
+                    event_history
+                        .iter()
+                        .rev()
+                        .find(|event| matches!(event, store::Event::OrderRoll { .. }))
+                        .unwrap()
+                        .clone()
+                }
+                Event::HomeRollRequest { player_id: _ } => event_history
+                    .iter()
+                    .rev()
+                    .find(|event| matches!(event, store::Event::HomeRoll { .. }))
+                    .unwrap()
+                    .clone(),
+                Event::DestinationRollRequest { player_id: _ } => event_history
+                    .iter()
+                    .rev()
+                    .find(|event| matches!(event, store::Event::DestinationRoll { .. }))
+                    .unwrap()
+                    .clone(),
+                Event::MovementRollRequest { player_id: _ } => event_history
+                    .iter()
+                    .rev()
+                    .find(|event| matches!(event, store::Event::MovementRoll { .. }))
+                    .unwrap()
+                    .clone(),
+                _ => event,
+            }
+        };
+
         for (peer_addr, recp) in broadcast_recipients {
             match recp.unbounded_send(Message::Binary(
                 bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
             )) {
+                // TODO: If the event is any of the roll events, then don't send the roll request, only the results.
                 Ok(_) => println!("Main Event sent to {:?}", peer_addr),
                 Err(e) => println!("Error sending main event to {:?}: {}", peer_addr, e),
             }
+        }
+
+        // TODO: after consuming the event, check if the game is over
+        // TODO: If the previous event causes the turn to be moved to the next player, and the next player is a computer
+        // then use minimax to determine the best move for the computer, and send every event to each player until the computer's turn is over and we have reached
+        // a human player's turn.
+
+        // Send each message with a one second delay.
+        // TODO: To fix the timer part of this, compute and consume all events from the computer then send each event retrospectively to all players with a one second.
+        while {
+            let game_states_lock = game_states.lock().unwrap();
+            let game_state = game_states_lock.get(&game_id).unwrap();
+
+            match game_state.stage {
+                store::Stage::InGame(_) => {
+                    if let Some(active_player_id) = game_state.active_player_id {
+                        let active_player = game_state.players.get(&active_player_id).unwrap();
+                        active_player.computer
+                    } else {
+                        println!("Exiting while loop @ 295");
+                        println!("Game state: {:#?}", game_state);
+                        false
+                    }
+                }
+                _ => {
+                    println!("Exiting while loop @ 302");
+                    println!("Game state: {:#?}", game_state);
+                    false
+                }
+            }
+        } {
+            println!("Computer is thinking..");
+
+            // compute the best move for the computer
+            let last_event = {
+                game_states
+                    .lock()
+                    .unwrap()
+                    .get(&game_id)
+                    .unwrap()
+                    .history
+                    .last()
+                    .unwrap()
+                    .clone()
+            };
+
+            let active_player_id = {
+                game_states
+                    .lock()
+                    .unwrap()
+                    .get(&game_id)
+                    .unwrap()
+                    .active_player_id
+                    .unwrap()
+            };
+
+            let (_, event) = {
+                game_states.lock().unwrap().get(&game_id).unwrap().minimax(
+                    3,
+                    active_player_id,
+                    false,
+                    last_event,
+                )
+            };
+            println!("Done thinking. Event: {:?}", event);
+
+            // consume the event
+
+            println!("starting consuming");
+            game_states
+                .lock()
+                .unwrap()
+                .get_mut(&game_id)
+                .unwrap()
+                .consume(&event);
+
+            println!("Done consuming");
+
+            // delay for 1 second
+            println!("Sleeping for 1 second..");
+            // std::thread::sleep(std::time::Duration::from_secs(1));
+            println!("Done sleeping");
+
+            // TODO: Change to broadcast to all players
+            // broadcast the event to all players
+            // for (peer_addr, recp) in broadcast_recipients {
+            //     match recp.unbounded_send(Message::Binary(
+            //         bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
+            //     )) {
+            //         Ok(_) => println!("Computer Event sent to {:?}", peer_addr),
+            //         Err(e) => println!("Error sending computer event to {:?}: {}", peer_addr, e),
+            //     }
+            // }
+
+            let event = {
+                let event_history = game_states
+                    .lock()
+                    .unwrap()
+                    .get(&game_id)
+                    .unwrap()
+                    .history
+                    .clone();
+
+                match event.clone() {
+                    Event::OrderRollRequest { player_id: _ } => {
+                        // retrieve the last Event::OrderRoll
+                        event_history
+                            .iter()
+                            .rev()
+                            .find(|event| matches!(event, store::Event::OrderRoll { .. }))
+                            .unwrap()
+                            .clone()
+                    }
+                    Event::HomeRollRequest { player_id: _ } => event_history
+                        .iter()
+                        .rev()
+                        .find(|event| matches!(event, store::Event::HomeRoll { .. }))
+                        .unwrap()
+                        .clone(),
+                    Event::DestinationRollRequest { player_id: _ } => event_history
+                        .iter()
+                        .rev()
+                        .find(|event| matches!(event, store::Event::DestinationRoll { .. }))
+                        .unwrap()
+                        .clone(),
+                    Event::MovementRollRequest { player_id: _ } => event_history
+                        .iter()
+                        .rev()
+                        .find(|event| matches!(event, store::Event::MovementRoll { .. }))
+                        .unwrap()
+                        .clone(),
+                    _ => event,
+                }
+            };
+
+            match tx.unbounded_send(Message::Binary(
+                bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
+            )) {
+                Ok(_) => {
+                    println!("Computer event sent to {:?}", addr);
+                    println!("Computer event {:?}", event);
+                }
+                Err(e) => println!("Error sending computer event to {:?}: {}", addr, e),
+            }
+
+            println!(
+                "Active player id: {:?}",
+                game_states
+                    .lock()
+                    .unwrap()
+                    .get(&game_id)
+                    .unwrap()
+                    .active_player_id
+            );
         }
 
         future::ok(())

@@ -128,7 +128,7 @@ impl DiceRoll {
         let red_dice = dice_roll.red_dice.unwrap();
         let white_dice = dice_roll.white_dice;
 
-        let _region_match = if red_dice.is_odd() {
+        let region_match = if red_dice.is_odd() {
             match white_dice.0 + white_dice.1 {
                 2 => Region::Plains,
                 3 => Region::South_East,
@@ -161,8 +161,7 @@ impl DiceRoll {
         };
 
         // TODO: Remove / Don't commit. Just for testing while we only have northeast cities implemented
-        (dice_roll, Region::North_East)
-        // (dice_roll, region_match)
+        (dice_roll, region_match)
     }
 }
 
