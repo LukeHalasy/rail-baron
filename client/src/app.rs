@@ -1,13 +1,16 @@
 use std::collections::HashMap;
+use std::thread;
 
 use futures::{SinkExt, StreamExt};
 
+use leptos::leptos_dom::logging::console_log;
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
 use reqwasm::websocket::{futures::WebSocket, Message};
 
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
+use std::time::Duration as duration;
 use store::rail::Rail;
 use store::travel_payout::City;
 use store::{ClientMessage, Event, Player, ServerMessage, State};
@@ -20,6 +23,7 @@ use crate::pre_game::home::Home;
 use crate::pre_game::join::Join;
 use crate::pre_game::lobby::{Lobby, LobbyParams};
 use crate::pre_game::rules::Rules;
+use gloo_timers::future::TimeoutFuture;
 
 pub type Error = String;
 
@@ -62,8 +66,10 @@ pub fn App() -> impl IntoView {
     });
 
     leptos::spawn_local(async move {
+        // wait a second
         while let Some(msg) = read.next().await {
             if let Message::Bytes(bytes) = msg.unwrap() {
+                console::log_1(&"got message from server!".to_string().into());
                 if let Ok(server_message) = bincode::deserialize::<ServerMessage>(&bytes) {
                     match server_message {
                         ServerMessage::Event(event) => {
@@ -75,6 +81,10 @@ pub fn App() -> impl IntoView {
 
                                 state.consume(&event);
                             });
+
+                            console::log_1(&"waiting 10 seconds...".to_string().into());
+                            TimeoutFuture::new(1_000).await;
+                            console::log_1(&"done".to_string().into());
 
                             if let Event::Start { player_id: _ } = event {
                                 // get the lobby id from the url
