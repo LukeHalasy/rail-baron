@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 use strum::IntoEnumIterator;
 
-use crate::{rail::RAILROAD_GRAPH, travel_payout::travel_payout};
+pub use crate::{rail::RAILROAD_GRAPH, rail::RAILROAD_EDGES, travel_payout::travel_payout};
 use std::str::FromStr;
 pub type PlayerId = u64;
 

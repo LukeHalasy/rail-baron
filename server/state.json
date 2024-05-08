@@ -1,0 +1,1028 @@
+{
+  "stage": {
+    "InGame": "Movement"
+  },
+  "active_player_id": 55493,
+  "game_host": 55493,
+  "players": {
+    "55494": {
+      "cash": 18000,
+      "name": "Computer 55494",
+      "piece": "Green",
+      "home_city": "Spokane_WA",
+      "route": [
+        [
+          {
+            "P": "Cataldo_ID"
+          },
+          "CMSTP_AND_P"
+        ],
+        [
+          {
+            "P": "St_Regis_MT"
+          },
+          "CMSTP_AND_P"
+        ],
+        [
+          {
+            "P": "Missoula_MT"
+          },
+          "CMSTP_AND_P"
+        ],
+        [
+          {
+            "D": "Butte_MT"
+          },
+          "NP"
+        ],
+        [
+          {
+            "P": "Townsend_MT"
+          },
+          "CMSTP_AND_P"
+        ],
+        [
+          {
+            "P": "Harlowton_MT"
+          },
+          "CMSTP_AND_P"
+        ],
+        [
+          {
+            "P": "Roundup_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      ],
+      "route_history": [],
+      "grand_fathered_rail": null,
+      "start": "Spokane_WA",
+      "destination": "Cincinnati_OH",
+      "spaces_left_to_move": null,
+      "going_home": false,
+      "engine": "Freight",
+      "bankrupt": false,
+      "computer": true
+    },
+    "55495": {
+      "cash": 23500,
+      "name": "Computer 55495",
+      "piece": "Blue",
+      "home_city": "Indianapolis_IN",
+      "route": [],
+      "route_history": [
+        [
+          [
+            {
+              "P": "Columbus_IN"
+            },
+            "PA"
+          ],
+          [
+            {
+              "D": "Louisville_KY"
+            },
+            "PA"
+          ],
+          [
+            {
+              "P": "Elizabethtown_KY"
+            },
+            "L_AND_N"
+          ],
+          [
+            {
+              "P": "Bowling_Green_KY"
+            },
+            "L_AND_N"
+          ],
+          [
+            {
+              "D": "Nashville_TN"
+            },
+            "L_AND_N"
+          ],
+          [
+            {
+              "P": "Tullahoma_TN"
+            },
+            "L_AND_N"
+          ],
+          [
+            {
+              "D": "Chattanooga_TN"
+            },
+            "L_AND_N"
+          ],
+          [
+            {
+              "P": "Rome_GA"
+            },
+            "SOU"
+          ],
+          [
+            {
+              "D": "Atlanta_GA"
+            },
+            "SOU"
+          ],
+          [
+            {
+              "P": "Perry_GA"
+            },
+            "ACL"
+          ],
+          [
+            {
+              "P": "Arabi_GA"
+            },
+            "ACL"
+          ],
+          [
+            {
+              "P": "Willacoochee_GA"
+            },
+            "ACL"
+          ],
+          [
+            {
+              "D": "Jacksonville_FL"
+            },
+            "ACL"
+          ]
+        ]
+      ],
+      "grand_fathered_rail": null,
+      "start": "Jacksonville_FL",
+      "destination": "Dallas_TX",
+      "spaces_left_to_move": null,
+      "going_home": false,
+      "engine": "Freight",
+      "bankrupt": false,
+      "computer": true
+    },
+    "55493": {
+      "cash": 19000,
+      "name": "Player 55493",
+      "piece": "Yellow",
+      "home_city": "Los_Angeles_CA",
+      "route": [
+        [
+          {
+            "P": "Santa_Barbara_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Santa_Maria_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "San_Simeon_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Big_Sur_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "San_Jose_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "D": "San_Francisco_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Santa_Rosa_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Fortuna_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Crescent_City_CA"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Grants_Pass_OR"
+          },
+          "SP"
+        ],
+        [
+          {
+            "P": "Roseburg_OR"
+          },
+          "SP"
+        ]
+      ],
+      "route_history": [],
+      "grand_fathered_rail": null,
+      "start": "Los_Angeles_CA",
+      "destination": "Des_Moines_IA",
+      "spaces_left_to_move": 3,
+      "going_home": false,
+      "engine": "Freight",
+      "bankrupt": false,
+      "computer": false
+    }
+  },
+  "player_order": [
+    55495,
+    55493,
+    55494
+  ],
+  "history": [
+    {
+      "Create": {
+        "player_id": 55493
+      }
+    },
+    {
+      "ComputerJoined": {
+        "player_id": 55494
+      }
+    },
+    {
+      "ComputerJoined": {
+        "player_id": 55495
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "OrderRoll"
+        },
+        "line": 412
+      }
+    },
+    {
+      "Start": {
+        "player_id": 55493
+      }
+    },
+    {
+      "OrderRoll": {
+        "player_id": 55493,
+        "roll": {
+          "white_dice": [
+            "One",
+            "Three"
+          ],
+          "red_dice": "One"
+        }
+      }
+    },
+    {
+      "OrderRoll": {
+        "player_id": 55494,
+        "roll": {
+          "white_dice": [
+            "Two",
+            "One"
+          ],
+          "red_dice": "One"
+        }
+      }
+    },
+    {
+      "OrderRoll": {
+        "player_id": 55495,
+        "roll": {
+          "white_dice": [
+            "Five",
+            "Two"
+          ],
+          "red_dice": "Three"
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "HomeRoll"
+        },
+        "line": 746
+      }
+    },
+    {
+      "HomeRoll": {
+        "player_id": 55495,
+        "region_roll": {
+          "white_dice": [
+            "Five",
+            "One"
+          ],
+          "red_dice": "Three"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Six",
+            "Two"
+          ],
+          "red_dice": "Five"
+        },
+        "region": "North_Central",
+        "city": "Indianapolis_IN"
+      }
+    },
+    {
+      "HomeRoll": {
+        "player_id": 55493,
+        "region_roll": {
+          "white_dice": [
+            "Two",
+            "Five"
+          ],
+          "red_dice": "Six"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Six",
+            "One"
+          ],
+          "red_dice": "Two"
+        },
+        "region": "South_West",
+        "city": "Los_Angeles_CA"
+      }
+    },
+    {
+      "HomeRoll": {
+        "player_id": 55494,
+        "region_roll": {
+          "white_dice": [
+            "Five",
+            "Four"
+          ],
+          "red_dice": "Six"
+        },
+        "city_roll": {
+          "white_dice": [
+            "One",
+            "One"
+          ],
+          "red_dice": "Four"
+        },
+        "region": "North_West",
+        "city": "Spokane_WA"
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "DestinationRoll"
+        },
+        "line": 678
+      }
+    },
+    {
+      "DestinationRoll": {
+        "player_id": 55495,
+        "region_roll": {
+          "white_dice": [
+            "Two",
+            "Two"
+          ],
+          "red_dice": "Five"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Five",
+            "Two"
+          ],
+          "red_dice": "Six"
+        },
+        "region": "South_East",
+        "city": "Jacksonville_FL"
+      }
+    },
+    {
+      "DestinationRoll": {
+        "player_id": 55493,
+        "region_roll": {
+          "white_dice": [
+            "Six",
+            "Five"
+          ],
+          "red_dice": "Four"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Five",
+            "Three"
+          ],
+          "red_dice": "Six"
+        },
+        "region": "Plains",
+        "city": "Des_Moines_IA"
+      }
+    },
+    {
+      "DestinationRoll": {
+        "player_id": 55494,
+        "region_roll": {
+          "white_dice": [
+            "Two",
+            "Five"
+          ],
+          "red_dice": "Three"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Two",
+            "Two"
+          ],
+          "red_dice": "Six"
+        },
+        "region": "North_Central",
+        "city": "Cincinnati_OH"
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "MovementRoll"
+        },
+        "line": 811
+      }
+    },
+    {
+      "MovementRoll": {
+        "player_id": 55495,
+        "roll": {
+          "white_dice": [
+            "Four",
+            "Two"
+          ],
+          "red_dice": null
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Movement"
+        },
+        "line": 839
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Columbus_IN"
+          },
+          "PA"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "D": "Louisville_KY"
+          },
+          "PA"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Elizabethtown_KY"
+          },
+          "L_AND_N"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Bowling_Green_KY"
+          },
+          "L_AND_N"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "D": "Nashville_TN"
+          },
+          "L_AND_N"
+        ]
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "MovementRoll"
+        },
+        "line": 626
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Tullahoma_TN"
+          },
+          "L_AND_N"
+        ]
+      }
+    },
+    {
+      "MovementRoll": {
+        "player_id": 55493,
+        "roll": {
+          "white_dice": [
+            "Six",
+            "Five"
+          ],
+          "red_dice": null
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Movement"
+        },
+        "line": 839
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Santa_Barbara_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Santa_Maria_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "San_Simeon_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Big_Sur_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "San_Jose_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "D": "San_Francisco_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Santa_Rosa_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Fortuna_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Crescent_City_CA"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Grants_Pass_OR"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "MovementRoll"
+        },
+        "line": 626
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55493,
+        "route": [
+          {
+            "P": "Roseburg_OR"
+          },
+          "SP"
+        ]
+      }
+    },
+    {
+      "MovementRoll": {
+        "player_id": 55494,
+        "roll": {
+          "white_dice": [
+            "Five",
+            "Two"
+          ],
+          "red_dice": null
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Movement"
+        },
+        "line": 839
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "Cataldo_ID"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "St_Regis_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "Missoula_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "D": "Butte_MT"
+          },
+          "NP"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "Townsend_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "Harlowton_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "MovementRoll"
+        },
+        "line": 626
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55494,
+        "route": [
+          {
+            "P": "Roundup_MT"
+          },
+          "CMSTP_AND_P"
+        ]
+      }
+    },
+    {
+      "MovementRoll": {
+        "player_id": 55495,
+        "roll": {
+          "white_dice": [
+            "Six",
+            "Five"
+          ],
+          "red_dice": null
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Movement"
+        },
+        "line": 839
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "D": "Chattanooga_TN"
+          },
+          "L_AND_N"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Rome_GA"
+          },
+          "SOU"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "D": "Atlanta_GA"
+          },
+          "SOU"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Perry_GA"
+          },
+          "ACL"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Arabi_GA"
+          },
+          "ACL"
+        ]
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "P": "Willacoochee_GA"
+          },
+          "ACL"
+        ]
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "DestinationRoll"
+        },
+        "line": 566
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "DestinationRoll"
+        },
+        "line": 577
+      }
+    },
+    {
+      "Move": {
+        "player_id": 55495,
+        "route": [
+          {
+            "D": "Jacksonville_FL"
+          },
+          "ACL"
+        ]
+      }
+    },
+    {
+      "DestinationRoll": {
+        "player_id": 55495,
+        "region_roll": {
+          "white_dice": [
+            "One",
+            "Two"
+          ],
+          "red_dice": "Four"
+        },
+        "city_roll": {
+          "white_dice": [
+            "Five",
+            "One"
+          ],
+          "red_dice": "Six"
+        },
+        "region": "South_Central",
+        "city": "Dallas_TX"
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Purchase"
+        },
+        "line": 796
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "MovementRoll"
+        },
+        "line": 884
+      }
+    },
+    {
+      "EndPurchaseStage": {
+        "player_id": 55495
+      }
+    },
+    {
+      "MovementRoll": {
+        "player_id": 55493,
+        "roll": {
+          "white_dice": [
+            "One",
+            "Two"
+          ],
+          "red_dice": null
+        }
+      }
+    },
+    {
+      "ChangeStage": {
+        "stage": {
+          "InGame": "Movement"
+        },
+        "line": 839
+      }
+    }
+  ],
+  "rail_ledger": {
+    "SAL": null,
+    "GN": null,
+    "C_AND_O": null,
+    "SOU": null,
+    "GM_AND_O": null,
+    "NP": null,
+    "SP": null,
+    "SLSF": null,
+    "NYC": null,
+    "UP": null,
+    "WP": null,
+    "N_AND_W": null,
+    "PA": null,
+    "RF_AND_P": null,
+    "C_AND_NW": null,
+    "D_AND_RGW": null,
+    "L_AND_N": null,
+    "T_AND_P": null,
+    "CMSTP_AND_P": null,
+    "CRI_AND_P": null,
+    "IC": null,
+    "ACL": null,
+    "B_AND_O": null,
+    "MP": null,
+    "CB_AND_Q": null,
+    "NYNH_AND_H": null,
+    "AT_AND_SF": null,
+    "B_AND_M": null
+  },
+  "winner": null,
+  "all_roads_bought": false,
+  "declare_amount": 200000,
+  "rover_reward": 50000,
+  "auction_bid_increment": 500,
+  "auction_state": null
+}

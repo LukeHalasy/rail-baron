@@ -396,19 +396,8 @@ async fn handle_connection(
 
             // delay for 1 second
             println!("Sleeping for 1 second..");
-            // std::thread::sleep(std::time::Duration::from_secs(1));
+            std::thread::sleep(std::time::Duration::from_secs(1));
             println!("Done sleeping");
-
-            // TODO: Change to broadcast to all players
-            // broadcast the event to all players
-            // for (peer_addr, recp) in broadcast_recipients {
-            //     match recp.unbounded_send(Message::Binary(
-            //         bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
-            //     )) {
-            //         Ok(_) => println!("Computer Event sent to {:?}", peer_addr),
-            //         Err(e) => println!("Error sending computer event to {:?}: {}", peer_addr, e),
-            //     }
-            // }
 
             let event = {
                 let event_history = game_states
@@ -451,15 +440,25 @@ async fn handle_connection(
                 }
             };
 
-            match tx.unbounded_send(Message::Binary(
-                bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
-            )) {
-                Ok(_) => {
-                    println!("Computer event sent to {:?}", addr);
-                    println!("Computer event {:?}", event);
+            // TODO: Change to broadcast to all players
+            // broadcast the event to all players
+            for (peer_addr, recp) in broadcast_recipients {
+                match recp.unbounded_send(Message::Binary(
+                    bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
+                )) {
+                    Ok(_) => println!("Computer Event sent to {:?}", peer_addr),
+                    Err(e) => println!("Error sending computer event to {:?}: {}", peer_addr, e),
                 }
-                Err(e) => println!("Error sending computer event to {:?}: {}", addr, e),
             }
+            // match tx.unbounded_send(Message::Binary(
+            //     bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
+            // )) {
+            //     Ok(_) => {
+            //         println!("Computer event sent to {:?}", addr);
+            //         println!("Computer event {:?}", event);
+            //     }
+            //     Err(e) => println!("Error sending computer event to {:?}: {}", addr, e),
+            // }
 
             println!(
                 "Active player id: {:?}",
