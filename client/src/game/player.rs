@@ -1,6 +1,5 @@
 use leptos::*;
 use leptos_leaflet::{position, Circle, Marker, Position};
-use store::{rail::C, travel_payout::City};
 
 #[component]
 pub fn Player(player: store::Player) -> impl IntoView {

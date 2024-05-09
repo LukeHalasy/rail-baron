@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::io::Write;
 
 use store::{Event, Piece, State};
 
@@ -55,14 +55,12 @@ fn main() {
         }
 
         // Now, let the computer play four rounds
-        let mut i = 0;
         let player_to_max_id = 2;
         while game_state.stage != store::Stage::Ended {
             // println!("Game: {}, Round: {}", count, i);
             // io::stdout().flush().unwrap();
 
-
-            let active_player = game_state.active_player_id.unwrap();
+            let _active_player = game_state.active_player_id.unwrap();
             // Thought.. what happens if the player gets eliminated...
             let (_, event) = game_state.minimax(
                 15,
@@ -103,8 +101,11 @@ fn main() {
             game_state.consume(&event);
 
             // check if the player to max id has been eliminted
-            if game_state.player_order.contains(&player_to_max_id) == false {
-                println!("The AI Lost! Player {} has been eliminated!", player_to_max_id);
+            if !game_state.player_order.contains(&player_to_max_id) {
+                println!(
+                    "The AI Lost! Player {} has been eliminated!",
+                    player_to_max_id
+                );
 
                 break;
                 // find the next player to max id
@@ -115,8 +116,6 @@ fn main() {
                 // println!("Next player to max id: {}", next_player_to_max_id);
                 // player_to_max_id = next_player_to_max_id;
             }
-
-            i += 1;
         }
 
         if game_state.winner.is_some() && game_state.winner.unwrap() == player_to_max_id {
@@ -125,6 +124,9 @@ fn main() {
         }
     }
 
-    println!("The computer won {} out of {} games", computer_wins, game_vec.len());
+    println!(
+        "The computer won {} out of {} games",
+        computer_wins,
+        game_vec.len()
+    );
 }
-

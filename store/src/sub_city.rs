@@ -115,7 +115,7 @@ sub_cities! {
     [Thayer: MO] => (36.5286, -91.5415),
     [Mansfield: MO] => (37.1134, -92.5806),
     [Bakersfield: MO] => (36.5009, -92.2715),
-    
+
     // South_East
     [Spring_Hill: TN] => (35.7512, -86.9310),
     [Greenville: AL] => (31.8296, -86.6178),

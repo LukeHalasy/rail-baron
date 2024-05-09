@@ -26,7 +26,7 @@ impl State {
 
         // check if the player has been eliminated
         if !self.player_order.contains(&player_to_max_id) {
-           return -1.0;
+            return -1.0;
         }
 
         // TODO: Evaluate railroad network connectivity.
@@ -305,7 +305,10 @@ impl State {
         minning_for_other: bool,
         last_event: Event,
     ) -> (f64, Event) {
-        if self.stage == Stage::Ended || depth == 0 || !self.player_order.contains(&player_to_max_id) {
+        if self.stage == Stage::Ended
+            || depth == 0
+            || !self.player_order.contains(&player_to_max_id)
+        {
             return (self.evaluate(player_to_max_id), last_event);
         };
 

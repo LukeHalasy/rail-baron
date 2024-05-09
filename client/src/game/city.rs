@@ -2,8 +2,8 @@ use futures::channel::mpsc::Sender;
 use leptos::*;
 use leptos_leaflet::{leaflet::MouseEvent, position, Circle, MouseEvents};
 use store::{
-    rail::{self, Rail, C},
-    ClientMessage, Event, RAILROAD_GRAPH,
+    rail::{self, C},
+    ClientMessage, Event,
 };
 
 use crate::app::PlayerId;
@@ -28,7 +28,7 @@ pub fn City(city: C) -> impl IntoView {
     let tx = use_context::<Sender<ClientMessage>>().expect("Expected the tx sender");
     let player_id = use_context::<PlayerId>().expect("Expected a player id signal");
 
-    let move_player = move |event: MouseEvent| {
+    let move_player = move |_event: MouseEvent| {
         let game_state = use_context::<ReadSignal<Option<store::State>>>()
             .expect("Expected a game state signal");
         let current_city = game_state
@@ -70,19 +70,16 @@ pub fn City(city: C) -> impl IntoView {
             .get(&(current_city, city))
             .or_else(|| rail::RAILROAD_EDGES.get(&(city, current_city)));
 
-        match rails {
-            Some(rails) => {
-                if rails.len() == 1 {
-                    let mut tx = tx.clone();
-                    let _ = tx.try_send(ClientMessage::Event(Event::Move {
-                        player_id: player_id.0.get().unwrap(),
-                        route: (city, rails[0]),
-                    }));
-                } else {
-                    // TODO: Show a pop-up with the options
-                }
+        if let Some(rails) = rails {
+            if rails.len() == 1 {
+                let mut tx = tx.clone();
+                let _ = tx.try_send(ClientMessage::Event(Event::Move {
+                    player_id: player_id.0.get().unwrap(),
+                    route: (city, rails[0]),
+                }));
+            } else {
+                // TODO: Show a pop-up with the options
             }
-            None => {}
         }
 
         // TODO: In the future, if the user is riding along a rail that has two options for multiple stops, then after the
