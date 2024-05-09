@@ -26,7 +26,7 @@ impl State {
 
         // check if the player has been eliminated
         if !self.player_order.contains(&player_to_max_id) {
-           return -1.0;
+            return -1.0;
         }
 
         // TODO: Evaluate railroad network connectivity.
@@ -305,12 +305,15 @@ impl State {
         minning_for_other: bool,
         last_event: Event,
     ) -> (f64, Event) {
-        if self.stage == Stage::Ended || depth == 0 || !self.player_order.contains(&player_to_max_id) {
+        if self.stage == Stage::Ended
+            || depth == 0
+            || !self.player_order.contains(&player_to_max_id)
+        {
             return (self.evaluate(player_to_max_id), last_event);
         };
 
         if minning_for_other {
-            let mut min_eval = std::f64::MAX;
+            let mut min_eval = f64::MAX;
             let mut min_event = None;
 
             if self.find_all_valid_moves().is_empty() {
@@ -364,7 +367,7 @@ impl State {
                 min_event.expect("A min event should have been set"),
             )
         } else {
-            let mut max_eval = std::f64::MIN;
+            let mut max_eval = f64::MIN;
             let mut max_event = None;
 
             if self.find_all_valid_moves().is_empty() {

@@ -663,7 +663,7 @@ graph_out_rails! {
     P(Wickenburg_AZ), D(Phoenix_AZ), AT_AND_SF;
     P(San_Bernardino_CA), P(Lancaster_CA), AT_AND_SF;
     P(San_Bernardino_CA), D(San_Diego_CA), AT_AND_SF;
-    
+
     // D_AND_RGW
     P(Ogden_UT), D(Salt_Lake_City_UT), D_AND_RGW;
     P(Provo_UT), D(Salt_Lake_City_UT), D_AND_RGW;
@@ -740,7 +740,7 @@ graph_out_rails! {
     P(Bend_OR), P(Shaniko_OR), GN;
     P(Bend_OR), P(Chemult_OR), GN;
     P(Klamath_Falls_OR), P(Chemult_OR), GN;
-    
+
     // NP
     D(Portland_OR), P(Olympia_WA), NP;
     D(Seattle_WA), P(Olympia_WA), NP;
@@ -896,7 +896,7 @@ graph_out_rails! {
     D(Omaha_NE), P(Red_Oak_IA), CB_AND_Q;
     P(Beardstown_IL), P(Mornmouth_IL), CB_AND_Q;
     P(Beardstown_IL), D(St_Louis_MO), CB_AND_Q;
-    
+
     // MP
     D(Pueblo_CO), P(Las_Animas_CO), MP;
     P(Syracuse_KS), P(Las_Animas_CO), MP;
@@ -933,7 +933,7 @@ graph_out_rails! {
     P(Salado_TX), P(Waco_TX), MP;
     P(Salado_TX), P(Austin_TX), MP;
     D(San_Antonio_TX), P(Austin_TX), MP;
-    
+
     // SLSF
     D(Birmingham_AL), P(Windham_Springs_AL), SLSF;
     P(Amory_MS), P(Windham_Springs_AL), SLSF;
@@ -1031,6 +1031,7 @@ graph_out_rails! {
 
 lazy_static::lazy_static! {
     pub static ref RAILROAD_GRAPH: UnGraph<C, Rail> = Rail::get_railroad_graph();
+    pub static ref RAILROAD_EDGES: HashMap<(C, C), Vec<Rail>> = Rail::get_edges();
     #[allow(dead_code)]
     pub static ref RAILS_TO_CITIES_MAP: HashMap<Rail, HashSet<C>> = Rail::rail_to_cities_map();
 }

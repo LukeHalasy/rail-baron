@@ -1,7 +1,7 @@
 use leptos::*;
 use leptos_router::use_params;
 
-use crate::{app::PlayerId, pre_game::lobby::LobbyParams};
+use crate::pre_game::lobby::LobbyParams;
 
 #[component]
 pub fn StateDebug() -> impl IntoView {

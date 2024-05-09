@@ -3,7 +3,6 @@ use leptos::*;
 use leptos_meta::Title;
 use leptos_router::*;
 use store::{ClientMessage, Event};
-use web_sys::console;
 
 use crate::{app::PlayerId, pre_game::layout::Layout};
 

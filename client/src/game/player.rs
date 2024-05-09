@@ -1,6 +1,5 @@
 use leptos::*;
-use leptos_leaflet::{Marker, Position};
-use store::{rail::C, travel_payout::City};
+use leptos_leaflet::{position, Circle, Marker, Position};
 
 #[component]
 pub fn Player(player: store::Player) -> impl IntoView {
@@ -15,24 +14,24 @@ pub fn Player(player: store::Player) -> impl IntoView {
         _ => "black",
     };
 
-    let home_city = move || {
-        if let Some(city) = player.home_city {
-            view! {
-                <Marker
-                    position=Position::new(
-                        city.coordinates().latitude(),
-                        city.coordinates().longitude(),
-                    )
-                    icon_url=format!("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-{}.png", color)
-                    // needed to make the icon appear in the correct location
-                    icon_size=(25.0, 41.0)
-                    icon_anchor=(12.0, 41.0)>
-                ></Marker>
-            }
-        } else {
-            view! {}.into_view()
-        }
-    };
+    // let home_city = move || {
+    //     if let Some(city) = player.home_city {
+    //         view! {
+    //             <Marker
+    //                 position=Position::new(
+    //                     city.coordinates().latitude(),
+    //                     city.coordinates().longitude(),
+    //                 )
+    //                 icon_url=format!("https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-{}.png", color)
+    //                 // needed to make the icon appear in the correct location
+    //                 icon_size=(25.0, 41.0)
+    //                 icon_anchor=(12.0, 41.0)>
+    //             ></Marker>
+    //         }
+    //     } else {
+    //         view! {}.into_view()
+    //     }
+    // };
 
     let destination_city = move || {
         if let Some(city) = player.destination {
@@ -53,8 +52,20 @@ pub fn Player(player: store::Player) -> impl IntoView {
         }
     };
 
+    let current_city = move || {
+        if let Some(city) = player.clone().current_city() {
+            view! {
+                <Circle fill_opacity=1.0 fill_color={color} color="black" center=position!(city.coordinates().latitude(), city.coordinates().longitude()) radius={27000.0}>
+                </Circle>
+            }
+        } else {
+            view! {}.into_view()
+        }
+    };
+
     view! {
-        { home_city }
+        // { home_city }
+        { current_city }
         { destination_city }
     }
 }

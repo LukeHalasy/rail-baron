@@ -28,7 +28,6 @@ use std::{
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
-use rand::Rng;
 use store::{Event, GameId, ServerMessage, State};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::tungstenite::protocol::Message;
@@ -395,20 +394,9 @@ async fn handle_connection(
             println!("Done consuming");
 
             // delay for 1 second
-            println!("Sleeping for 1 second..");
+            // println!("Sleeping for 1 second..");
             // std::thread::sleep(std::time::Duration::from_secs(1));
-            println!("Done sleeping");
-
-            // TODO: Change to broadcast to all players
-            // broadcast the event to all players
-            // for (peer_addr, recp) in broadcast_recipients {
-            //     match recp.unbounded_send(Message::Binary(
-            //         bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
-            //     )) {
-            //         Ok(_) => println!("Computer Event sent to {:?}", peer_addr),
-            //         Err(e) => println!("Error sending computer event to {:?}: {}", peer_addr, e),
-            //     }
-            // }
+            // println!("Done sleeping");
 
             let event = {
                 let event_history = game_states
@@ -451,6 +439,16 @@ async fn handle_connection(
                 }
             };
 
+            // TODO: Change to broadcast to all players
+            // broadcast the event to all players
+            // for (peer_addr, recp) in broadcast_recipients {
+            //     match recp.unbounded_send(Message::Binary(
+            //         bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
+            //     )) {
+            //         Ok(_) => println!("Computer Event sent to {:?}", peer_addr),
+            //         Err(e) => println!("Error sending computer event to {:?}: {}", peer_addr, e),
+            //     }
+            // }
             match tx.unbounded_send(Message::Binary(
                 bincode::serialize(&ServerMessage::Event(event.clone())).unwrap(),
             )) {

@@ -7,14 +7,7 @@ use store::{ClientMessage, Event};
 
 use crate::{
     app::PlayerId,
-    game::{
-        cities::Cities,
-        debug::{
-            events::EventHistoryDebug, player::PlayerDebug, rail::RailDebug, state::StateDebug,
-        },
-        player::Player,
-        rails::Rails,
-    },
+    game::{cities::Cities, player::Player, rails::Rails},
     pre_game::lobby::LobbyParams,
 };
 
@@ -55,7 +48,7 @@ pub fn Game() -> impl IntoView {
                 <For
                     each=move || game_state.get().unwrap().players
                     key=|player_map| player_map.0
-                    children=move |(id, player)| {
+                    children=move |(_id, player)| {
                         let home_city = player.home_city.map(|h| h.to_string()).unwrap_or_else(|| "None".to_string());
                         let start = player.start.map(|s| s.to_string()).unwrap_or_else(|| "None".to_string());
                         let destination = player.destination.map(|d| d.to_string()).unwrap_or_else(|| "None".to_string());

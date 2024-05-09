@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use futures::{SinkExt, StreamExt};
 
 use leptos_meta::{provide_meta_context, Stylesheet, Title};
@@ -8,10 +6,9 @@ use reqwasm::websocket::{futures::WebSocket, Message};
 use leptos::*;
 
 use leptos_router::{Route, Router, Routes};
-use store::rail::Rail;
-use store::travel_payout::City;
-use store::{ClientMessage, Event, Player, ServerMessage, State};
-use strum::IntoEnumIterator;
+
+use store::{ClientMessage, Event, ServerMessage, State};
+
 use web_sys::console;
 // use server::ServerMessage;
 
@@ -20,11 +17,9 @@ use crate::pre_game::home::Home;
 use crate::pre_game::join::Join;
 use crate::pre_game::lobby::{Lobby, LobbyParams};
 use crate::pre_game::rules::Rules;
+use gloo_timers::future::TimeoutFuture;
 
 pub type Error = String;
-
-#[derive(Copy, Clone, Debug)]
-pub struct GameId(ReadSignal<Option<store::GameId>>);
 
 #[derive(Copy, Clone, Debug)]
 pub struct PlayerId(pub ReadSignal<Option<store::PlayerId>>);
@@ -45,9 +40,6 @@ pub fn App() -> impl IntoView {
     let (player_id, set_player_id) = create_signal(None::<store::PlayerId>);
     provide_context(PlayerId(player_id));
 
-    let (game_id, _set_game_id) = create_signal(None::<store::GameId>);
-    provide_context(GameId(game_id));
-
     let (error, set_error) = create_signal(None::<Error>);
     provide_context(error);
 
@@ -62,8 +54,10 @@ pub fn App() -> impl IntoView {
     });
 
     leptos::spawn_local(async move {
+        // wait a second
         while let Some(msg) = read.next().await {
             if let Message::Bytes(bytes) = msg.unwrap() {
+                console::log_1(&"got message from server!".to_string().into());
                 if let Ok(server_message) = bincode::deserialize::<ServerMessage>(&bytes) {
                     match server_message {
                         ServerMessage::Event(event) => {
@@ -75,6 +69,14 @@ pub fn App() -> impl IntoView {
 
                                 state.consume(&event);
                             });
+
+                            // we should only wait if the game stage is start
+                            if let store::Stage::InGame(_stage) =
+                                state.get().as_ref().unwrap().stage
+                            {
+                                web_sys::console::log_1(&"waiting 1 second...".to_string().into());
+                                TimeoutFuture::new(1_000).await;
+                            }
 
                             if let Event::Start { player_id: _ } = event {
                                 // get the lobby id from the url
