@@ -13,7 +13,7 @@ use leptos_router::{Route, Router, Routes};
 use std::time::Duration as duration;
 use store::rail::Rail;
 use store::travel_payout::City;
-use store::{ClientMessage, Event, Player, ServerMessage, State};
+use store::{ClientMessage, Event, InGameStage, Player, ServerMessage, State};
 use strum::IntoEnumIterator;
 use web_sys::console;
 // use server::ServerMessage;
@@ -82,9 +82,12 @@ pub fn App() -> impl IntoView {
                                 state.consume(&event);
                             });
 
-                            console::log_1(&"waiting 10 seconds...".to_string().into());
-                            TimeoutFuture::new(1_000).await;
-                            console::log_1(&"done".to_string().into());
+                            // we should only wait if the game stage is start
+                            if let store::Stage::InGame(stage) = state.get().as_ref().unwrap().stage
+                            {
+                                web_sys::console::log_1(&"waiting 1 second...".to_string().into());
+                                TimeoutFuture::new(1_000).await;
+                            }
 
                             if let Event::Start { player_id: _ } = event {
                                 // get the lobby id from the url
