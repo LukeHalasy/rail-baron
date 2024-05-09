@@ -310,7 +310,7 @@ impl State {
         };
 
         if minning_for_other {
-            let mut min_eval = std::f64::MAX;
+            let mut min_eval = f64::MAX;
             let mut min_event = None;
 
             if self.find_all_valid_moves().is_empty() {
@@ -364,7 +364,7 @@ impl State {
                 min_event.expect("A min event should have been set"),
             )
         } else {
-            let mut max_eval = std::f64::MIN;
+            let mut max_eval = f64::MIN;
             let mut max_event = None;
 
             if self.find_all_valid_moves().is_empty() {
