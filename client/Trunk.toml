@@ -1,4 +1,13 @@
+trunk_version = "0.17.5"
+
+[serve]
+address = "0.0.0.0"
+port = 8088
+
+[tools]
+tailwindcss = "3.3.5"
+
 [[hooks]]
 stage = "pre_build"
 command = "sh"
-command_arguments = ["-c", "npx tailwindcss -i input.css -o style/output.css"]
+# command_arguments = ["-c", "npx tailwindcss -i input.css -o style/output.css"]

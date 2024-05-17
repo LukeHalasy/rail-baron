@@ -503,7 +503,7 @@ async fn handle_connection(
 async fn main() -> Result<(), IoError> {
     let addr = env::args()
         .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8000".to_string());
+        .unwrap_or_else(|| "0.0.0.0:8000".to_string());
 
     let peer_maps = PeerMaps::new(Mutex::new(HashMap::new()));
     let game_states = GameStates::new(Mutex::new(HashMap::new()));
