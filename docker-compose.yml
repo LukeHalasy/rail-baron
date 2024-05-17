@@ -1,0 +1,18 @@
+version: "3.0"
+services:
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8088:8088"
+  server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
