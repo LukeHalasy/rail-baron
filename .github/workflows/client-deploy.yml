@@ -44,7 +44,7 @@ jobs:
 
 
       - name: Download and install tailwindcss binary
-        run: npm install -D tailwindcss && npx tailwindcss -i <INPUT/PATH.css> -o <OUTPUT/PATH.css>  # run tailwind
+        run: npm install -D tailwindcss
 
 
       - name: Download and install Trunk binary
