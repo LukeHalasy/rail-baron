@@ -4,6 +4,9 @@ version = "0.0.1"
 edition = "2021"
 rust-version = "1.75.0"
 
+[[bin]]
+name = "server"
+
 [dependencies]
 store = { path = "../store" }
 serde = { version = "1", features = ["derive"] }

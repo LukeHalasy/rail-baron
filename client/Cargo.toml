@@ -12,7 +12,10 @@ store = { path = "../store" }
 console_error_panic_hook = "0.1"
 leptos = { version = "0.5.2", features = ["csr", "nightly"] }
 leptos_meta = { version = "0.5.2", features = ["csr", "nightly"] }
-leptos-leaflet = { git = "https://github.com/LukeHalasy/leptos-leaflet.git", rev="2b6551409b91a861f286d2fe1792275e68add911", default-features = false, features = [
+# leptos-leaflet = { git = "https://github.com/LukeHalasy/leptos-leaflet.git", rev="2b6551409b91a861f286d2fe1792275e68add911", default-features = false, features = [
+#     "csr",
+# ] }
+leptos-leaflet = { git = "https://github.com/LukeHalasy/leptos-leaflet.git", rev="e80dbfa3b630919ad380c8c1e7e872d6cc415f4c", default-features = false, features = [
     "csr",
 ] }
 

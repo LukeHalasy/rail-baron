@@ -1,22 +1,3 @@
-//! A chat server that broadcasts a message to all connections.
-//!
-//! This is a simple line-based server which accepts WebSocket connections,
-//! reads lines from those connections, and broadcasts the lines to all other
-//! connected clients.
-//!
-//! You can test this out by running:
-//!
-//!     cargo run --example server 127.0.0.1:12345
-//!
-//! And then in another window run:
-//!
-//!     cargo run --example client ws://127.0.0.1:12345/
-//!
-//! You can run the second command in multiple windows and then chat between the
-//! two, seeing the messages from the other client as they're received. For all
-//! connected clients they'll all join the same room and see everyone else's
-//! messages.
-
 use std::{
     collections::HashMap,
     env,
@@ -34,7 +15,6 @@ use tokio_tungstenite::tungstenite::protocol::Message;
 
 type Tx = UnboundedSender<Message>;
 
-// each game has a list of peers
 type PeerMaps = Arc<Mutex<HashMap<GameId, HashMap<SocketAddr, Tx>>>>;
 type PeerToGameMap = Arc<Mutex<HashMap<SocketAddr, GameId>>>;
 
@@ -54,7 +34,6 @@ async fn handle_connection(
         .expect("Error during the websocket handshake occurred");
     println!("WebSocket connection established: {}", addr);
 
-    // Insert the write part of this peer to the peer map.
     let (tx, rx) = unbounded();
     let (outgoing, incoming) = ws_stream.split();
 
@@ -63,8 +42,6 @@ async fn handle_connection(
     )) {
         println!("Error sending connection message to {:?}: {}", addr, e);
     }
-
-    // tx.unbounded_send(Message::Binary(addr.port().to_string().into_bytes()));
 
     let broadcast_incoming = incoming.try_for_each(|msg| {
         // deserialize message into an Event
@@ -503,7 +480,7 @@ async fn handle_connection(
 async fn main() -> Result<(), IoError> {
     let addr = env::args()
         .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8000".to_string());
+        .unwrap_or_else(|| "0.0.0.0:8000".to_string());
 
     let peer_maps = PeerMaps::new(Mutex::new(HashMap::new()));
     let game_states = GameStates::new(Mutex::new(HashMap::new()));
