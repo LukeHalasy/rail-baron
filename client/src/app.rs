@@ -26,7 +26,7 @@ pub struct PlayerId(pub ReadSignal<Option<store::PlayerId>>);
 
 #[component]
 pub fn App() -> impl IntoView {
-    let ws = WebSocket::open("ws://127.0.0.1:8000").unwrap();
+    let ws = WebSocket::open("ws://0.0.0.0:8000").unwrap();
     let (mut write, mut read) = ws.split();
 
     let (in_tx, mut in_rx) = futures::channel::mpsc::channel::<ClientMessage>(1000);
@@ -144,7 +144,7 @@ pub fn App() -> impl IntoView {
 
     provide_meta_context();
     view! {
-        <Stylesheet id="leptos" href="/pkg/tailwind.css"/>
+        <Stylesheet id="leptos" href="/src/output.css"/>
         <Title formatter=|text| format!("Railway Riches - {text}")/>
         <Router>
             <Routes>
